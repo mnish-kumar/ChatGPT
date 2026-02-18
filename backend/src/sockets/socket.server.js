@@ -1,0 +1,96 @@
+const  { Server }  = require("socket.io");
+const cookie = require('cookie');
+const jwt = require('jsonwebtoken');
+const userModel = require('../models/user.models');
+const { generateResponse } = require('../services/ai.service');
+const  messageModel  = require('../models/message.model');
+
+
+function initSocketServer(httpServer) {
+    const io = new Server(httpServer, { /* options */ });
+
+    // Middleware to authenticate socket connection
+    io.use(async (socket, next) => {
+        const cookies = cookie.parse(socket.handshake.headers.cookie || '');
+        
+        if (!cookies.token) {
+            return next(new Error("Authentication error ! Token not found in cookies"));
+        }
+
+        try {
+            const decode = jwt.verify(cookies.token, process.env.JWT_SECRET);
+            
+            const user = await userModel.findById(decode.id);
+
+            if (!user) {
+                return next(new Error("Authentication error ! User not found"));
+            }
+
+            socket.user = user;
+            next();
+        } catch (err) {
+            return next(new Error("Authentication error ! Invalid Token"));
+        }
+    })
+
+
+
+    io.on("connection", (socket) => {
+        console.log("A user connection");
+
+        // disconnection event fire when user disconnects
+        socket.on("disconnect", () => {
+            console.log("A user disconnected");
+        });
+
+        socket.on('ai-message', async (messagePayload) => {
+            /*
+            messagePayload = {
+                content: "Hello, how are you?",
+                Chat: chatId
+            }
+            */
+
+            console.log("Received ai-message:", messagePayload);
+
+            // Store user message in DB
+            await messageModel.create({
+                user: socket.user._id,
+                chat: messagePayload.chat,
+                content: messagePayload.content,
+                role: 'user'
+            });
+
+            // Retrieve last 20 messages from chat history
+            const chatHistory = (await messageModel.find({
+                chat: messagePayload.chat,
+            }).sort({ createdAt: -1}).limit(20).lean()).reverse();
+
+
+            // Generate AI response
+            const Response = await generateResponse(chatHistory.map(msg => ({
+                role: msg.role,
+                parts: [{text: msg.content}]
+            })));
+
+
+            // Store AI response in DB
+            await messageModel.create({
+                user: socket.user._id,
+                chat: messagePayload.chat,
+                content: Response,
+                role: 'model'
+            });
+
+            // Emit AI response back to client
+            socket.emit('ai-response', { 
+                content: Response,
+                chat: messagePayload.chat
+            });
+        })
+    });
+    
+}
+
+
+module.exports = initSocketServer;
