@@ -11,7 +11,7 @@ function initSocketServer(httpServer) {
 
     // Middleware to authenticate socket connection
     io.use(async (socket, next) => {
-        const cookies = cookie.parse(socket.handshake.headers.cookie || '');
+        const cookies = cookie.parse(socket.handshake.headers?.cookie || '');
         
         if (!cookies.token) {
             return next(new Error("Authentication error ! Token not found in cookies"));
@@ -36,6 +36,7 @@ function initSocketServer(httpServer) {
 
 
     io.on("connection", (socket) => {
+        // console.log("Socket connected with id:", socket.id);
         console.log("A user connection");
 
         // disconnection event fire when user disconnects
@@ -51,7 +52,7 @@ function initSocketServer(httpServer) {
             }
             */
 
-            console.log("Received ai-message:", messagePayload);
+            console.log("Received ai-message:", messagePayload.content);
 
             // Store user message in DB
             await messageModel.create({
@@ -61,17 +62,23 @@ function initSocketServer(httpServer) {
                 role: 'user'
             });
 
-            // Retrieve last 20 messages from chat history
+            // Retrieve last 20 messages from chat history [Short term memory for AI]
             const chatHistory = (await messageModel.find({
                 chat: messagePayload.chat,
             }).sort({ createdAt: -1}).limit(20).lean()).reverse();
 
 
             // Generate AI response
-            const Response = await generateResponse(chatHistory.map(msg => ({
-                role: msg.role,
-                parts: [{text: msg.content}]
-            })));
+            const Response = await generateResponse(chatHistory.map(item => {
+                return{
+                    role: item.role,
+                    parts: [{
+                        text: item.content,
+                    }]
+                }
+            }));     
+
+            console.log("Generated AI response:", Response);
 
 
             // Store AI response in DB
