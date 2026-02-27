@@ -14,6 +14,10 @@ async function generateResponse(content) {
     const responce = await ai.models.generateContent({
         model: process.env.GEMINI_MODEL_NAME,
         contents: content,
+        config: {
+            temperature: 0.7,
+            systemInstruction: "You are a helpful assistant for answering user queries.",
+        }
     });
     return responce.text;
 } 

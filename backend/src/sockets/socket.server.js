@@ -54,16 +54,20 @@ function initSocketServer(httpServer) {
       }
       */
 
-      // Store user message in DB
-      const userMessage = await messageModel.create({
-        user: socket.user._id,
-        chat: messagePayload.chat,
-        content: messagePayload.content,
-        role: "user",
-      });
+      
+      const [userMessage, vectors] = await Promise.all([
+        // Store user message in DB and generate embedding in parallel
+        messageModel.create({
+          user: socket.user._id,
+          chat: messagePayload.chat,
+          content: messagePayload.content,
+          role: "user",
+        }),
 
-      const vectors = await aiService.generateEmbedding(messagePayload.content);
+        aiService.generateEmbedding(messagePayload.content),
+      ]);
 
+      
       // Save user input in Supabase -> vectors, metadata (user, chat), messageId(unique id for each message)
       try {
         await createVector({
@@ -75,29 +79,30 @@ function initSocketServer(httpServer) {
             text: messagePayload.content,
           },
         });
-
-        
       } catch (error) {
         console.error("Supabase memory error", error);
       }
 
-      const memory = await queryVectors({
-        queryVector: vectors,
-        limit: 3,
-        metadata: {
-          user: socket.user._id,
-        },
-      });
+      const [memory, chatHistory] = await Promise.all([
+        // Query Supabase to get relevant past messages based on the current message vectors
+        queryVectors({
+          queryVector: vectors,
+          limit: 3,
+          metadata: {
+            user: socket.user._id,
+          },
+        }),
 
-      // Retrieve last 20 messages from chat history [Short term memory for AI]
-      const chatHistory = (
-        await messageModel
+        // Retrieve last 20 messages from chat history [Short term memory for AI]
+        messageModel
           .find({ chat: messagePayload.chat })
           .sort({ createdAt: -1 })
           .limit(20)
           .lean()
-      ).reverse();
+          .then((result) => result.reverse()),
+      ]);
 
+      
       const STM = chatHistory.map((item) => {
         return {
           role: item.role,
@@ -122,20 +127,26 @@ function initSocketServer(httpServer) {
         },
       ];
 
-
       // Generate AI response
       const Response = await aiService.generateResponse([...LTM, ...STM]);
 
-
-      // Store AI response in DB
-      const aiResponseMessage = await messageModel.create({
-        user: socket.user._id,
-        chat: messagePayload.chat,
+      // Emit AI response back to client
+      socket.emit("ai-response", {
         content: Response,
-        role: "model",
+        chat: messagePayload.chat,
       });
 
-      const responseVectors = await aiService.generateEmbedding(Response);
+      const [aiResponseMessage, responseVectors] = await Promise.all([
+        // Store AI response in DB
+        await messageModel.create({
+          user: socket.user._id,
+          chat: messagePayload.chat,
+          content: Response,
+          role: "model",
+        }),
+
+        await aiService.generateEmbedding(Response),
+      ]);
 
       // Save AI response in Supabase -> vectors, metadata (user, chat), messageId(unique id for each message)
       try {
@@ -148,17 +159,9 @@ function initSocketServer(httpServer) {
             text: Response,
           },
         });
-
-        
       } catch (error) {
         console.error("Supabase memory error", error);
       }
-
-      // Emit AI response back to client
-      socket.emit("ai-response", {
-        content: Response,
-        chat: messagePayload.chat,
-      });
     });
   });
 }
