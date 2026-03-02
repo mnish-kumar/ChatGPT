@@ -79,7 +79,25 @@ async function loginController(req, res) {
   });
 }
 
+async function logoutController(req, res) {
+  try {
+    res.clearCookie("token");
+
+    return res.status(200).json({
+      sucess: true,
+      message: "Logout successful",
+    });
+  } catch (error) {
+    return res.status(500).json({
+      sucess: false,
+      message: "Logout failed",
+      error: error.message,
+    });
+  }
+}
+
 module.exports = {
   registerController,
   loginController,
+  logoutController,
 };
