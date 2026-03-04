@@ -1,8 +1,12 @@
-import React from 'react'
+import MianRoutes from './routes/MianRoutes'
+import { AuthProvider } from './context/AuthContext'
 
 const App = () => {
+  
   return (
-    <div>App</div>
+    <AuthProvider>
+      <MianRoutes />
+    </AuthProvider>
   )
 }
 
