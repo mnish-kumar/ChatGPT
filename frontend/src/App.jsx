@@ -1,5 +1,5 @@
 import MianRoutes from './routes/MianRoutes'
-import { AuthProvider } from './context/AuthContext'
+import { AuthProvider } from './auth/services/auth.context';
 
 const App = () => {
   

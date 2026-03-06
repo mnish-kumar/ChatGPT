@@ -1,36 +1,34 @@
-import axios from "axios";
 import { LockKeyhole, Mail, User } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import "../App.css";
+import { useAuth } from "../auth/hooks/useauth";
 
 const Register = () => {
   const { register, reset, handleSubmit } = useForm();
   const navigate = useNavigate();
+  const { handleRegister, loading} = useAuth();
 
-  const BASE_URL = import.meta.env.VITE_BASE_URL || "http://localhost:3000";
+  const onSubmit = async (data) => {
+    const { firstname, lastname, email, password } = data;
+    await handleRegister({
+      fullname: { firstname, lastname },
+      email,
+      password,
+    });
 
-  const onSubmit = (data) => {
-    const formatedData = {
-      fullname: {
-        firstname: data.firstname,
-        lastname: data.lastname,
-      },
-      email: data.email,
-      password: data.password,
-    };
+    reset();
 
-    axios
-      .post(`${BASE_URL}/api/auth/register`, formatedData, { withCredentials: true })
-      .then((response) => {
-        console.log("Registration successful:", response.data);
-        reset();
-        navigate("/login");
-      })
-      .catch((error) => {
-        console.error("Registration error:", error);
-      });
+    navigate("/login");
   };
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen bg-(--primary-color)">
+        <p className="text-(--text-color) text-xl font-medium">Loading...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-(--primary-color)">

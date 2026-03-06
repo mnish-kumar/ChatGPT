@@ -1,37 +1,37 @@
 import { SquarePen } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../auth/hooks/useauth";
 
 const Profile = () => {
   const navigate = useNavigate();
-
   const [tilt, setTilt] = useState({ x: 0, y: 0 });
+  const { user } = useAuth();
 
-    // Adjust the threshold value to control the tilt effect
-    const threshold = 12;
+  // Adjust the threshold value to control the tilt effect
+  const threshold = 12;
 
-    const handleMove = (e) => {
-        const { left, top, width, height } = e.currentTarget.getBoundingClientRect();
-        const x = (e.clientX - left) / width - 0.5;
-        const y = (e.clientY - top) / height - 0.5;
-        setTilt({ x: y * -threshold, y: x * threshold });
-    };
+  const handleMove = (e) => {
+    const { left, top, width, height } =
+      e.currentTarget.getBoundingClientRect();
+    const x = (e.clientX - left) / width - 0.5;
+    const y = (e.clientY - top) / height - 0.5;
+    setTilt({ x: y * -threshold, y: x * threshold });
+  };
 
   return (
-    <div
-      
-    className="flex justify-center items-center min-h-screen bg-gray-100">
-      
+    <div className="flex justify-center items-center min-h-screen bg-gray-100">
       {/* Profile Card */}
       <div
-      onMouseMove={handleMove}
-      onMouseLeave={() => setTilt({x:0, y: 0})}
-      style={{ transform: `perspective(1000px) rotateX(${tilt.x}deg) rotateY(${tilt.y}deg)` }}
-      className="w-95 bg-white rounded-2xl shadow-lg p-6 transition-transform duration-200 ease-out shadow-gray-800">
-
+        onMouseMove={handleMove}
+        onMouseLeave={() => setTilt({ x: 0, y: 0 })}
+        style={{
+          transform: `perspective(1000px) rotateX(${tilt.x}deg) rotateY(${tilt.y}deg)`,
+        }}
+        className="w-95 bg-white rounded-2xl shadow-lg p-6 transition-transform duration-200 ease-out shadow-gray-800"
+      >
         {/* Top Section */}
         <div className="flex items-start justify-between">
-
           {/* Image + Name */}
           <div className="flex flex-col justify-start gap-1">
             <img
@@ -41,12 +41,8 @@ const Profile = () => {
             />
 
             <div>
-              <h2 className="text-lg font-medium text-gray-800">
-                John Doe
-              </h2>
-              <p className="text-gray-500 text-sm">
-                johndoe@gmail.com
-              </p>
+              <h2 className="text-lg font-medium text-gray-800">{user?.fullname?.firstname || "N/A"} {user?.fullname?.lastname || "N/A"}</h2>
+              <p className="text-gray-500 text-sm">{user?.email || "N/A"}</p>
             </div>
           </div>
 
@@ -58,7 +54,6 @@ const Profile = () => {
             <SquarePen size={16} />
             Edit
           </button>
-
         </div>
 
         {/* Divider */}
@@ -66,17 +61,22 @@ const Profile = () => {
 
         {/* Extra Info */}
         <div className="space-y-2 text-gray-700">
+          <div className="flex flex-col border-l-4 border-gray-300 pl-3">
+            <span className="font-semibold">Username:</span>
+
+            <div className="flex gap-2">
+              <span className="text-gray-900">FirstName:</span> {user?.fullname?.firstname || "N/A"}
+              <span>|</span>
+              <span className="text-gray-900">LastName:</span> {user?.fullname?.lastname || "N/A"}
+            </div>
+          </div>
           <p className="flex flex-col border-l-4 border-gray-300 pl-3">
-            <span className="font-semibold">Username:</span> johndoe
+            <span className="font-semibold">ID:</span> {user?._id || "N/A"}
           </p>
           <p className="flex flex-col border-l-4 border-gray-300 pl-3">
-            <span className="font-semibold">Location:</span> India
-          </p>
-          <p className="flex flex-col border-l-4 border-gray-300 pl-3">
-            <span className="font-semibold">Email:</span> manish.mvi@gmail.com
+            <span className="font-semibold">Email:</span> {user?.email || "N/A"}
           </p>
         </div>
-
       </div>
     </div>
   );

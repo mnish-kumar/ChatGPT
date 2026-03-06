@@ -1,35 +1,36 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Menu, Plus, MessageSquare, Settings, Search, Send, Trash2 } from 'lucide-react';
-import Logout from '../pages/Logout';
+import { useState } from "react";
+import { Menu, Send, User2Icon } from "lucide-react";
 
-
+import PopUp from "../components/PopUp";
+import Sidebar from "../components/Sidebar";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../auth/hooks/useauth";
 
 const Home = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const navigate = useNavigate();
-
-  const [conversations, setConversations] = useState([
-    { id: 1, title: 'How to learn React?' },
-    { id: 2, title: 'Python best practices' },
-    { id: 3, title: 'Web design tips' },
-  ]);
-
-
+  const [showLoginPopup, setShowLoginPopup] = useState(false);
   const [messages, setMessages] = useState([
-    { id: 1, type: 'assistant', content: 'Hello! How can I help you today?' },
+    { id: 1, type: "assistant", content: "Hello! How can I help you today?" },
   ]);
-  const [inputValue, setInputValue] = useState('');
-  const [activeConversation, setActiveConversation] = useState(1);
+  const [inputValue, setInputValue] = useState("");
+
+  const navigate = useNavigate();
+  const { user } = useAuth();
 
   const handleSendMessage = (e) => {
     e.preventDefault();
     if (!inputValue.trim()) return;
 
+    // Check if user is logged in
+    if (!user) {
+      setShowLoginPopup(true);
+      return;
+    }
+
     // Add user message
     const userMessage = {
       id: messages.length + 1,
-      type: 'user',
+      type: "user",
       content: inputValue,
     };
     setMessages([...messages, userMessage]);
@@ -38,91 +39,43 @@ const Home = () => {
     setTimeout(() => {
       const assistantMessage = {
         id: messages.length + 2,
-        type: 'assistant',
-        content: 'This is a simulated response. Connect your backend to get real responses!',
+        type: "assistant",
+        content:
+          "This is a simulated response. Connect your backend to get real responses!",
       };
       setMessages((prev) => [...prev, assistantMessage]);
     }, 500);
 
-    setInputValue('');
+    setInputValue("");
   };
 
-  const createNewConversation = () => {
-    const newId = Math.max(...conversations.map((c) => c.id), 0) + 1;
-    setConversations([
-      {
-        id: newId,
-        title: `New conversation ${newId}`,
-      },
-      ...conversations,
-    ]);
-    setActiveConversation(newId);
-    setMessages([]);
-  };
-
-  const deleteConversation = (id) => {
-    setConversations(conversations.filter((c) => c.id !== id));
-    if (activeConversation === id) {
-      setActiveConversation(conversations[0]?.id || 1);
-      setMessages([]);
+  const handleUserIconClick = () => {
+    if (user) {
+      navigate("/profile");
+    } else {
+      setShowLoginPopup(true);
     }
-  };
+  }
 
   return (
     <div className="app-container">
+      {/* Sidebar Toggle Button (visible when closed) */}
+      {!sidebarOpen && (
+        <button
+          className="sidebar-toggle-btn"
+          onClick={() => setSidebarOpen(true)}
+          title="Open sidebar"
+        >
+          <Menu size={18} />
+        </button>
+      )}
+
       {/* Sidebar */}
-      <aside className={`sidebar ${sidebarOpen ? "open" : "closed"}`}>
-        <div className="sidebar-header">
-          <button
-            className="new-chat-btn"
-            onClick={createNewConversation}
-            title="New conversation"
-          >
-            <Plus size={20} />
-            <span>New chat</span>
-          </button>
-        </div>
-
-        <div className="sidebar-search">
-          <Search size={18} />
-          <input type="text" placeholder="Search conversations..." />
-        </div>
-
-        <div className="conversations-list">
-          <div className="conversations-header">Recent</div>
-          {conversations.map((conv) => (
-            <div
-              key={conv.id}
-              className={`conversation-item ${activeConversation === conv.id ? "active" : ""}`}
-              onClick={() => setActiveConversation(conv.id)}
-            >
-              <MessageSquare size={16} />
-              <span>{conv.title}</span>
-              <button
-                className="delete-conv-btn"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  deleteConversation(conv.id);
-                }}
-                title="Delete conversation"
-              >
-                <Trash2 size={14} />
-              </button>
-            </div>
-          ))}
-        </div>
-
-        <div className="sidebar-footer">
-          <button
-            onClick={() => navigate("/profile")}
-            className="sidebar-footer-btn"
-          >
-            <Settings size={18} />
-            <span>Settings</span>
-          </button>
-          <Logout />
-        </div>
-      </aside>
+      <Sidebar
+        setMessages={setMessages}
+        sidebarOpen={sidebarOpen}
+        setSidebarOpen={setSidebarOpen}
+      />
 
       {/* Main Chat Area */}
       <div className="chat-container">
@@ -135,10 +88,12 @@ const Home = () => {
           >
             <Menu size={24} />
           </button>
-          <h1 className='text-gray-700'>ChatGPT</h1>
+          <h1 className="text-gray-700">ChatGPT</h1>
           <div className="header-actions">
-            <button title="Settings">
-              <Settings size={20} />
+            <button 
+              onClick={handleUserIconClick} 
+              title="Settings">
+              <User2Icon size={20} />
             </button>
           </div>
         </header>
@@ -188,14 +143,19 @@ const Home = () => {
                 <Send size={20} />
               </button>
             </div>
-            <p className="input-footer">
-              Free Research Preview. ChatGPT may produce inaccurate information.
-            </p>
           </form>
         </div>
       </div>
+
+      {/* Login Popup */}
+      <PopUp
+        isOpen={showLoginPopup}
+        onClose={() => setShowLoginPopup(false)}
+        title="Login Required"
+        message="Please log in to send messages and create new conversations."
+      />
     </div>
   );
 };
 
-export default Home
+export default Home;

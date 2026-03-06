@@ -1,27 +1,30 @@
 import { useForm } from "react-hook-form";
-import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import { Link, useNavigate } from "react-router-dom";
 import { LockIcon, Mail } from "lucide-react";
 import "../App.css";
+import { useAuth } from "../auth/hooks/useauth";
 
 const Login = () => {
   const navigate = useNavigate();
-  const { register, handleSubmit, reset } = useForm();
+  const { register, handleSubmit, reset, setError, formState: { errors } } = useForm();
+  const { handleLogin, isSubmitting } = useAuth();
 
-  const BASE_URL = import.meta.env.VITE_BASE_URL || "http://localhost:3000";
-
-  const onSubmit = (data) => {
-    axios
-      .post(`${BASE_URL}/api/auth/login`, data, { withCredentials: true })
-      .then((response) => {
-        console.log("Login successful:", response.data);
-        navigate("/"); // Redirect to home page after successful login
-      })
-      .catch((error) => {
-        console.error("Login error:", error);
-      });
-      
-    reset();
+  const onSubmit = async (data) => {
+    const result = await handleLogin({ email: data.email, password: data.password });
+    if (result.success) {
+      reset();
+      navigate("/");
+    } else {
+      const errorMsg = result.error?.message || "Invalid email or password";
+      // Check if error is about email or password specifically
+      if (errorMsg.toLowerCase().includes("email")) {
+        setError("email", { type: "server", message: errorMsg });
+      } else if (errorMsg.toLowerCase().includes("password")) {
+        setError("password", { type: "server", message: errorMsg });
+      } else {
+        setError("root", { type: "server", message: errorMsg });
+      }
+    }
   };
 
   return (
@@ -42,9 +45,13 @@ const Login = () => {
             name="email"
             placeholder="Email id"
             className="border-none outline-none ring-0 text-(--text-color) placeholder:text-(--muted-text-color)"
-            {...register("email", { required: true })}
+            {...register("email", { required: "Email is required" })}
           />
         </div>
+        {errors.email && (
+          <p className="text-red-500 text-sm mt-1 text-left">{errors.email.message}</p>
+        )}
+
         <div className="flex items-center mt-4 w-full bg-white border border-(--border-color) h-12 rounded-full overflow-hidden pl-6 gap-2">
           <LockIcon className="w-4 h-4 text-(--muted-text-color)" />
 
@@ -53,9 +60,16 @@ const Login = () => {
             name="password"
             placeholder="Password"
             className="border-none outline-none ring-0 text-(--text-color) placeholder:text-(--muted-text-color)"
-            {...register("password", { required: true })}
+            {...register("password", { required: "Password is required" })}
           />
         </div>
+        {errors.password && (
+          <p className="text-red-500 text-sm mt-1 text-left">{errors.password.message}</p>
+        )}
+
+        {errors.root && (
+          <p className="text-red-500 text-sm mt-2 text-left">{errors.root.message}</p>
+        )}
 
         <div className="mt-4 text-left text-blue-500 ">
           <button className="text-sm cursor-pointer" type="reset">
@@ -65,19 +79,20 @@ const Login = () => {
 
         <button
           type="submit"
-          className="mt-2 w-full h-11 rounded-full text-white bg-(--accent-color) hover:bg-(--accent-hover) hover:scale-95 duration-500  cursor-pointer transition-colors"
+          disabled={isSubmitting}
+          className="mt-2 w-full h-11 rounded-full text-white bg-(--accent-color) hover:bg-(--accent-hover) hover:scale-95 duration-500 cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          Login
+          {isSubmitting ? "Logging in..." : "Login"}
         </button>
 
         <p className="text-gray-600 text-sm mt-3 mb-11">
-          Don't have an account?
-          <a
-            onClick={() => navigate("/register")}
-            className="text-blue-500 hover:underline cursor-pointer"
+          Don't have an account?{" "}
+          <Link
+            to="/register"
+            className="text-blue-500 hover:underline cursor-pointer no-underline"
           >
             click here
-          </a>
+          </Link>
         </p>
       </form>
     </div>
