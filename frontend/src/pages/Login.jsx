@@ -7,7 +7,7 @@ import { useAuth } from "../auth/hooks/useauth";
 const Login = () => {
   const navigate = useNavigate();
   const { register, handleSubmit, reset, setError, formState: { errors } } = useForm();
-  const { handleLogin, isSubmitting } = useAuth();
+  const { handleLogin, isSubmitting, loading } = useAuth();
 
   const onSubmit = async (data) => {
     const result = await handleLogin({ email: data.email, password: data.password });
@@ -26,6 +26,14 @@ const Login = () => {
       }
     }
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-(--primary-color)">
+        <p className="text-(--text-color) text-lg">Loading...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col justify-center items-center min-h-screen bg-(--primary-color)">

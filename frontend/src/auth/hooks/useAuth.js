@@ -4,11 +4,12 @@ import { login, register, logout } from "../API/auth.api";
 
 export const useAuth = () => {
     const context = useContext(AuthContext);
-    const {user, setUser, loading} = context;
+    const {user, setUser, loading, setLoading} = context;
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     const handleLogin = async ({ email, password }) => {
         setIsSubmitting(true);
+        setLoading(true);
 
         try {
             const data = await login({ email, password });
@@ -19,11 +20,14 @@ export const useAuth = () => {
             return { success: false, error };
         } finally {
             setIsSubmitting(false);
+            setLoading(false);
         }
     }
 
     const handleRegister = async ({ fullname, email, password }) => {
         setIsSubmitting(true);
+        setLoading(true);
+        
         try {
             const data = await register({ fullname, email, password });
             setUser(data.user);
@@ -33,6 +37,7 @@ export const useAuth = () => {
             return { success: false, error };
         } finally {
             setIsSubmitting(false);
+            setLoading(false);
         }
     }
 

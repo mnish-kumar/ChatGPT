@@ -13,8 +13,9 @@ import {
 import { useAuth } from "../auth/hooks/useauth";
 
 
-const Sidebar = ({setMessages, sidebarOpen, setSidebarOpen}) => {
+const Sidebar = ({setMessages, sidebarOpen, setSidebarOpen, setShowLoginPopup}) => {
     const [activeConversation, setActiveConversation] = useState(1);
+    const [searchTerm, setSearchTerm] = useState("");
     const [conversations, setConversations] = useState([
     { id: 1, title: "How to learn React?" },
     { id: 2, title: "Python best practices" },
@@ -53,6 +54,12 @@ const Sidebar = ({setMessages, sidebarOpen, setSidebarOpen}) => {
       setMessages([]);
     }
   };
+
+  const filteredConversations = conversations.filter((conv) =>
+    conv.title.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+  
+  
   return (
     <>
       <aside className={`sidebar ${sidebarOpen ? "open" : "closed"}`}>
@@ -77,12 +84,14 @@ const Sidebar = ({setMessages, sidebarOpen, setSidebarOpen}) => {
 
         <div className="sidebar-search">
           <Search size={18} />
-          <input type="text" placeholder="Search conversations..." />
+          <input 
+          onChange={filteredConversations => setSearchTerm(filteredConversations.target.value)}
+          type="text" placeholder="Search conversations..." />
         </div>
 
         <div className="conversations-list">
           <div className="conversations-header">Recent</div>
-          {conversations.map((conv) => (
+          {filteredConversations.map((conv) => (
             <div
               key={conv.id}
               className={`conversation-item ${activeConversation === conv.id ? "active" : ""}`}

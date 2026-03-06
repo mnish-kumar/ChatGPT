@@ -75,6 +75,7 @@ const Home = () => {
         setMessages={setMessages}
         sidebarOpen={sidebarOpen}
         setSidebarOpen={setSidebarOpen}
+        setShowLoginPopup={setShowLoginPopup} 
       />
 
       {/* Main Chat Area */}
