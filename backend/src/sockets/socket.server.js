@@ -8,7 +8,11 @@ const { createVector, queryVectors } = require("../services/vector.service");
 
 function initSocketServer(httpServer) {
   const io = new Server(httpServer, {
-    /* options */
+    cors: {
+      origin: ["http://localhost:5173"],
+      allowedHeaders: ["Content-Type", "Authorization"],
+      credentials: true
+    }
   });
 
   // Middleware to authenticate socket connection
@@ -53,8 +57,8 @@ function initSocketServer(httpServer) {
         Chat: chatId
       }
       */
-
-      
+      try {
+    
       const [userMessage, vectors] = await Promise.all([
         // Store user message in DB and generate embedding in parallel
         messageModel.create({
@@ -91,6 +95,9 @@ function initSocketServer(httpServer) {
           metadata: {
             user: socket.user._id,
           },
+        }).catch((err) => {
+          console.error("Supabase query error", err);
+          return [];
         }),
 
         // Retrieve last 20 messages from chat history [Short term memory for AI]
@@ -161,6 +168,10 @@ function initSocketServer(httpServer) {
         });
       } catch (error) {
         console.error("Supabase memory error", error);
+      }
+      } catch (error) {
+        console.error("ai-message handler error", error);
+        socket.emit("ai-error", { message: "Something went wrong. Please try again." });
       }
     });
   });

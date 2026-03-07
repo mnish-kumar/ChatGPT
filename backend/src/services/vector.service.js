@@ -9,7 +9,7 @@ const supabase = createClient(
 async function createVector({ vectors, metadata, messageId }) {
   const { data, error } = await supabase.from("vectors").insert([
     {
-        message_id: messageId,
+      message_id: messageId,
       embedding: vectors,
       metadata: metadata,
     },
@@ -37,5 +37,5 @@ async function queryVectors({ queryVector, limit = 5, metadata }) {
 
 module.exports = {
   createVector,
-    queryVectors,
+  queryVectors,
 };
