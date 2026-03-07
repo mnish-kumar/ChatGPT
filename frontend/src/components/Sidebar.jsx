@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Logout from "../pages/Logout";
 import {
@@ -11,44 +11,76 @@ import {
   LogIn,
 } from "lucide-react";
 import { useAuth } from "../auth/hooks/useauth";
+import { getChats, deleteChat } from "../auth/API/chat.api";
 
-
-const Sidebar = ({setMessages, sidebarOpen, setSidebarOpen, setShowLoginPopup}) => {
-    const [activeConversation, setActiveConversation] = useState(1);
-    const [searchTerm, setSearchTerm] = useState("");
-    const [conversations, setConversations] = useState([
-    { id: 1, title: "How to learn React?" },
-    { id: 2, title: "Python best practices" },
-    { id: 3, title: "Web design tips" },
-  ]);
+const Sidebar = ({
+  setMessages,
+  sidebarOpen,
+  setSidebarOpen,
+  setShowLoginPopup,
+}) => {
+  const [activeConversation, setActiveConversation] = useState(1);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [conversations, setConversations] = useState([]);
+  const [newChatName, setNewChatName] = useState("");
+  const [showNewChatInput, setShowNewChatInput] = useState(false);
 
   const navigate = useNavigate();
-  const { user } = useAuth();
-  
+  const { user, handleCreateChat } = useAuth();
 
-
-    const createNewConversation = () => {
+  const createNewConversation = () => {
     // Check if user is logged in
     if (!user) {
       setShowLoginPopup(true);
       return;
     }
 
-    const newId = Math.max(...conversations.map((c) => c.id), 0) + 1;
-    setConversations([
-      {
-        id: newId,
-        title: `New conversation ${newId}`,
-      },
-      ...conversations,
-    ]);
-    setActiveConversation(newId);
-    setMessages([]);
+    setNewChatName("");
+    setShowNewChatInput(true);
+  };
+
+  const confirmNewChat = async () => {
+    const title = newChatName.trim() || `New conversation`;
+
+    const chat = await handleCreateChat({ title });
+
+    setConversations([{ id: chat._id, title: chat.title }, ...conversations]);
+    setActiveConversation(chat._id);
+    setShowNewChatInput(false);
+    setNewChatName("");
   };
 
 
+  useEffect(() => {
+    if (!user) {
+      setConversations([]);
+      return;
+    }
+    getChats()
+      .then((data) => {
+        const chats = Array.isArray(data) ? data : data?.chats ?? [];
+        setConversations(
+          chats.map((chat) => ({ id: chat._id, title: chat.title }))
+        );
+      })
+      .catch((error) => {
+        console.error("Error fetching chats:", error);
+      });
+  }, [user]);
+
+  const cancelNewChat = () => {
+    setShowNewChatInput(false);
+    setNewChatName("");
+  };
+
   const deleteConversation = (id) => {
-    setConversations(conversations.filter((c) => c.id !== id));
+    deleteChat(id)
+      .then(() => {
+        setConversations(conversations.filter((c) => c.id !== id));
+      })
+      .catch((error) => {
+        console.error("Error deleting chat:", error);
+      });
     if (activeConversation === id) {
       setActiveConversation(conversations[0]?.id || 1);
       setMessages([]);
@@ -56,10 +88,9 @@ const Sidebar = ({setMessages, sidebarOpen, setSidebarOpen, setShowLoginPopup}) 
   };
 
   const filteredConversations = conversations.filter((conv) =>
-    conv.title.toLowerCase().includes(searchTerm.toLowerCase())
+    conv.title.toLowerCase().includes(searchTerm.toLowerCase()),
   );
-  
-  
+
   return (
     <>
       <aside className={`sidebar ${sidebarOpen ? "open" : "closed"}`}>
@@ -84,9 +115,13 @@ const Sidebar = ({setMessages, sidebarOpen, setSidebarOpen, setShowLoginPopup}) 
 
         <div className="sidebar-search">
           <Search size={18} />
-          <input 
-          onChange={filteredConversations => setSearchTerm(filteredConversations.target.value)}
-          type="text" placeholder="Search conversations..." />
+          <input
+            onChange={(filteredConversations) =>
+              setSearchTerm(filteredConversations.target.value)
+            }
+            type="text"
+            placeholder="Search conversations..."
+          />
         </div>
 
         <div className="conversations-list">
@@ -136,6 +171,38 @@ const Sidebar = ({setMessages, sidebarOpen, setSidebarOpen, setShowLoginPopup}) 
           )}
         </div>
       </aside>
+
+      {showNewChatInput && (
+        <div className="new-chat-modal-overlay" onClick={cancelNewChat}>
+          <div className="new-chat-modal" onClick={(e) => e.stopPropagation()}>
+            <h3>New Chat</h3>
+            <p>Enter a name for your new chat</p>
+            <input
+              type="text"
+              autoFocus
+              value={newChatName}
+              onChange={(e) => setNewChatName(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") confirmNewChat();
+                if (e.key === "Escape") cancelNewChat();
+              }}
+              placeholder="Chat name..."
+              className="new-chat-modal-input"
+            />
+            <div className="new-chat-modal-actions">
+              <button className="new-chat-modal-cancel" onClick={cancelNewChat}>
+                Cancel
+              </button>
+              <button
+                className="new-chat-modal-confirm"
+                onClick={confirmNewChat}
+              >
+                Create
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 };

@@ -1,19 +1,21 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Menu, Send, User2Icon } from "lucide-react";
-
 import PopUp from "../components/PopUp";
 import Sidebar from "../components/Sidebar";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/hooks/useauth";
+import { io } from "socket.io-client";
 
 const Home = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [showLoginPopup, setShowLoginPopup] = useState(false);
-  const [messages, setMessages] = useState([
-    { id: 1, type: "assistant", content: "Hello! How can I help you today?" },
-  ]);
+  const [socket, setSocket] = useState(null);
   const [inputValue, setInputValue] = useState("");
+  const [chatId, setChatId] = useState(null);
+  const [messages, setMessages] = useState([]);
+  
 
+  const bottomRef = useRef(null);
   const navigate = useNavigate();
   const { user } = useAuth();
 
@@ -27,25 +29,22 @@ const Home = () => {
       return;
     }
 
+    if (!socket) return;
+
     // Add user message
     const userMessage = {
       id: messages.length + 1,
       type: "user",
       content: inputValue,
     };
+
+    socket.emit("ai-message", {
+      chat: chatId,
+      role: "user",
+      content: userMessage.content,
+    });
+
     setMessages([...messages, userMessage]);
-
-    // Simulate assistant response
-    setTimeout(() => {
-      const assistantMessage = {
-        id: messages.length + 2,
-        type: "assistant",
-        content:
-          "This is a simulated response. Connect your backend to get real responses!",
-      };
-      setMessages((prev) => [...prev, assistantMessage]);
-    }, 500);
-
     setInputValue("");
   };
 
@@ -55,7 +54,34 @@ const Home = () => {
     } else {
       setShowLoginPopup(true);
     }
-  }
+  };
+
+  const BASE_URL = import.meta.env.VITE_BASE_URL || "http://localhost:3000";
+  useEffect(() => {
+
+    const tempSocket = io(BASE_URL, { withCredentials: true });
+    tempSocket.on("ai-response", (message) => {
+    console.log("Recieved AI response:", message);
+
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: message._id ?? prev.length + 1,
+          type: message.role ?? message.type ?? "assistant",
+          content: message.content ?? message.text ?? "",
+        },
+      ]);
+    });
+    
+
+    setSocket(tempSocket);
+
+    return () => tempSocket.disconnect();
+  }, []);
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
   return (
     <div className="app-container">
@@ -75,7 +101,7 @@ const Home = () => {
         setMessages={setMessages}
         sidebarOpen={sidebarOpen}
         setSidebarOpen={setSidebarOpen}
-        setShowLoginPopup={setShowLoginPopup} 
+        setShowLoginPopup={setShowLoginPopup}
       />
 
       {/* Main Chat Area */}
@@ -91,9 +117,7 @@ const Home = () => {
           </button>
           <h1 className="text-gray-700">ChatGPT</h1>
           <div className="header-actions">
-            <button 
-              onClick={handleUserIconClick} 
-              title="Settings">
+            <button onClick={handleUserIconClick} title="Settings">
               <User2Icon size={20} />
             </button>
           </div>
@@ -122,6 +146,7 @@ const Home = () => {
               ))}
             </div>
           )}
+          <div ref={bottomRef} />
         </div>
 
         {/* Input Area */}

@@ -1,6 +1,7 @@
 import { useContext, useState } from "react";
 import {AuthContext} from "../services/auth.context";
 import { login, register, logout } from "../API/auth.api";
+import { createChat } from "../API/chat.api";
 
 export const useAuth = () => {
     const context = useContext(AuthContext);
@@ -53,6 +54,18 @@ export const useAuth = () => {
             setIsSubmitting(false);
         }
     }
+    
+    const handleCreateChat = async ({ title }) => {
+        try {                
+            const data = await createChat({ title });
+            return data.chat;
+        } catch (error) {
+            console.error("Error creating chat:", error);
+            throw error;
+        } finally {
+            setIsSubmitting(false);
+        }
+    }
 
     return {
         user,
@@ -60,6 +73,7 @@ export const useAuth = () => {
         isSubmitting,
         handleLogin,
         handleRegister,
-        handleLogout
+        handleLogout,
+        handleCreateChat
     };
 }
