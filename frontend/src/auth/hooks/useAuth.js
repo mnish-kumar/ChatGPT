@@ -1,7 +1,7 @@
 import { useContext, useState } from "react";
 import {AuthContext} from "../services/auth.context";
 import { login, register, logout } from "../API/auth.api";
-import { createChat } from "../API/chat.api";
+import { createChat, getMessages } from "../API/chat.api";
 
 export const useAuth = () => {
     const context = useContext(AuthContext);
@@ -67,6 +67,20 @@ export const useAuth = () => {
         }
     }
 
+    const handleGetMessages = async (chatId) => {
+        setLoading(true);
+        try {
+            const data = await getMessages(chatId);
+
+            return data.messages;
+        } catch (error) {
+            console.error("Error fetching messages:", error);
+            throw error;
+        } finally {
+            setLoading(false);
+        }
+    }
+
     return {
         user,
         loading,
@@ -74,6 +88,7 @@ export const useAuth = () => {
         handleLogin,
         handleRegister,
         handleLogout,
-        handleCreateChat
+        handleCreateChat,
+        handleGetMessages,
     };
 }

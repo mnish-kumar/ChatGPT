@@ -15,6 +15,7 @@ import { getChats, deleteChat } from "../auth/API/chat.api";
 
 const Sidebar = ({
   setMessages,
+  setChatId,
   sidebarOpen,
   setSidebarOpen,
   setShowLoginPopup,
@@ -26,7 +27,7 @@ const Sidebar = ({
   const [showNewChatInput, setShowNewChatInput] = useState(false);
 
   const navigate = useNavigate();
-  const { user, handleCreateChat } = useAuth();
+  const { user, handleCreateChat, handleGetMessages } = useAuth();
 
   const createNewConversation = () => {
     // Check if user is logged in
@@ -37,6 +38,7 @@ const Sidebar = ({
 
     setNewChatName("");
     setShowNewChatInput(true);
+    
   };
 
   const confirmNewChat = async () => {
@@ -46,6 +48,8 @@ const Sidebar = ({
 
     setConversations([{ id: chat._id, title: chat.title }, ...conversations]);
     setActiveConversation(chat._id);
+    setChatId(chat._id);
+    setMessages([]);
     setShowNewChatInput(false);
     setNewChatName("");
   };
@@ -91,6 +95,7 @@ const Sidebar = ({
     conv.title.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
+
   return (
     <>
       <aside className={`sidebar ${sidebarOpen ? "open" : "closed"}`}>
@@ -130,7 +135,23 @@ const Sidebar = ({
             <div
               key={conv.id}
               className={`conversation-item ${activeConversation === conv.id ? "active" : ""}`}
-              onClick={() => setActiveConversation(conv.id)}
+              onClick={() => {
+              setActiveConversation(conv.id);
+              setChatId(conv.id);
+              setMessages([]);
+              handleGetMessages(conv.id)
+                .then((data) => {
+                  const msgs = Array.isArray(data) ? data : data?.messages ?? [];
+                  setMessages(
+                    msgs.map((m, i) => ({
+                      id: m._id ?? i,
+                      type: m.role ?? m.type ?? "assistant",
+                      content: m.content ?? m.text ?? "",
+                    }))
+                  );
+                })
+                .catch((err) => console.error("Error loading messages:", err));
+            }}
             >
               <MessageSquare size={16} />
               <span>{conv.title}</span>

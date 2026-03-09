@@ -27,6 +27,16 @@ export async function getChats() {
   }
 }
 
+export async function getMessages(chatId) {
+  try {
+    const response = await api.get(`/api/chat/${chatId}/messages`);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching messages:", error);
+    throw error;
+  }
+}
+
 export async function deleteChat(chatId) {
   try {
     const response = await api.delete(`/api/chat/${chatId}`);
@@ -34,16 +44,6 @@ export async function deleteChat(chatId) {
   }
   catch (error) {
     console.error("Error deleting chat:", error);
-    throw error;
-  }
-}
-
-export async function getMessages(chatId) {
-  try {
-    const response = await api.get(`/api/chat/${chatId}`);
-    return response.data;
-  } catch (error) {
-    console.error("Error fetching messages:", error);
     throw error;
   }
 }

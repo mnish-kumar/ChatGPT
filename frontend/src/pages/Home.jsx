@@ -5,6 +5,7 @@ import Sidebar from "../components/Sidebar";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/hooks/useauth";
 import { io } from "socket.io-client";
+import { Riple } from "react-loading-indicators";
 
 const Home = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -13,11 +14,10 @@ const Home = () => {
   const [inputValue, setInputValue] = useState("");
   const [chatId, setChatId] = useState(null);
   const [messages, setMessages] = useState([]);
-  
 
   const bottomRef = useRef(null);
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user , loading} = useAuth();
 
   const handleSendMessage = (e) => {
     e.preventDefault();
@@ -58,11 +58,8 @@ const Home = () => {
 
   const BASE_URL = import.meta.env.VITE_BASE_URL || "http://localhost:3000";
   useEffect(() => {
-
     const tempSocket = io(BASE_URL, { withCredentials: true });
     tempSocket.on("ai-response", (message) => {
-    console.log("Recieved AI response:", message);
-
       setMessages((prev) => [
         ...prev,
         {
@@ -72,16 +69,25 @@ const Home = () => {
         },
       ]);
     });
-    
 
     setSocket(tempSocket);
 
     return () => tempSocket.disconnect();
   }, []);
 
+
+  // Scroll to bottom when messages change
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  const Loading = () => {
+    return (
+      <div className="loading-container">
+        <Riple color="#32cd32" size="large" text="Loading..." textColor="#2f2a29" />
+      </div>
+    );
+  }
 
   return (
     <div className="app-container">
@@ -99,6 +105,7 @@ const Home = () => {
       {/* Sidebar */}
       <Sidebar
         setMessages={setMessages}
+        setChatId={setChatId}
         sidebarOpen={sidebarOpen}
         setSidebarOpen={setSidebarOpen}
         setShowLoginPopup={setShowLoginPopup}
@@ -127,10 +134,14 @@ const Home = () => {
         <div className="messages-area">
           {messages.length === 0 ? (
             <div className="empty-state">
-              <div className="empty-state-content">
-                <h2>Start a new conversation</h2>
-                <p>Ask me anything or help me with a task</p>
-              </div>
+              {loading ? (
+                <Loading />
+              ) : (
+                <div className="empty-state-content">
+                  <h2>Start a new conversation</h2>
+                  <p>Ask me anything or help me with a task</p>
+                </div>
+              )}
             </div>
           ) : (
             <div className="messages-list">
