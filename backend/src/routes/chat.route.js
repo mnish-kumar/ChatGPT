@@ -19,6 +19,14 @@ router.post('/', authUserMiddleware.authUserMiddleware, ChatController.createCha
  */
 router.get('/', authUserMiddleware.authUserMiddleware, ChatController.getUserChats);
 
+
+/**
+ * @route GET /api/chat/:chatId/messages
+ * @desc Get all messages for a specific chat
+ * @access Private
+ */
+router.get('/:chatId/messages', authUserMiddleware.authUserMiddleware, ChatController.getChatMessages);
+
 /**
  * @route DELETE /api/chat/:chatId
  * @desc Delete a specific chat by ID

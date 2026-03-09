@@ -39,6 +39,29 @@ async function getUserChats(req, res) {
   });
 }
 
+async function getChatMessages(req, res) {
+  const { chatId } = req.params;
+
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 20;
+  const skip = (page - 1) * limit;
+
+  const messages = await messageModel
+    .find({ chat: chatId })
+    .sort({ createdAt: -1 })
+    .skip(skip)
+    .limit(limit);
+
+  res.status(200).json({
+    messages: messages.map((message) => ({
+      _id: message._id,
+      content: message.content,
+      role: message.role,
+      chat: message.chat,
+    }))
+  });
+}
+
 async function deleteChat(req, res) {
   const user = req.user;
   const { chatId } = req.params;
@@ -66,5 +89,6 @@ async function deleteChat(req, res) {
 module.exports = {
   createChat,
   getUserChats,
+  getChatMessages,
   deleteChat,
 };
