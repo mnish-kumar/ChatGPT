@@ -4,7 +4,11 @@ const authUserMiddleware  = require('../middlewares/auth.middleware');
 const ChatController  = require('../controller/chat.controller');
 
 
-/* POST/api/chat */
+/* 
+* @route POST /api/chat
+* @desc Create a new chat
+* @access Private
+*/
 router.post('/', authUserMiddleware.authUserMiddleware, ChatController.createChat);
 
 
@@ -14,5 +18,12 @@ router.post('/', authUserMiddleware.authUserMiddleware, ChatController.createCha
  * @access Private
  */
 router.get('/', authUserMiddleware.authUserMiddleware, ChatController.getUserChats);
+
+/**
+ * @route DELETE /api/chat/:chatId
+ * @desc Delete a specific chat by ID
+ * @access Private
+ */
+router.delete('/:chatId', authUserMiddleware.authUserMiddleware, ChatController.deleteChat);
 
 module.exports = router;

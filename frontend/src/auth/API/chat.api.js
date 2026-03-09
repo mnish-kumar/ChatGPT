@@ -37,3 +37,13 @@ export async function deleteChat(chatId) {
     throw error;
   }
 }
+
+export async function getMessages(chatId) {
+  try {
+    const response = await api.get(`/api/chat/${chatId}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching messages:", error);
+    throw error;
+  }
+}
