@@ -134,10 +134,17 @@ function initSocketServer(httpServer) {
         },
       ];
 
-      // Generate AI response
-      const Response = await aiService.generateResponse([...LTM, ...STM]);
+      const chunkingCallback = (chunk) => {
+        socket.emit("ai-chunk", {
+          content: chunk,
+          chat: messagePayload.chat,
+        });
+      }
 
-      // Emit AI response back to client
+      // Generate AI response and stream chunks to client
+      const Response = await aiService.GenerateContentStream([...LTM, ...STM],chunkingCallback);
+
+      // Signal streaming is complete
       socket.emit("ai-response", {
         content: Response,
         chat: messagePayload.chat,

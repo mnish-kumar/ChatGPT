@@ -1,6 +1,7 @@
 const { GoogleGenAI } = require("@google/genai");
 const { z } = require("zod");
 const { zodToJsonSchema } = require("zod-to-json-schema");
+const utils = require("../utils/stream.helper");
 
 if (!process.env.GEMINI_API_KEY) {
   console.error("GEMINI_API_KEY is not set in environment variables.");
@@ -14,22 +15,16 @@ const ai = new GoogleGenAI({
 
 const structuredContentSchema = z.object({
   query: z.string().describe("User query for which response is generated."),
-  context: z
-    .array(z.string())
-    .describe(
+  context: z.array(z.string()).describe(
       "An array of strings providing additional context for generating the response. This can include previous messages in a conversation, relevant information, or any other data that can help the model generate a more accurate and relevant response.",
     ),
 });
-
-const structuredContentSchemaJson = zodToJsonSchema(structuredContentSchema);
 
 async function generateResponse(content) {
   const responce = await ai.models.generateContent({
     model: process.env.GEMINI_MODEL_NAME,
     contents: content,
     config: {
-      responseMimeType: "application/json",
-      responseJsonSchema: zodToJsonSchema(structuredContentSchemaJson),
       temperature: 0.7,
       systemInstruction:
         "You are a helpful assistant for answering user queries.",
@@ -50,22 +45,30 @@ async function generateEmbedding(content) {
   return response.embeddings[0].values;
 }
 
-async function generateContentStream(content) {
+async function GenerateContentStream(content, onChunk) {
   try {
     const stream = await ai.models.generateContentStream({
       model: process.env.GEMINI_MODEL_NAME,
       contents: content,
 
       config: {
-        responseMimeType: "application/json",
-        responseJsonSchema: structuredContentSchemaJson,
         temperature: 0.7,
         systemInstruction:
           "You are a helpful assistant for answering user queries.",
       },
     });
 
-    return stream;
+    let fullText = "";
+    for await (const chunk of stream) {
+      const text = utils.extractText(chunk);
+      if (text) {
+        fullText += text;
+        if (typeof onChunk === "function") {
+          onChunk(text);
+        }
+      }
+    }
+    return fullText;
   } catch (error) {
     console.error("Gemini streaming error:", error);
     throw new Error("AI response generation failed");
@@ -75,5 +78,5 @@ async function generateContentStream(content) {
 module.exports = {
   generateResponse,
   generateEmbedding,
-  generateContentStream,
+  GenerateContentStream,
 };
