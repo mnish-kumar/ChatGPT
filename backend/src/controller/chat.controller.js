@@ -77,11 +77,14 @@ async function deleteChat(req, res) {
     });
   }
 
-  console.log("Deleting messages for chat:", chatId);
-  await messageModel.deleteMany({ chat: chatId });
+  const deletedMessages = await messageModel.deleteMany({ chat: chatId });
 
   res.status(200).json({
     message: "Chat deleted successfully.",
+    deletedMessages:{
+      count: deletedMessages.deletedCount,
+      chatId: chatId,
+    }
   });
 }
 

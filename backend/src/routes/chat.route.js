@@ -28,10 +28,10 @@ router.get('/', authUserMiddleware.authUserMiddleware, ChatController.getUserCha
 router.get('/:chatId/messages', authUserMiddleware.authUserMiddleware, ChatController.getChatMessages);
 
 /**
- * @route DELETE /api/chat/:chatId
+ * @route DELETE /api/chat/deleteChat/chatID/:chatId
  * @desc Delete a specific chat by ID
  * @access Private
  */
-router.delete('/:chatId', authUserMiddleware.authUserMiddleware, ChatController.deleteChat);
+router.delete('/deleteChat/chatID/:chatId', authUserMiddleware.authUserMiddleware, ChatController.deleteChat);
 
 module.exports = router;
