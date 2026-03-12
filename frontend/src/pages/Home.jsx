@@ -59,6 +59,7 @@ const Home = () => {
   const BASE_URL = import.meta.env.VITE_BASE_URL || "http://localhost:3000";
   useEffect(() => {
     const tempSocket = io(BASE_URL, { withCredentials: true });
+    // Handle complete messages (in case the server sends a final message after all chunks)
     tempSocket.on("ai-response", (message) => {
       setMessages((prev) => [
         ...prev,
@@ -168,7 +169,7 @@ const Home = () => {
                 type="text"
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
-                placeholder="Message ChatGPT..."
+                placeholder="Ask me anything..."
                 className="message-input"
               />
               <button
@@ -193,6 +194,6 @@ const Home = () => {
       />
     </div>
   );
-};
+}
 
 export default Home;
