@@ -143,7 +143,7 @@ const Sidebar = ({
                 .then((data) => {
                   const msgs = Array.isArray(data) ? data : data?.messages ?? [];
                   setMessages(
-                    msgs.map((m, i) => ({
+                    [...msgs].reverse().map((m, i) => ({
                       id: m._id ?? i,
                       type: m.role ?? m.type ?? "assistant",
                       content: m.content ?? m.text ?? "",
