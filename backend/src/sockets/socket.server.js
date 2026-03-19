@@ -59,6 +59,16 @@ function initSocketServer(httpServer) {
       */
       try {
     
+      if (!messagePayload.content?.trim()) {
+        socket.emit("ai-error", { message: "Content cannot be empty" });
+        return;
+      }
+      
+      if (messagePayload.content.length > 5000) {
+        socket.emit("ai-error", { message: "Message too long" });
+        return;
+      }
+
       const [userMessage, vectors] = await Promise.all([
         // Store user message in DB and generate embedding in parallel
         messageModel.create({
@@ -74,7 +84,7 @@ function initSocketServer(httpServer) {
       
       // Save user input in Supabase -> vectors, metadata (user, chat), messageId(unique id for each message)
       try {
-        const data=await createVector({
+        await createVector({
           userId: socket.user._id,
           chatId: messagePayload.chat,
           messageId: userMessage._id, // Use the messageId from the user message
@@ -84,8 +94,6 @@ function initSocketServer(httpServer) {
             role: "user",
           },
         });
-
-        console.log("Vector saved in Supabase:", data);
       } catch (error) {
         console.error("Supabase memory error", error);
       }
@@ -155,25 +163,25 @@ function initSocketServer(httpServer) {
 
       const [aiResponseMessage, responseVectors] = await Promise.all([
         // Store AI response in DB
-        await messageModel.create({
+        messageModel.create({
           user: socket.user._id,
           chat: messagePayload.chat,
           content: Response,
           role: "model",
         }),
 
-        await aiService.generateEmbedding(Response),
+        aiService.generateEmbedding(Response),
       ]);
 
       // Save AI response in Supabase -> vectors, metadata (user, chat), messageId(unique id for each message)
       try {
         await createVector({
-          userId: socket.user._id,   // 🔥 but ensure UUID (important)
+          userId: socket.user._id,
           chatId: messagePayload.chat,
-          vectors,
-          messageId: userMessage._id,
+          vectors: responseVectors,
+          messageId: aiResponseMessage._id,
           metadata: {
-            text: messagePayload.content,
+            text: Response,
             role: "model",
           },
         });
