@@ -35,7 +35,16 @@ async function queryVectors({ queryVector, limit = 5, metadata }) {
   return data;
 }
 
+async function deleteVectorsByChatId(chatId) {
+  const { data, error } = await supabase.from("vectors").delete().eq("metadata->>chat", chatId);
+
+  if (error) throw new Error(error.message);
+  return data;
+
+}
+
 module.exports = {
   createVector,
   queryVectors,
+  deleteVectorsByChatId
 };
