@@ -74,15 +74,18 @@ function initSocketServer(httpServer) {
       
       // Save user input in Supabase -> vectors, metadata (user, chat), messageId(unique id for each message)
       try {
-        await createVector({
-          vectors,
+        const data=await createVector({
+          userId: socket.user._id,
+          chatId: messagePayload.chat,
           messageId: userMessage._id, // Use the messageId from the user message
+          vectors,
           metadata: {
-            chat: messagePayload.chat,
-            user: socket.user._id,
             text: messagePayload.content,
+            role: "user",
           },
         });
+
+        console.log("Vector saved in Supabase:", data);
       } catch (error) {
         console.error("Supabase memory error", error);
       }
@@ -165,12 +168,13 @@ function initSocketServer(httpServer) {
       // Save AI response in Supabase -> vectors, metadata (user, chat), messageId(unique id for each message)
       try {
         await createVector({
-          vectors: responseVectors,
-          messageId: aiResponseMessage._id,
+          userId: socket.user._id,   // 🔥 but ensure UUID (important)
+          chatId: messagePayload.chat,
+          vectors,
+          messageId: userMessage._id,
           metadata: {
-            chat: messagePayload.chat,
-            user: socket.user._id,
-            text: Response,
+            text: messagePayload.content,
+            role: "model",
           },
         });
       } catch (error) {
@@ -179,7 +183,7 @@ function initSocketServer(httpServer) {
       } catch (error) {
         console.error("ai-message handler error", error);
         socket.emit("ai-error", { message: "Something went wrong. Please try again." });
-      }
+      }   
     });
   });
 }

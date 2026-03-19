@@ -6,9 +6,11 @@ const supabase = createClient(
   process.env.SUPABASE_API_SECRET,
 );
 
-async function createVector({ vectors, metadata, messageId }) {
+async function createVector({ userId, chatId, messageId, vectors, metadata }) {
   const { data, error } = await supabase.from("vectors").insert([
     {
+      user_id: userId,     // 🔥 IMPORTANT
+      chat_id: chatId,
       message_id: messageId,
       embedding: vectors,
       metadata: metadata,
