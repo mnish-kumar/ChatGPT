@@ -8,7 +8,7 @@ async function rateLimitMiddleware(req, res, next) {
 
     if (!result.allowed) {
       return res.status(429).json({
-        message: "Too many requests",
+        message: "Too many requests - please try again later",
         retryAfter: result.retryAfter,
       });
     }
