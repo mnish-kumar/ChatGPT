@@ -2,14 +2,15 @@ const express = require('express');
 const router = express.Router();
 const authUserMiddleware  = require('../middlewares/auth.middleware');
 const ChatController  = require('../controller/chat.controller');
+const rateLimitMiddleware = require('../middlewares/rateLimit.middleware');
 
 
-/* 
-* @route POST /api/chat
-* @desc Create a new chat
-* @access Private
-*/
-router.post('/', authUserMiddleware.authUserMiddleware, ChatController.createChat);
+/**
+ * @route POST /api/chat
+ * @desc Create a new chat
+ * @access Private
+ */
+router.post('/', authUserMiddleware.authUserMiddleware, rateLimitMiddleware.rateLimitMiddleware, ChatController.createChat);
 
 
 /**
