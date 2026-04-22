@@ -2,14 +2,13 @@ const express = require('express');
 const router = express.Router();
 const authUserMiddleware  = require('../middlewares/auth.middleware');
 const ChatController  = require('../controller/chat.controller');
-const rateLimitMiddleware = require('../middlewares/rateLimit.middleware');
 
 /**
  * @route POST /api/chat
  * @desc Create a new chat
  * @access Private
  */
-router.post('/', authUserMiddleware.authUserMiddleware, rateLimitMiddleware.rateLimitMiddleware, ChatController.createChat);
+router.post('/', authUserMiddleware.createAuthMiddleware(["user"]), ChatController.createChat);
 
 
 /**
@@ -17,7 +16,7 @@ router.post('/', authUserMiddleware.authUserMiddleware, rateLimitMiddleware.rate
  * @desc Get all chats of the authenticated user
  * @access Private
  */
-router.get('/', authUserMiddleware.authUserMiddleware, ChatController.getUserChats);
+router.get('/', authUserMiddleware.createAuthMiddleware(["user"]), ChatController.getUserChats);
 
 
 /**
@@ -25,13 +24,13 @@ router.get('/', authUserMiddleware.authUserMiddleware, ChatController.getUserCha
  * @desc Get all messages for a specific chat
  * @access Private
  */
-router.get('/:chatId/messages', authUserMiddleware.authUserMiddleware, ChatController.getChatMessages);
+router.get('/:chatId/messages', authUserMiddleware.createAuthMiddleware(["user"]), ChatController.getChatMessages);
 
 /**
  * @route DELETE /api/chat/deleteChat/chatID/:chatId
  * @desc Delete a specific chat by ID
  * @access Private
  */
-router.delete('/deleteChat/chatID/:chatId', authUserMiddleware.authUserMiddleware, ChatController.deleteChat);
+router.delete('/deleteChat/chatID/:chatId', authUserMiddleware.createAuthMiddleware(["user"]), ChatController.deleteChat);
 
 module.exports = router;
