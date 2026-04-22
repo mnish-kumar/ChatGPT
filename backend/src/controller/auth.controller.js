@@ -1,7 +1,8 @@
 const bcrypt = require("bcryptjs");
-const userModel = require("../models/user.models");
+const userModel = require("../models/user.model");
 const jwt = require("jsonwebtoken");
 const blacklistTokenModel = require("../models/token.model");
+const redisClient = require("../config/redis");
 
 
 /** 

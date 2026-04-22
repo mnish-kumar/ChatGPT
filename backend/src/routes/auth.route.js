@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const authController = require('../controller/auth.controller');
-const authMiddleware = require('../middlewares/auth.middleware');
+const createAuthMiddleware = require('../middlewares/auth.middleware');
 
 
 /**  
@@ -31,6 +31,6 @@ router.post('/logout', authController.logoutController);
  * @desc Get current logged in user details
  * @access Private
  */
-router.get('/get-me', authMiddleware.authUserMiddleware, authController.getMeController);
+router.get('/get-me', createAuthMiddleware(["user"]), authController.getMeController);
 
 module.exports = router;

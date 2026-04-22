@@ -1,7 +1,7 @@
 const { Server } = require("socket.io");
 const cookie = require("cookie");
 const jwt = require("jsonwebtoken");
-const userModel = require("../models/user.models");
+const userModel = require("../models/user.model");
 const aiService = require("../services/ai.service");
 const messageModel = require("../models/message.model");
 const { createVector, queryVectors } = require("../services/vector.service");

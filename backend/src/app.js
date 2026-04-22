@@ -6,8 +6,13 @@ const cors = require('cors');
 const authRouter = require('../src/routes/auth.route');
 const chatRoute = require('../src/routes/chat.route');
 
+const rateLimiter = require('./middlewares/rateLimiter.middleware');
+
 
 const app = express();
+
+// trust first proxy (if behind a reverse proxy like Nginx or Heroku)
+app.set('trust proxy', 1); 
 
 const corsOptions = {
     origin: 'http://localhost:5173',
@@ -18,6 +23,9 @@ const corsOptions = {
 app.use(express.json());
 app.use(cookieParser());
 app.use(cors(corsOptions));
+
+// Apply global API rate limiter to all routes
+app.use(rateLimiter.globalAPIRateLimiter);
 
 
 /* Using Route */
