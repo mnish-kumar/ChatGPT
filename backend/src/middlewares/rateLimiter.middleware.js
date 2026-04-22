@@ -1,99 +1,141 @@
-const configRateLimiter = require("../config/rateLimit.config");
+const { getClientIP, toManyRequest } = require("../utils/helpers/rateLimit.helper");
+const hashKey = require("../utils/hash.utils");
 const { RateLimiterRedis } = require("rate-limiter-flexible");
-const redisClient = require("../config/redis");
+const redisClient = require("../config/redis")
 
+
+/**
+ * Login — per IP
+ * 5 attempts per 15 min window; 1-hour block after exhaustion.
+ * inmemoryBlockOnConsumed reduces Redis round-trips under a brute-force flood.
+ */
 const loginByIP = new RateLimiterRedis({
   storeClient: redisClient,
   keyPrefix: "login_ip",
   points: 5,
   duration: 60 * 15,
-  blockDuration: 60 * 60,
+  blockDuration: 60 * 15,
+  inMemoryBlockOnConsumed: 5,
+  inMemoryBlockDuration: 60 * 30,
 });
 
-const login_user = new RateLimiterRedis({
+
+/**
+ * Login — per user (hashed email)
+ * Prevents distributed attacks targeting a single account from many IPs.
+ */
+const loginByUser = new RateLimiterRedis({
   storeClient: redisClient,
   keyPrefix: "login_user",
   points: 5,
   duration: 60 * 15,
-  blockDuration: 60 * 60,
+  blockDuration: 60 * 15,
+  inMemoryBlockOnConsumed: 5,
+  inMemoryBlockDuration: 60 * 30,
 });
 
+
+/**
+ * Register — per IP
+ * Tighter than the global limiter to prevent mass account creation.
+ */
 const registerByIP = new RateLimiterRedis({
   storeClient: redisClient,
   keyPrefix: "register_ip",
   points: 5,
   duration: 60 * 15,
-  blockDuration: 60 * 60,
+  blockDuration: 60 * 15,
+  inMemoryBlockOnConsumed: 5,
+  inMemoryBlockDuration: 60 * 30,
 });
 
+
+/**
+ * Global API — per IP
+ * Loose general-purpose throttle for all routes.
+ */
 const globalAPIByIP = new RateLimiterRedis({
   storeClient: redisClient,
   keyPrefix: "global_api_ip",
   points: 100,
   duration: 60,
+  inMemoryBlockOnConsumed: 100,
+  inMemoryBlockDuration: 30,
 });
 
-const loginRateLimiter = async (req, res, next) => {
-  const ip = req.headers["x-forwarded-for"] || req.connection.remoteAddress || req.ip;
 
-  const userKey = (req.body?.email || "unknown_user").toLowerCase().trim();
+const loginRateLimiter = async (req, res, next) => {
+  const ip = getClientIP(req);
+  const rawEmail = (req.body?.email || "unknown_user").toLowerCase().trim();
+  const userKey = hashKey(rawEmail);
   try {
     // Consume points for IP
     await loginByIP.consume(ip);
 
     // Consume points for User
-    await login_user.consume(userKey);
-    
+    await loginByUser.consume(userKey);
+
+    return next();
   } catch (err) {
     if (err instanceof Error) {
-      console.warn({
-        message: "Rate Limiter Error",
-        error: err.message,
-        ip,
-        userKey,
+      console.error("[RateLimit] Redis/system error on login:", err);
+
+      return res.status(503).json({
+        success: false,
+        message:
+          "Authentication service temporarily unavailable. Please try again shortly.",
       });
-      return res.status(500).json({ message: "Internal Server Error" });
     }
-    
-    return next();
+
+    return toManyRequest(
+      res,
+      err,
+      "Too many login attempts. Please try again later.",
+    );
   }
 };
-
 
 const registerRateLimiter = async (req, res, next) => {
-  const ip = req.headers["x-forwarded-for"] || req.connection.remoteAddress || req.ip;
+  const ip = getClientIP(req);
   try {
     await registerByIP.consume(ip);
-    next();
+    return next();
   } catch (err) {
     if (err instanceof Error) {
-      console.warn({
-        message: "Rate Limiter Error",
-        error: err.message,
-        ip,
+      console.error("[RateLimit] Redis/system error on register:", err);
+      return res.status(503).json({
+        success: false,
+        message: "Registration service temporarily unavailable. Please try again shortly.",
       });
-      return res.status(500).json({ message: "Internal Server Error" });
     }
-    return next();
+
+
+    return toManyRequest(
+      res,
+      err,
+      "Too many registration attempts. Try again later."
+    );
   }
 };
 
-
 const globalAPIRateLimiter = async (req, res, next) => {
-  const ip = req.headers["x-forwarded-for"] || req.connection.remoteAddress || req.ip;
+  const ip =
+    req.headers["x-forwarded-for"] || req.connection.remoteAddress || req.ip;
   try {
     await globalAPIByIP.consume(ip);
     next();
   } catch (err) {
     if (err instanceof Error) {
-      console.warn({
-        message: "Rate Limiter Error",
-        error: err.message,
-        ip,
-      });
-      return res.status(500).json({ message: "Internal Server Error" });
+      console.error("[RateLimit] Redis/system error on global API:", err);
+      // Fail-open: degraded protection is acceptable here
+      return next();
     }
-    return next();
+
+    return toManyRequest(
+      res,
+      err,
+      "Too many requests. Try again later."
+    );
   }
 };
 

@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const authController = require('../controller/auth.controller');
 const authMiddleware = require('../middlewares/auth.middleware');
+const redisRateLimiter = require('../middlewares/rateLimiter.middleware');
 
 
 /**  
@@ -9,14 +10,14 @@ const authMiddleware = require('../middlewares/auth.middleware');
  * @desc Register a new user and return JWT token in cookie
  * @access Public
  */
-router.post('/register', authController.registerController);
+router.post('/register', redisRateLimiter.registerRateLimiter, authController.registerController);
 
 /**
  * @route POST api/auth/login
  * @desc Login user and return JWT token in cookie
  * @access Public
  */
-router.post('/login', authController.loginController);
+router.post('/login', redisRateLimiter.loginRateLimiter, authController.loginController);
 
 /**
  * @route POST api/auth/logout
