@@ -12,6 +12,7 @@ const blacklistTokenModel = require("../models/token.model");
 async function registerController(req, res) {
   const {
     email,
+    username,
     fullname: { firstname, lastname },
     password,
   } = req.body;
@@ -36,19 +37,24 @@ async function registerController(req, res) {
       firstname,
       lastname,
     },
+    username,
     email,
     password: hashedPassword,
   });
 
   const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
 
-  res.cookie("token", token);
+  res.cookie("token", token, {
+    httpOnly: true,
+    maxAge: 24 * 60 * 60 * 1000, // 24 hours
+  });
 
   return res.status(201).json({
     message: "User registered successfully",
     user: {
       _id: user._id,
       email: user.email,
+      username: user.username,
       fullname: user.fullname,
     },
   });
@@ -61,27 +67,36 @@ async function registerController(req, res) {
  */
 async function loginController(req, res) {
   // Implementation for login
-  const { email, password } = req.body;
+  const { username, email, password } = req.body;
   const user = await userModel.findOne({ email });
 
   if (!user) {
-    return res.status(400).json({ message: "Invalid email or password" });
+    return res.status(400).json({ 
+      success: false,
+      message: "Invalid email or password" 
+    });
   }
 
 
+  // Compare the provided password with the hashed password in the database
   const isPasswordValid = await bcrypt.compare(password, user.password);
 
   if (!isPasswordValid) {
     return res.status(400).json({ 
+      success: false,
       message: "Invalid password !" 
     });
   }
 
 
   const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
-  res.cookie("token", token);
+  res.cookie("token", token, {
+    httpOnly: true,
+    maxAge: 24 * 60 * 60 * 1000, // 24 hours
+  });
   
   return res.status(200).json({
+    success: true,
     message: "Login successful",
     user: {
       _id: user._id,

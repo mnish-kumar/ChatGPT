@@ -4,7 +4,6 @@ const authUserMiddleware  = require('../middlewares/auth.middleware');
 const ChatController  = require('../controller/chat.controller');
 const rateLimitMiddleware = require('../middlewares/rateLimit.middleware');
 
-
 /**
  * @route POST /api/chat
  * @desc Create a new chat

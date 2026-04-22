@@ -7,6 +7,11 @@ const userSchema = new mongoose.Schema({
         required:true,
         unique:true,
     },
+    username: {
+        type: String,
+        required: true,
+        unique: true,
+    },
     fullname:{
         firstname:{
             type:String,
@@ -20,6 +25,11 @@ const userSchema = new mongoose.Schema({
     password:{
         type:String,
         required:true,
+    },
+    plan: {
+        type: String,
+        enum: ["free", "premium"],
+        default: "free"
     }
 },
     {
@@ -28,7 +38,6 @@ const userSchema = new mongoose.Schema({
 )
 
 // userSchema.index({ email: 1 }, { unique: true });
-
 const userModel = mongoose.model('user', userSchema);
 
 module.exports = userModel;
