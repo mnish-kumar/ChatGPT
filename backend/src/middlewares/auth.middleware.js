@@ -29,6 +29,10 @@ function createAuthMiddleware(roles = []) {
       req.user = user;
       next();
     } catch (error) {
+      if (error?.name === "TokenExpiredError" || error?.name === "JsonWebTokenError") {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
       return res.status(500).json({ message: "Internal Server Error" });
     }
   };

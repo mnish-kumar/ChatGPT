@@ -1,4 +1,5 @@
 const { body, validationResult } = require('express-validator');
+const userModel = require('../models/user.model');
 
 const validateError = (req, res, next) => {
     const errors = validationResult(req);
@@ -11,23 +12,32 @@ const validateError = (req, res, next) => {
 
 const registerValidators = [
     body('username')
-        .isLength({ min: 3 })
+        .isLength({ min: 3, max: 30 })
+        .trim()
         .isString()
-        .withMessage('Username must be a string'),
+        .matches(/^[a-zA-Z0-9_]+$/)
+        .withMessage('Username can only contain letters, numbers, and underscores'),
     body('email')
+        .trim()
         .isEmail()
-        .isMatch(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)
+        .normalizeEmail()
         .withMessage('Invalid email address'),
     body('password')
         .isLength({ min: 6 })
-        .withMessage('Password must be at least 6 characters long'),
+        .withMessage('Password must be at least 6 characters long')
+        .matches(/[A-Z]/)
+        .withMessage('Password must contain at least one uppercase letter')
+        .matches(/[0-9]/)
+        .withMessage('Password must contain at least one number'),
     body('fullname.firstname')
         .isString()
         .notEmpty()
+        .isLength({ min: 2})
         .withMessage('First name is required'),
     body('fullname.lastname')
         .isString()
         .notEmpty()
+        .isLength({ min: 2})
         .withMessage('Last name is required'),
     
     validateError
@@ -44,12 +54,19 @@ const loginValidators = [
     body('email')
         .optional({ values: 'falsy' })
         .isEmail()
-        .isMatch(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)
+        .normalizeEmail()
         .withMessage('Invalid email address'),
     
     body('password')
         .isLength({ min: 6 })
         .withMessage('Password must be at least 6 characters long'),
+
+    body('email').custom(async (email) => {
+        const user = await userModel.findOne({ email });
+        if (user) {
+            throw new Error('Email already in use');
+        }
+    }),
 
     validateError
 ]

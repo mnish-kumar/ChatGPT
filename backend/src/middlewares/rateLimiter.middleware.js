@@ -67,7 +67,7 @@ const globalAPIByIP = new RateLimiterRedis({
 const loginRateLimiter = async (req, res, next) => {
   const ip = getClientIP(req);
   const rawEmail = (req.body?.email || "unknown_user").toLowerCase().trim();
-  const userKey = hashKey(rawEmail);
+  const userKey = hashKey.hashKey(rawEmail);
   try {
     // Consume points for IP
     await loginByIP.consume(ip);
