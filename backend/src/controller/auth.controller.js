@@ -4,6 +4,7 @@ const jwt = require("jsonwebtoken");
 const blacklistTokenModel = require("../models/token.model");
 const redisClient = require("../config/redis");
 const userCache = require("../cache/user.cache");
+const authRedisService = require("../services/redis.service");
 
 
 /** 
@@ -44,11 +45,39 @@ async function registerController(req, res) {
     password: hashedPassword,
   });
 
-  const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
+  const accessToken = jwt.sign(
+    { id: user._id, username: user.username },
+    process.env.JWT_SECRET,
+    { expiresIn: "15m" }
+  );
 
-  res.cookie("token", token, {
+  const refreshToken = jwt.sign(
+    { id: user._id, username: user.username },
+    process.env.JWT_REFRESH_SECRET,
+    { expiresIn: "7d" }
+  );
+
+  const { sessionId } = await authRedisService.setRefreshToken(
+    user._id.toString(),
+    refreshToken,
+    req
+  );
+
+  res.cookie("token",accessToken,{
     httpOnly: true,
-    maxAge: 24 * 60 * 60 * 1000, // 24 hours
+    secure: true,
+    maxAge: 15 * 60 * 1000, // 15 minutes
+  });
+
+  res.cookie("refreshToken",refreshToken,{
+    httpOnly: true,
+    secure: true,
+    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+  });
+
+  res.cookie("sessionId",sessionId,{
+    httpOnly: true,
+    secure: true
   });
 
   return res.status(201).json({
@@ -70,7 +99,12 @@ async function registerController(req, res) {
 async function loginController(req, res) {
   // Implementation for login
   const { username, email, password } = req.body;
-  const user = await userModel.findOne({ email });
+  const user = await userModel.findOne({
+    $or: [
+      { email: email },
+      { username: username }
+    ]
+  });
 
   if (!user) {
     return res.status(400).json({ 
@@ -91,10 +125,49 @@ async function loginController(req, res) {
   }
 
 
-  const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
+  // Generate access token
+  const token = jwt.sign(
+    {
+      id: user._id,
+      username: user.username,
+    },
+    process.env.JWT_SECRET,
+    {
+      expiresIn: "15m",
+    }
+  );
+
+  // Generate refresh token
+  const refreshToken = jwt.sign({
+    id: user._id,
+    username: user.username,
+  }, process.env.JWT_REFRESH_SECRET, {
+    expiresIn: "7d",
+  });
+
+
+  // Store refresh token in Redis
+  const { sessionId } = await authRedisService.setRefreshToken(
+    user._id.toString(),
+    refreshToken,
+    req
+  )
+
   res.cookie("token", token, {
     httpOnly: true,
-    maxAge: 24 * 60 * 60 * 1000, // 24 hours
+    secure: true,
+    maxAge: 15 * 60 * 1000, // 15 minutes
+  });
+
+  res.cookie("refreshToken", refreshToken, {
+    httpOnly: true,
+    secure: true,
+    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+  });
+
+  res.cookie("sessionId", sessionId, {
+    httpOnly: true,
+    secure: true
   });
   
   return res.status(200).json({
@@ -103,6 +176,7 @@ async function loginController(req, res) {
     user: {
       _id: user._id,
       email: user.email,
+      username: user.username,
       fullname: user.fullname,
     },
   });
@@ -115,20 +189,37 @@ async function loginController(req, res) {
  */
 async function logoutController(req, res) {
 
-  const BlacklistToken = req.cookies.token;
+  const accessToken = req.cookies.token;
+  const sessionId = req.cookies.sessionId;
+  const userId = req.user.id;
 
-  if (!BlacklistToken) {
+  if (!accessToken || !sessionId) {
     return res.status(401).json({
       message: "Unauthorized token",
     })
   }
 
   try {
-    await blacklistTokenModel.create({
-      token: BlacklistToken,
-    });
+    await redisClient.set(
+      `blacklist:${accessToken}`,
+      "blacklisted",
+      {
+        EX: 15 * 60 // blacklist for 15 minutes (same as token expiry)
+      }
+    )
 
-    res.clearCookie("token");
+    if (sessionId) {
+      await authRedisService.deleteRefreshToken(userId, sessionId);
+    }
+
+    const cookieOptions = {
+      httpOnly: true,
+      secure: true,
+    };
+
+    res.clearCookie("token", cookieOptions);
+    res.clearCookie("refreshToken", cookieOptions);
+    res.clearCookie("sessionId", cookieOptions);
 
     return res.status(200).json({
       success: true,
@@ -202,9 +293,79 @@ async function getMeController(req, res) {
   }
 }
 
+
+/**
+ * @route POST api/auth/refresh-token
+ * @desc Refresh access token using refresh token
+ * @access Private
+ */
+async function refreshTokenController(req, res) {
+  const sessionId = req.cookies.sessionId;
+  const refreshToken = req.cookies.refreshToken;
+
+  if (!refreshToken || !sessionId) {
+    return res.status(400).json({
+      success: false,
+      message: "Unauthorized",
+    });
+  }
+
+  try {
+    const decoded = await authRedisService.verifyRefreshToken(
+      refreshToken,
+      req.user.id,
+      sessionId
+    );
+
+    const newAccessToken = jwt.sign({
+      id: decoded.id,
+      username: decoded.username,
+    }, process.env.JWT_REFRESH_SECRET, 
+      { expiresIn: '7d' }
+    );
+
+    res.cookie("token", newAccessToken, {
+      httpOnly: true,
+      secure: true,
+      maxAge: 15 * 60 * 1000, // 15 minutes
+    });
+
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: true,
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    });
+
+    res.cookie("sessionId", sessionId, {
+      httpOnly: true,
+      secure: true
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Token refreshed successfully",
+    });
+
+  }catch (error) {
+    if (error?.name === "TokenExpiredError" || error?.name === "JsonWebTokenError") {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
+    }
+
+    return res.status(401).json({
+      success: false,
+      message: "Failed to refresh token",
+      error: error.message,
+    });
+  }
+}
+
 module.exports = {
   registerController,
   loginController,
   logoutController,
   getMeController,
+  refreshTokenController
 };

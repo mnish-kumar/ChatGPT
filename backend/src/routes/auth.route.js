@@ -35,4 +35,12 @@ router.post('/logout', authController.logoutController);
  */
 router.get('/get-me', authMiddleware.createAuthMiddleware(["user"]), authController.getMeController);
 
+
+/**
+ * @route POST api/auth/refresh-token
+ * @desc Refresh access token using refresh token
+ * @access Private
+ */
+router.post('/refresh-token', authController.refreshTokenController);
+
 module.exports = router;

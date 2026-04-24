@@ -27,7 +27,9 @@
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.0.2",
     "rate-limiter-flexible": "^11.0.1",
+    "razorpay": "^2.9.6",
     "socket.io": "^4.8.1",
+    "uuid": "^14.0.0",
     "zod": "^4.3.6",
     "zod-to-json-schema": "^3.25.1"
   }

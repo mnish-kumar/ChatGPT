@@ -39,6 +39,13 @@ const registerValidators = [
         .notEmpty()
         .isLength({ min: 2})
         .withMessage('Last name is required'),
+
+    body('email').custom(async (email) => {
+        const user = await userModel.findOne({ email });
+        if (user) {
+            throw new Error('Email already in use');
+        }
+    }),
     
     validateError
 ]
@@ -60,13 +67,6 @@ const loginValidators = [
     body('password')
         .isLength({ min: 6 })
         .withMessage('Password must be at least 6 characters long'),
-
-    body('email').custom(async (email) => {
-        const user = await userModel.findOne({ email });
-        if (user) {
-            throw new Error('Email already in use');
-        }
-    }),
 
     validateError
 ]
