@@ -3,6 +3,7 @@ const userModel = require("../models/user.model");
 const jwt = require("jsonwebtoken");
 const blacklistTokenModel = require("../models/token.model");
 const redisClient = require("../config/redis");
+const userCache = require("../cache/user.cache");
 
 
 /** 
@@ -149,19 +150,56 @@ async function logoutController(req, res) {
  * @access Private
  */
 
-async function getMeController(req, res){
-  const user = await userModel.findById(req.user.id);
+async function getMeController(req, res) {
+  const userId = req.user.id;
 
-  
-  return res.status(200).json({
-    success: true,
-    message: "User details fetched successfully",
-    user: {
+  try {
+    // 1. Cache first
+    const cachedUser = await userCache.getUserCache(userId);
+
+    if (cachedUser) {
+      // fire-and-forget (non-blocking)
+      userCache.refreshUserCacheTTL(userId);
+
+      return res.status(200).json({
+        success: true,
+        data: cachedUser,
+      });
+    }
+
+     // ── 2. DB query
+    const user = await userModel
+      .findById(userId)
+      .select("_id email username fullname")
+      .lean();
+ 
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    // 3. Prepare response (single source)
+    const response = {
       _id: user._id,
       email: user.email,
+      username: user.username,
       fullname: user.fullname,
-    },
-  });
+    };
+
+    // 4. Set cache
+    userCache.setUserCache(userId, response);
+
+    return res.status(200).json(response);
+  } catch (err) {
+    console.error("[getMeController] error:", err);
+
+    return res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+    });
+  }
 }
 
 module.exports = {

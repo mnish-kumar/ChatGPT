@@ -1,6 +1,7 @@
 const cookieParser = require('cookie-parser');
 const express = require('express');
 const cors = require('cors');
+const compression = require('compression');
 
 /* Importing Routes */
 const authRouter = require('../src/routes/auth.route');
@@ -30,7 +31,7 @@ app.use(rateLimiter.globalAPIRateLimiter);
 
 /* Using Route */
 app.use('/api/auth', authRouter);
-app.use('/api/chat', chatRoute);
+app.use('/api/chat', compression(), chatRoute);
 
 
 
