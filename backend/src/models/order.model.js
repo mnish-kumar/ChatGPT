@@ -4,6 +4,7 @@ const orderSchema = new mongoose.Schema({
     user: {
         type: mongoose.Schema.Types.ObjectId,
         required: true,
+        index: true,
     },
     price: {
         amount: {
@@ -13,7 +14,7 @@ const orderSchema = new mongoose.Schema({
         currency: {
             type: String,
             enum: ["USD", "INR"],
-            default: "INR",
+            required: true,
         }
     },
     status: {
@@ -26,7 +27,7 @@ const orderSchema = new mongoose.Schema({
         userMail: String,
     }
 
-});
+}, { timestamps: true });
 
 
 const orderModel = mongoose.model("order", orderSchema);

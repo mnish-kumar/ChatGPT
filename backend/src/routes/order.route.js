@@ -24,6 +24,6 @@ router.get("/", authMiddleware.createAuthMiddleware(["user"]));
  * @desc Get order details by order ID for the logged in user
  * @access Private (user)
  */
-router.get("/:orderId", authMiddleware.createAuthMiddleware(["user"]));
+router.get("/:orderId", authMiddleware.createAuthMiddleware(["user"]), orderController.getOrderById);
 
 module.exports = router;

@@ -1,5 +1,9 @@
 const paymentModel = require("../models/payment.model");
 const hashSignature = require("../utils/hash.utils");
+const orderModel = require("../models/order.model");
+const axios = require('axios');
+const Razorpay = require("razorpay");
+const crypto = require("crypto");
 
 
 let razorpayClient;
@@ -25,42 +29,51 @@ async function createPayment(req, res) {
   const token = req.cookies?.token || req.headers?.authorization?.split(" ")[1];
 
   if (!token) {
-    logger.warn("Unauthorized createPayment: no token", {
-      route: "createPayment",
-      ip: req.ip,
-    });
     return res.status(401).json({
       success: false,
       message: "Unauthorized: No token provided",
     });
   }
 
+  
+
   try {
     let razorpay;
     try {
       razorpay = getRazorpayClient();
     } catch (err) {
-      logger.error("Razorpay client not configured", {
-        route: "createPayment",
-        userId: req.user?.id,
-        error: err,
-      });
       return res.status(500).json({
         success: false,
         message: "Payment provider is not configured",
       });
     }
+    
+    const orderId = req.params.orderId;
+    if (!orderId) {
+      return res.status(400).json({
+        success: false,
+        message: "Missing orderId parameter",
+      });
+    }
 
-    const price = orderResponse.data.order.totalPrice;
-    const amountInPaise = price.amount; // Convert to paise
+    const orderResponse = await axios.get(`http://localhost:3000/api/orders/${orderId}`, {
+      headers: { 
+        Authorization: `Bearer ${token}` 
+      },
+    });
+
+    const receipt = crypto.randomBytes(10).toString("hex");
+
+    const price = orderResponse.data.order.price;
+    const amountInPaise = price.amount;
     const order = await razorpay.orders.create({
       amount: amountInPaise,
       currency: price.currency,
-      receipt: `receipt_${orderId}`,
+      receipt: `receipt_${receipt}`,
     });
 
     const payment = await paymentModel.create({
-      order: orderId,
+      orderId: orderId,
       razorpayOrderId: order.id,
       user: req.user.id,
       price: {
@@ -78,9 +91,12 @@ async function createPayment(req, res) {
       payment,
     });
   } catch (err) {
-    return res.status(500).json({
+    const status = err?.response?.status || 500;
+    const details = err?.response?.data || err?.message;
+    return res.status(status).json({
       success: false,
       message: "Failed to create payment",
+      error: details,
     });
   }
 }
@@ -109,7 +125,7 @@ async function verifyPayment(req, res) {
 
   const { razorpayPaymentId, razorpayOrderId, razorpaySignature } = req.body;
   if (!razorpayPaymentId || !razorpayOrderId || !razorpaySignature) {
-    logger.warn("verifyPayment missing required fields", {
+    console.warn("verifyPayment missing required fields", {
       route: "verifyPayment",
       userId: req.user?.id,
     });
