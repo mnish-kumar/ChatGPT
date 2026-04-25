@@ -6,11 +6,11 @@ const api = axios.create({
 
 const BASE_URL = import.meta.env.VITE_BASE_URL || "http://localhost:3000";
 
-export async function login({ email, password }) {
+export async function login({ email, password, username }) {
   try {
     const response = await api.post(
       `${BASE_URL}/api/auth/login`,
-      { email, password }
+      { email, password, username }
     );
 
     return response.data;
@@ -20,7 +20,7 @@ export async function login({ email, password }) {
   }
 }
 
-export async function register({ fullname, email, password }) {
+export async function register({ fullname, email, password, username }) {
   const formatedData = {
     fullname: {
       firstname: fullname.firstname,
@@ -28,6 +28,7 @@ export async function register({ fullname, email, password }) {
     },
     email: email,
     password: password,
+    username: username
   };
 
   try {

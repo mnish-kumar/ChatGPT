@@ -10,11 +10,12 @@ const Register = () => {
   const { handleRegister, loading} = useAuth();
 
   const onSubmit = async (data) => {
-    const { firstname, lastname, email, password } = data;
+    const { firstname, lastname, email, password, username } = data;
     await handleRegister({
       fullname: { firstname, lastname },
       email,
       password,
+      username
     });
 
     reset();
@@ -63,6 +64,17 @@ const Register = () => {
               {...register("lastname", { required: true })}
             />
           </div>
+        </div>
+
+        <div className="flex items-center w-full mt-4 bg-white border border-(--border-color) h-12 rounded-full overflow-hidden pl-6 gap-2">
+          <Mail className="w-4 h-4 text-(--muted-text-color)" />
+          <input
+            type="text"
+            name="username"
+            placeholder="Username"
+            className="border-none outline-none ring-0 text-(--text-color) placeholder:text-(--muted-text-color)"
+            {...register("username", { required: true })}
+          />
         </div>
 
         <div className="flex items-center w-full mt-4 bg-white border border-(--border-color) h-12 rounded-full overflow-hidden pl-6 gap-2">

@@ -8,12 +8,12 @@ export const useAuth = () => {
   const { user, setUser, loading, setLoading } = context;
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleLogin = async ({ email, password }) => {
+  const handleLogin = async ({ email, password, username }) => {
     setIsSubmitting(true);
     setLoading(true);
 
     try {
-      const data = await login({ email, password });
+      const data = await login({ email, password, username });
       setUser(data.user);
       return { success: true };
     } catch (error) {
@@ -25,12 +25,12 @@ export const useAuth = () => {
     }
   };
 
-  const handleRegister = async ({ fullname, email, password }) => {
+  const handleRegister = async ({ fullname, email, password, username }) => {
     setIsSubmitting(true);
     setLoading(true);
 
     try {
-      const data = await register({ fullname, email, password });
+      const data = await register({ fullname, email, password, username });
       setUser(data.user);
       return { success: true };
     } catch (error) {

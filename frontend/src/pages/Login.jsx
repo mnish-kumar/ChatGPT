@@ -10,14 +10,16 @@ const Login = () => {
   const { handleLogin, isSubmitting, loading } = useAuth();
 
   const onSubmit = async (data) => {
-    const result = await handleLogin({ email: data.email, password: data.password });
+    const result = await handleLogin({ username: data.username, email: data.email, password: data.password });
     if (result.success) {
       reset();
       navigate("/");
     } else {
-      const errorMsg = result.error?.message || "Invalid email or password";
-      // Check if error is about email or password specifically
-      if (errorMsg.toLowerCase().includes("email")) {
+      const errorMsg = result.error?.message || "Invalid username, email or password";
+      // Check if error is about username, email or password specifically
+      if (errorMsg.toLowerCase().includes("username")) {
+        setError("username", { type: "server", message: errorMsg });
+      } else if (errorMsg.toLowerCase().includes("email")) {
         setError("email", { type: "server", message: errorMsg });
       } else if (errorMsg.toLowerCase().includes("password")) {
         setError("password", { type: "server", message: errorMsg });
@@ -45,6 +47,23 @@ const Login = () => {
         <p className="text-(--muted-text-color) text-sm mt-2">
           Please Login in to continue
         </p>
+
+
+        <div className="flex items-center w-full mt-4 bg-white border border-(--border-color) h-12 rounded-full overflow-hidden pl-6 gap-2">
+          <Mail className="w-4 h-4 text-(--muted-text-color)" />
+
+          <input
+            type="text"
+            name="username"
+            placeholder="Username"
+            className="border-none outline-none ring-0 text-(--text-color) placeholder:text-(--muted-text-color)"
+            {...register("username", { required: "Username is required" })}
+          />
+        </div>
+        {errors.username && (
+          <p className="text-red-500 text-sm mt-1 text-left">{errors.username.message}</p>
+        )}
+
         <div className="flex items-center w-full mt-4 bg-white border border-(--border-color) h-12 rounded-full overflow-hidden pl-6 gap-2">
           <Mail className="w-4 h-4 text-(--muted-text-color)" />
 
