@@ -14,6 +14,11 @@ const planSchema = new mongoose.Schema({
     expiry: {
         type: Date,
     },
+    payment: {
+        orderId: String,
+        paymentId: String,
+        signature: String,
+    },
 
     razorpaySubscriptionId: {
         type: String,
@@ -25,6 +30,7 @@ const userSchema = new mongoose.Schema({
         type:String,
         required:true,
         unique:true,
+        index:true,
     },
     username: {
         type: String,
@@ -49,7 +55,11 @@ const userSchema = new mongoose.Schema({
         type:Boolean,
         default:false,
     },
-    plan: planSchema
+    isActive:{
+        type:Boolean,
+        default:true,
+    },
+    plan: [planSchema]
 },
     {
         timestamps: true,

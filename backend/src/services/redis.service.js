@@ -31,17 +31,22 @@ async function verifyRefreshToken (refreshToken, userId, sessionId) {
         // Verify jwt 
         const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
 
+        if (!decoded || !decoded.id) {
+            throw new Error("Invalid refresh payload");
+        }
+
         if (decoded?.id?.toString() !== userId?.toString()) {
             throw new Error("Refresh token user mismatch");
         }
 
         const key = `refreshToken:${userId}:${sessionId}`;
-
         const storedRefreshToken = await redisClient.get(key);
 
         if (!storedRefreshToken) {
             throw new Error("Refresh token not found in redis");
         }
+
+        // Compare hashed tokens
         const parsed = JSON.parse(storedRefreshToken);
         const hashedToken = hashUtils.hashToken(refreshToken);
 
@@ -51,6 +56,7 @@ async function verifyRefreshToken (refreshToken, userId, sessionId) {
 
         return decoded;
     }catch (error) {
+        console.error("verifyRefreshToken failed:", error.message);
         throw error;
     }
 }

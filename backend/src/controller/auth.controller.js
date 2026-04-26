@@ -6,8 +6,13 @@ const redisClient = require("../config/redis");
 const userCache = require("../cache/user.cache");
 const authRedisService = require("../services/redis.service");
 
+const options = {
+  httpOnly: true,
+  secure: true,
+  sameSite: "Strict",
+};
 
-/** 
+/**
  * @route POST api/auth/register
  * @desc Register a new user and return JWT token in cookie
  * @access Public
@@ -25,8 +30,8 @@ async function registerController(req, res) {
   });
 
   if (isAlreadyExist) {
-    return res.status(400).json({ 
-      message: "User already exist !" 
+    return res.status(400).json({
+      message: "User already exist !",
     });
   }
 
@@ -43,41 +48,38 @@ async function registerController(req, res) {
     username,
     email,
     password: hashedPassword,
+    plan: [],
   });
 
+  // Generate access token
   const accessToken = jwt.sign(
     { id: user._id, username: user.username },
     process.env.JWT_SECRET,
-    { expiresIn: "15m" }
+    { expiresIn: "15m" },
   );
 
+  // Generate refresh token
   const refreshToken = jwt.sign(
     { id: user._id, username: user.username },
     process.env.JWT_REFRESH_SECRET,
-    { expiresIn: "7d" }
+    { expiresIn: "7d" },
   );
 
+  // Store refresh token in Redis
   const { sessionId } = await authRedisService.setRefreshToken(
     user._id.toString(),
     refreshToken,
-    req
+    req,
   );
 
-  res.cookie("token",accessToken,{
-    httpOnly: true,
-    secure: true,
-    maxAge: 15 * 60 * 1000, // 15 minutes
-  });
-
-  res.cookie("refreshToken",refreshToken,{
-    httpOnly: true,
-    secure: true,
+  res.cookie("refreshToken", refreshToken, {
+    ...options,
     maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
   });
 
-  res.cookie("sessionId",sessionId,{
-    httpOnly: true,
-    secure: true
+  res.cookie("sessionId", sessionId, {
+    ...options,
+    maxAge: 1 * 24 * 60 * 60 * 1000, // 1 day
   });
 
   return res.status(201).json({
@@ -88,6 +90,7 @@ async function registerController(req, res) {
       username: user.username,
       fullname: user.fullname,
     },
+    token: accessToken,
   });
 }
 
@@ -100,33 +103,28 @@ async function loginController(req, res) {
   // Implementation for login
   const { username, email, password } = req.body;
   const user = await userModel.findOne({
-    $or: [
-      { email: email },
-      { username: username }
-    ]
+    $or: [{ email: email }, { username: username }],
   });
 
   if (!user) {
-    return res.status(400).json({ 
+    return res.status(400).json({
       success: false,
-      message: "Invalid email or password" 
+      message: "Invalid email or password",
     });
   }
-
 
   // Compare the provided password with the hashed password in the database
   const isPasswordValid = await bcrypt.compare(password, user.password);
 
   if (!isPasswordValid) {
-    return res.status(400).json({ 
+    return res.status(400).json({
       success: false,
-      message: "Invalid password !" 
+      message: "Invalid password !",
     });
   }
 
-
   // Generate access token
-  const token = jwt.sign(
+  const accessToken = jwt.sign(
     {
       id: user._id,
       username: user.username,
@@ -134,42 +132,38 @@ async function loginController(req, res) {
     process.env.JWT_SECRET,
     {
       expiresIn: "15m",
-    }
+    },
   );
 
   // Generate refresh token
-  const refreshToken = jwt.sign({
-    id: user._id,
-    username: user.username,
-  }, process.env.JWT_REFRESH_SECRET, {
-    expiresIn: "7d",
-  });
-
+  const refreshToken = jwt.sign(
+    {
+      id: user._id,
+      username: user.username,
+    },
+    process.env.JWT_REFRESH_SECRET,
+    {
+      expiresIn: "7d",
+    },
+  );
 
   // Store refresh token in Redis
   const { sessionId } = await authRedisService.setRefreshToken(
     user._id.toString(),
     refreshToken,
-    req
-  )
-
-  res.cookie("token", token, {
-    httpOnly: true,
-    secure: true,
-    maxAge: 15 * 60 * 1000, // 15 minutes
-  });
+    req,
+  );
 
   res.cookie("refreshToken", refreshToken, {
-    httpOnly: true,
-    secure: true,
+    ...options,
     maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
   });
 
   res.cookie("sessionId", sessionId, {
-    httpOnly: true,
-    secure: true
+    ...options,
+    maxAge: 1 * 24 * 60 * 60 * 1000, // 1 day
   });
-  
+
   return res.status(200).json({
     success: true,
     message: "Login successful",
@@ -179,6 +173,7 @@ async function loginController(req, res) {
       username: user.username,
       fullname: user.fullname,
     },
+    token: accessToken,
   });
 }
 
@@ -188,52 +183,51 @@ async function loginController(req, res) {
  * @access Private
  */
 async function logoutController(req, res) {
-
-  const accessToken = req.cookies.token;
+  const accessToken = req.headers.authorization?.split(" ")[1];
   const sessionId = req.cookies.sessionId;
   const userId = req.user.id;
 
   if (!accessToken || !sessionId) {
     return res.status(401).json({
       message: "Unauthorized token",
-    })
+    });
   }
 
   try {
-    await redisClient.set(
-      `blacklist:${accessToken}`,
-      "blacklisted",
-      {
-        EX: 15 * 60 // blacklist for 15 minutes (same as token expiry)
-      }
-    )
-
-    if (sessionId) {
-      await authRedisService.deleteRefreshToken(userId, sessionId);
+    let decoded;
+    try {
+      decoded = jwt.verify(accessToken, process.env.JWT_SECRET);
+    } catch (err) {
+      res.clearCookie("refreshToken", options);
+      res.clearCookie("sessionId", options);
+      return res.status(200).json({ success: true, message: "Logged out" });
     }
 
-    const cookieOptions = {
-      httpOnly: true,
-      secure: true,
-    };
+    const ttl = decoded.exp - Math.floor(Date.now() / 1000);
 
-    res.clearCookie("token", cookieOptions);
-    res.clearCookie("refreshToken", cookieOptions);
-    res.clearCookie("sessionId", cookieOptions);
+    if (ttl > 0) {
+      await redisClient.set(`blacklist:${accessToken}`, "blacklisted", {
+        EX: ttl, // blacklist until token would have expired
+      });
+    }
+
+    await authRedisService.deleteRefreshToken(userId, sessionId);
+
+    res.clearCookie("refreshToken", options);
+    res.clearCookie("sessionId", options);
 
     return res.status(200).json({
       success: true,
       message: "Logout successful",
     });
   } catch (error) {
+    console.error("Logout error:", error);
     return res.status(500).json({
       success: false,
       message: "Logout failed",
-      error: error.message,
     });
   }
 }
-
 
 /**
  * @route GET api/auth/get-me
@@ -258,12 +252,12 @@ async function getMeController(req, res) {
       });
     }
 
-     // ── 2. DB query
+    // ── 2. DB query
     const user = await userModel
       .findById(userId)
       .select("_id email username fullname")
       .lean();
- 
+
     if (!user) {
       return res.status(404).json({
         success: false,
@@ -293,7 +287,6 @@ async function getMeController(req, res) {
   }
 }
 
-
 /**
  * @route POST api/auth/refresh-token
  * @desc Refresh access token using refresh token
@@ -314,40 +307,53 @@ async function refreshTokenController(req, res) {
     const decoded = await authRedisService.verifyRefreshToken(
       refreshToken,
       req.user.id,
-      sessionId
+      sessionId,
     );
 
-    const newAccessToken = jwt.sign({
-      id: decoded.id,
-      username: decoded.username,
-    }, process.env.JWT_REFRESH_SECRET, 
-      { expiresIn: '7d' }
+    const newAccessToken = jwt.sign(
+      {
+        id: decoded.id,
+        username: decoded.username,
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: "15m" },
     );
 
-    res.cookie("token", newAccessToken, {
-      httpOnly: true,
-      secure: true,
-      maxAge: 15 * 60 * 1000, // 15 minutes
-    });
+    const newRefreshToken = jwt.sign(
+      {
+        id: decoded.id,
+        username: decoded.username,
+      },
+      process.env.JWT_REFRESH_SECRET,
+      { expiresIn: "7d" },
+    );
+
+    await authRedisService.setRefreshToken(
+      decoded.id,
+      newRefreshToken,
+      sessionId,
+    );
 
     res.cookie("refreshToken", refreshToken, {
-      httpOnly: true,
-      secure: true,
+      ...options,
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
 
     res.cookie("sessionId", sessionId, {
-      httpOnly: true,
-      secure: true
+      ...options,
+      maxAge: 1 * 24 * 60 * 60 * 1000, // 1 day
     });
 
     return res.status(200).json({
       success: true,
       message: "Token refreshed successfully",
+      token: newAccessToken,
     });
-
-  }catch (error) {
-    if (error?.name === "TokenExpiredError" || error?.name === "JsonWebTokenError") {
+  } catch (error) {
+    if (
+      error?.name === "TokenExpiredError" ||
+      error?.name === "JsonWebTokenError"
+    ) {
       return res.status(401).json({
         success: false,
         message: "Unauthorized",
@@ -367,5 +373,5 @@ module.exports = {
   loginController,
   logoutController,
   getMeController,
-  refreshTokenController
+  refreshTokenController,
 };
