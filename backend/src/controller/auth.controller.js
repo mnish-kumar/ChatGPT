@@ -53,14 +53,14 @@ async function registerController(req, res) {
 
   // Generate access token
   const accessToken = jwt.sign(
-    { id: user._id, username: user.username },
+    { id: user._id, username: user.username, role: user.role },
     process.env.JWT_SECRET,
     { expiresIn: "15m" },
   );
 
   // Generate refresh token
   const refreshToken = jwt.sign(
-    { id: user._id, username: user.username },
+    { id: user._id, username: user.username, role: user.role },
     process.env.JWT_REFRESH_SECRET,
     { expiresIn: "7d" },
   );
@@ -128,6 +128,7 @@ async function loginController(req, res) {
     {
       id: user._id,
       username: user.username,
+      role: user.role,
     },
     process.env.JWT_SECRET,
     {
@@ -140,6 +141,7 @@ async function loginController(req, res) {
     {
       id: user._id,
       username: user.username,
+      role: user.role,
     },
     process.env.JWT_REFRESH_SECRET,
     {
@@ -314,6 +316,7 @@ async function refreshTokenController(req, res) {
       {
         id: decoded.id,
         username: decoded.username,
+        role: decoded.role,
       },
       process.env.JWT_SECRET,
       { expiresIn: "15m" },
@@ -323,6 +326,7 @@ async function refreshTokenController(req, res) {
       {
         id: decoded.id,
         username: decoded.username,
+        role: decoded.role,
       },
       process.env.JWT_REFRESH_SECRET,
       { expiresIn: "7d" },
