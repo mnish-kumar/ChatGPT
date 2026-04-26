@@ -1,10 +1,9 @@
-const redisClient = require('../config/redis');
+const redisClient = require("../config/redis");
 
 const CACHE_TTL_SECONDS = 60 * 10; // 10 minutes
-const CACHE_VERSION = 'v1';
+const CACHE_VERSION = "v1";
 
 const userKey = (userId) => `user:${CACHE_VERSION}:${userId}`;
-
 
 function parseUserCache(raw) {
   try {
@@ -15,35 +14,37 @@ function parseUserCache(raw) {
 }
 
 const setUserCache = async (userId, userData) => {
-    try {
-        const serializedData = JSON.stringify(userData);
+  try {
+    const serializedData = JSON.stringify(userData);
 
-        redisClient.set(userKey(userId), serializedData, 'EX', CACHE_TTL_SECONDS);
-    } catch (err) {
-        console.error('Error setting user cache:', err);
-        return false;
-    }
-}
+    redisClient.set(userKey(userId), serializedData, "EX", CACHE_TTL_SECONDS);
+  } catch (err) {
+    console.error("Error setting user cache:", err);
+    return false;
+  }
+};
 
 const getUserCache = async (userId) => {
-    try {
-        const cachedData = await redisClient.get(userKey(userId));
-        
-        if (!cachedData)  return null;
+  try {
+    const cachedData = await redisClient.get(userKey(userId));
 
-        const { data, corrupted } = parseUserCache(cachedData);
+    if (!cachedData) return null;
 
-        if (corrupted) {
-            console.warn(`[UserCache] Corrupted cache for userId=${userId}, deleting...`);
-            await redisClient.del(userKey(userId));
-            return null;
-        }
-        return data;
-    } catch (err) {
-        console.error(`[UserCache] get failed for userId=${userId}:`, err);
-        return null;
+    const { data, corrupted } = parseUserCache(cachedData);
+
+    if (corrupted) {
+      console.warn(
+        `[UserCache] Corrupted cache for userId=${userId}, deleting...`,
+      );
+      await redisClient.del(userKey(userId));
+      return null;
     }
-}
+    return data;
+  } catch (err) {
+    console.error(`[UserCache] get failed for userId=${userId}:`, err);
+    return null;
+  }
+};
 
 const deleteUsersCache = async (userIds = []) => {
   try {
@@ -55,13 +56,13 @@ const deleteUsersCache = async (userIds = []) => {
 };
 
 const getUserCacheTTL = async (userId) => {
-    try {
-        return await redisClient.ttl(userKey(userId));
-    } catch (err) {
-        console.error('Error getting user cache TTL:', err);
-        return null;
-    }
-}
+  try {
+    return await redisClient.ttl(userKey(userId));
+  } catch (err) {
+    console.error("Error getting user cache TTL:", err);
+    return null;
+  }
+};
 
 const refreshUserCacheTTL = async (userId) => {
   try {
@@ -76,9 +77,9 @@ const refreshUserCacheTTL = async (userId) => {
 };
 
 module.exports = {
-    setUserCache,
-    getUserCache,
-    deleteUsersCache,
-    getUserCacheTTL,
-    refreshUserCacheTTL
-}
+  setUserCache,
+  getUserCache,
+  deleteUsersCache,
+  getUserCacheTTL,
+  refreshUserCacheTTL,
+};
