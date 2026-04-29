@@ -64,6 +64,27 @@ const globalAPIByIP = new RateLimiterRedis({
 });
 
 
+/**
+ * Password Reset — per user
+ * Prevents abuse of password reset functionality.
+ */
+const passwordResetLimiter = new RateLimiterRedis({
+  storeClient: redisClient,
+  keyPrefix: "rl:password_reset",
+  points: 5,
+  duration: 60 * 60, 
+  blockDuration: 60 * 60,
+});
+
+
+const emailVerificationLimiter = new RateLimiterRedis({
+  storeClient: redisClient,
+  keyPrefix: "rl:email_verification",
+  points: 3,
+  duration: 60 * 60, 
+  blockDuration: 60 * 60,
+})
+
 const loginRateLimiter = async (req, res, next) => {
   const ip = getClientIP(req);
   const rawEmail = (req.body?.email || "unknown_user").toLowerCase().trim();
@@ -139,8 +160,35 @@ const globalAPIRateLimiter = async (req, res, next) => {
   }
 };
 
+
+const passwordResetRateLimiter = async (req, res, next) => {
+  try {
+    await passwordResetLimiter.consume(req.ip);
+    next();
+  }catch (err) {
+    return res.status(429).json({
+      success: false,
+      message: "Too many password reset attempts. Try again after 1 hour.",
+    });
+  }
+}
+
+const emailVerificationRateLimiter = async (req, res, next) => {
+  try {
+    await emailVerificationLimiter.consume(req.ip);
+    next();
+  } catch (err) {
+    return res.status(429).json({
+      success: false,
+      message: "Too many email verification requests. Try again after 1 hour.",
+    });
+  }
+}
+
 module.exports = {
   loginRateLimiter,
   registerRateLimiter,
   globalAPIRateLimiter,
+  passwordResetRateLimiter,
+  emailVerificationRateLimiter
 };

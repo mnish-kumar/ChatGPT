@@ -18,10 +18,14 @@ function expectedSignature(razorpayOrderId, razorpayPaymentId) {
     .update(`${razorpayOrderId}|${razorpayPaymentId}`)
     .digest("hex");
 }
- 
+
+function generateVerificationToken() {
+  return crypto.randomBytes(32).toString("hex");
+}
 
 module.exports = {
   hashKey,
   hashToken,
   expectedSignature,
+  generateVerificationToken
 };

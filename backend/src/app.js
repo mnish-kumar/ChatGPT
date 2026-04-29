@@ -2,6 +2,7 @@ const cookieParser = require('cookie-parser');
 const express = require('express');
 const cors = require('cors');
 const compression = require('compression');
+const helmet = require('helmet');
 
 /* Importing Routes */
 const authRouter = require('../src/routes/auth.route');
@@ -13,6 +14,9 @@ const rateLimiter = require('./middlewares/rateLimiter.middleware');
 
 
 const app = express();
+
+// Set security-related HTTP headers using Helmet
+app.use(helmet());
 
 // trust first proxy (if behind a reverse proxy like Nginx or Heroku)
 app.set('trust proxy', 1); 

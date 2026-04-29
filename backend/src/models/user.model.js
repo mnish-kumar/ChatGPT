@@ -59,7 +59,10 @@ const userSchema = new mongoose.Schema({
         type:Boolean,
         default:true,
     },
-    plan: [planSchema]
+    plan: [planSchema],
+    
+    emailVerificationToken: String,
+    emailVerificationTokenExpiry: Date,
 },
     {
         timestamps: true,

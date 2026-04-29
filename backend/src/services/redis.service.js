@@ -68,8 +68,19 @@ async function deleteRefreshToken(userId, sessionId) {
     await redisClient.del(key);
 }
 
+
+
+async function passwordResetTokenSet(userId) {
+   const resetToken = hashUtils.generateVerificationToken();
+   const hashedToken = hashUtils.hashToken(resetToken);
+
+   const key = `passwordReset:${userId}`;
+   await redisClient.set(key, hashedToken, "EX", 15 * 60);
+}
+
 module.exports = {
     setRefreshToken,
     verifyRefreshToken,
-    deleteRefreshToken
+    deleteRefreshToken,
+    passwordResetTokenSet
 }

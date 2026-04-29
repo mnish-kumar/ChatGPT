@@ -30,11 +30,23 @@ function createAuthMiddleware(roles = []) {
         });
       }
 
-      req.user = {
-        id: decoded.id,
-        username: decoded.username,
-        role: decoded.role,
-      };
+      const user = await userModel.findById(decoded.id).select("isEmailVerified role");
+
+      if (!user) {
+        return res.status(401).json({
+          success: false,
+          message: "Unauthorized",
+        });
+      }
+
+      if (!user.isEmailVerified) {
+        return res.status(403).json({
+          success: false,
+          message: "Please verify your email to access this resource",
+        });
+      }
+
+      req.user = user;
 
       next();
     } catch (error) {

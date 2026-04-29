@@ -5,6 +5,8 @@ const blacklistTokenModel = require("../models/token.model");
 const redisClient = require("../config/redis");
 const userCache = require("../cache/user.cache");
 const authRedisService = require("../services/redis.service");
+const hash = require("../utils/hash.utils");
+const emailService = require("../services/email.service");
 
 const options = {
   httpOnly: true,
@@ -372,10 +374,234 @@ async function refreshTokenController(req, res) {
   }
 }
 
+
+/**
+ * @route POST api/auth/request-password-reset
+ * @desc Request password reset link to be sent to email
+ * @access Public
+ */
+async function requestPasswordResetController(req, res) {
+  const { email } = req.body;
+  
+  try {
+    const user = await userModel.findOne({ email })
+      .select("_id email username fullname")
+      .lean();
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    // Store hashed token in Redis (15 min TTL)
+    await authRedisService.passwordResetTokenSet(user._id.toString());
+
+    const resetToken = hash.generateVerificationToken();
+    const resetLink = `http://localhost:3000/api/auth/reset-password?token=${resetToken}&id=${user._id}`;
+    await emailService.sendPasswordResetEmail(email, resetLink);
+
+    return res.status(200).json({
+      success: true,
+      message: "If this email exists, a reset link has been sent. Please check your inbox.",
+    });
+
+  } catch (err) {
+    console.error("[requestPasswordResetController] error:", err);
+    return res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+    });
+  }
+}
+
+
+/**
+ * @route GET api/auth/verify-email/:token
+ * @desc Verify user's email using the token sent in verification email
+ * @access Public
+ */
+async function verifyEmailController(req, res) {
+  const { token } = req.params;
+
+  try {
+    if (!token) {
+      return res.status(400).json({
+        success: false,
+        message: "Verification token is required",
+      });
+    }
+
+    const hashedToken = hash.hashToken(token);
+
+    const key = `emailVerification:${hashedToken}`;
+    const userId = await redisClient.get(key);
+
+    if (!userId) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid or expired token",
+      });
+    }
+
+    const user = await userModel.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    if (user.isEmailVerified) {
+      return res.status(400).json({
+        success: false,
+        message: "Email is already verified",
+      });
+    }
+
+    await userModel.findByIdAndUpdate(userId, { isEmailVerified: true });
+    await redisClient.del(key);
+
+    return res.status(200).json({
+      success: true,
+      message: "Email verified successfully",
+    });
+
+
+  } catch (err) {
+    console.error("verifyEmail error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
+}
+
+
+/**
+ * @route POST api/auth/send-verification-email
+ * @desc Send email verification link to user's email
+ * @access Public
+ * */
+async function sendVerificationEmailController(req, res) {
+  const { email } = req.body;
+
+  try {
+    const user = await userModel.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    if (user.isEmailVerified) {
+      return res.status(400).json({
+        success: false,
+        message: "Email is already verified",
+      });
+    }
+
+    const verificationToken = hash.generateVerificationToken();
+    const hashedToken = hash.hashToken(verificationToken);
+
+    // Store hashed token in Redis with 24 hour TTL
+    const key = `emailVerification:${hashedToken}`;
+    await redisClient.set(key, user._id.toString(), "EX", 24 * 60 * 60);
+
+    // Send verification email with link to verify email address
+    const verificationLink = `http://localhost:3000/api/auth/verify-email/${verificationToken}`;
+
+    // ✅ Send email (controller will catch any errors)
+    await emailService.sendVerificationEmail(email, verificationLink);
+
+    return res.status(200).json({
+      success: true,
+      message: "Verification email sent. Please check your inbox.",
+    });
+
+  }catch (err) {
+    console.error("sendVerificationEmailController error:", err);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
+}
+
+
+/**
+ * @route POST api/auth/resend-verification-email
+ * @desc Resend email verification link to user's email
+ * @access Public
+ * */
+async function resendVerificationEmailController(req, res) {
+  const { email } = req.body;
+
+  try {
+    const user = await userModel.findOne({ email });
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    if (user.isEmailVerified) {
+      return res.status(400).json({
+        success: false,
+        message: "Email is already verified",
+      });
+    }
+
+    const existKey = await redisClient.keys(`emailVerification:*:${user._id.toString()}`);
+    for (const key of existKey) {
+      const storedUserId = await redisClient.get(key);
+      if (storedUserId === user._id.toString()) {
+        await redisClient.del(key);
+        break;
+      }
+    }
+
+    const verificationToken = hash.generateVerificationToken();
+    const hashedToken = hash.hashToken(verificationToken);
+
+    const key = `emailVerification:${hashedToken}`;
+    await redisClient.set(key, user._id.toString(), {
+      EX: 24 * 60 * 60, // 24 hours
+    });
+
+    const verificationLink = `http://localhost:3000/api/auth/verify-email/${verificationToken}`;
+
+     // ✅ Send email (controller will catch any errors)
+    await emailService.sendVerificationEmail(email, verificationLink);
+
+    return res.status(200).json({
+      success: true,
+      message: "Verification email resent. Please check your inbox.",
+    });
+
+  }catch (err) {
+    console.error("resendVerificationEmailController error:", err);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
+}
+
+
 module.exports = {
   registerController,
   loginController,
   logoutController,
   getMeController,
   refreshTokenController,
+  requestPasswordResetController,
+  verifyEmailController,
+  sendVerificationEmailController,
+  resendVerificationEmailController
 };
