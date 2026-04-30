@@ -70,6 +70,21 @@ const userSchema = new mongoose.Schema(
 
     emailVerificationToken: String,
     emailVerificationTokenExpiry: Date,
+
+    twoFactorAuth: {
+      enabled: {
+        type: Boolean,
+        default: false, // ← off by default
+      },
+      secret: {
+        type: String,
+        default: null, // ← TOTP secret
+      },
+      backupCodes: {
+        type: [String],
+        default: [], // ← recovery codes
+      },
+    },
   },
   {
     timestamps: true,

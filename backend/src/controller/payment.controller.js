@@ -1,29 +1,10 @@
-const paymentModel = require("../models/payment.model");
-const hashSignature = require("../utils/hash.utils");
 const orderModel = require("../models/order.model");
+const paymentModel = require("../models/payment.model");
+const userModel = require("../models/user.model");
+const hashSignature = require("../utils/hash.utils");
 const axios = require('axios');
-const Razorpay = require("razorpay");
-const crypto = require("crypto");
 
-
-let razorpayClient;
-function getRazorpayClient() {
-  if (razorpayClient) return razorpayClient;
-
-  const keyId = process.env.RAZORPAY_KEY_ID;
-  const keySecret = process.env.RAZORPAY_KEY_SECRET;
-  if (!keyId || !keySecret) {
-    throw new Error(
-      "Razorpay keys are not configured (RAZORPAY_KEY_ID/RAZORPAY_KEY_SECRET)",
-    );
-  }
-
-  razorpayClient = new Razorpay({
-    key_id: keyId,
-    key_secret: keySecret,
-  });
-  return razorpayClient;
-}
+const logger = console;
 
 async function createPayment(req, res) {
   const token = req.cookies?.token || req.headers?.authorization?.split(" ")[1];
@@ -35,45 +16,26 @@ async function createPayment(req, res) {
     });
   }
 
-  
-
   try {
-    let razorpay;
-    try {
-      razorpay = getRazorpayClient();
-    } catch (err) {
-      return res.status(500).json({
-        success: false,
-        message: "Payment provider is not configured",
-      });
-    }
-    
-    const orderId = req.params.orderId;
+
+    const orderId = req.params?.orderId;
+
     if (!orderId) {
       return res.status(400).json({
         success: false,
-        message: "Missing orderId parameter",
+        message: "Order ID is required",
       });
     }
 
-    const orderResponse = await axios.get(`http://localhost:3000/api/orders/${orderId}`, {
-      headers: { 
-        Authorization: `Bearer ${token}` 
-      },
-    });
-
-    const receipt = crypto.randomBytes(10).toString("hex");
-
-    const price = orderResponse.data.order.price;
-    const amountInPaise = price.amount;
-    const order = await razorpay.orders.create({
-      amount: amountInPaise,
-      currency: price.currency,
-      receipt: `receipt_${receipt}`,
-    });
+    const order = await orderModel.findById(orderId);
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: "Order not found",
+      });
+    }
 
     const payment = await paymentModel.create({
-      orderId: orderId,
       razorpayOrderId: order.id,
       user: req.user.id,
       price: {
@@ -165,6 +127,19 @@ async function verifyPayment(req, res) {
         message: "Payment not found",
       });
     }
+
+    await userModel.findByIdAndUpdate(order.user, {
+      plan: {
+        type: "PREMIUM",
+        startDate: new Date(),
+        expiry: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
+        payment: {
+          orderId: razorpayOrderId,
+          paymentId: razorpayPaymentId,
+          signature: razorpaySignature,
+        },
+      },
+    });
 
     res.status(200).json({
       success: true,

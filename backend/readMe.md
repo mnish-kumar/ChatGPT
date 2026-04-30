@@ -43,7 +43,7 @@ POST /auth/reset-password            → set new password
 
 
 
-## 🌐4.  Social Login (Google / GitHub)
+## 🌐4.  Social Login (Google) (COMPLETE✅)
 GET  /auth/google                    → redirect to Google OAuth
 GET  /auth/google/callback           → Google redirects here
 ### FLOW -> Click "Login with Google" → Google OAuth screen
@@ -52,7 +52,7 @@ GET  /auth/google/callback           → Google redirects here
 
 
 
-### 🔒5.   2FA / OTP
+### 🔒5.   2FA / OTP (COMPLETE✅)
 POST /auth/2fa/setup                 → generate QR code (Google Authenticator)
 POST /auth/2fa/enable                → verify first OTP to activate 2FA
 POST /auth/2fa/verify                → verify OTP on login

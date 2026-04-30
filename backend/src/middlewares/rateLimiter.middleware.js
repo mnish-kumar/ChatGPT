@@ -85,6 +85,15 @@ const emailVerificationLimiter = new RateLimiterRedis({
   blockDuration: 60 * 60,
 })
 
+
+const twoFactorLimiter = new RateLimiterRedis({
+  storeClient: redisClient,
+  keyPrefix: "rl:2fa",
+  points: 5,               
+  duration: 60 * 10,       
+  blockDuration: 60 * 30,
+});
+
 const loginRateLimiter = async (req, res, next) => {
   const ip = getClientIP(req);
   const rawEmail = (req.body?.email || "unknown_user").toLowerCase().trim();
@@ -185,10 +194,23 @@ const emailVerificationRateLimiter = async (req, res, next) => {
   }
 }
 
+const twoFactorRateLimiter = async (req, res, next) => {
+  try {
+    await twoFactorLimiter.consume(req.ip);
+    next();
+  } catch (err) {
+    return res.status(429).json({
+      success: false,
+      message: "Too many 2FA attempts. Try again later.",
+    });
+  }
+}
+
 module.exports = {
   loginRateLimiter,
   registerRateLimiter,
   globalAPIRateLimiter,
   passwordResetRateLimiter,
-  emailVerificationRateLimiter
+  emailVerificationRateLimiter,
+  twoFactorRateLimiter,
 };

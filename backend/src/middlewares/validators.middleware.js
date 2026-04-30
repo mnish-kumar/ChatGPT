@@ -9,6 +9,7 @@ const validateError = (req, res, next) => {
   next();
 };
 
+// Registration validators
 const registerValidators = [
   body("username")
     .isLength({ min: 3, max: 30 })
@@ -49,6 +50,7 @@ const registerValidators = [
   validateError,
 ];
 
+// Login validators
 const loginValidators = [
   body("username")
     .optional({ values: "falsy" })
@@ -69,13 +71,14 @@ const loginValidators = [
   validateError,
 ];
 
+// Request Password Reset validators
 const requestPasswordResetValidators = [
   body("email")
     .notEmpty()
     .withMessage("Email is required")
     .isEmail()
-    .withMessage("Invalid email format")
-    .normalizeEmail(),
+    .withMessage("Invalid email format"),
+    
   validateError,
 ];
 

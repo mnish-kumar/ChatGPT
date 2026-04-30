@@ -10,6 +10,8 @@ const authRouter = require('../src/routes/auth.route');
 const chatRoute = require('../src/routes/chat.route');
 const orderRoute = require('../src/routes/order.route');
 const paymentRoute = require('../src/routes/payment.route');
+const twoFA_Route = require('../src/routes/2FA.route');
+const resetPasswordRoute = require('../src/routes/resetPassword.route');
 
 const rateLimiter = require('./middlewares/rateLimiter.middleware');
 
@@ -44,5 +46,7 @@ app.use('/api/auth', authRouter);
 app.use('/api/chat', compression(), chatRoute);
 app.use('/api/orders', orderRoute);
 app.use('/api/payment', paymentRoute);
+app.use('/api/auth/2fa', twoFA_Route);
+app.use('/api/auth', resetPasswordRoute);
 
 module.exports = app;

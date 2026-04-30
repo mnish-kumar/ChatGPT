@@ -6,6 +6,7 @@ const redisRateLimiter = require("../middlewares/rateLimiter.middleware");
 const validators = require("../middlewares/validators.middleware");
 const passport = require("../config/passport");
 
+
 /**
  * @route POST api/auth/register
  * @desc Register a new user and return JWT token in cookie
@@ -55,39 +56,6 @@ router.get(
  */
 router.post("/refresh-token", authController.refreshTokenController);
 
-/**
- * @route POST api/auth/request-password-reset
- * @desc Request password reset link to be sent to email
- * @access Public
- */
-router.post(
-  "/request-password-reset",
-  redisRateLimiter.passwordResetRateLimiter,
-  validators.requestPasswordResetValidators,
-  authController.requestPasswordResetController,
-);
-
-/**
- * @route POST api/auth/verify-reset-token
- * @desc Verify if the password reset token is valid and not expired
- * @access Public
- * */
-router.post(
-  "/verify-reset-token",
-  validators.verifyResetTokenValidators,
-  authController.verifyResetTokenController,
-);
-
-/**
- * @route POST api/auth/reset-password
- * @desc Reset password using the token sent to email
- * @access Public
- */
-router.post(
-  "/reset-password",
-  validators.resetPasswordValidators,
-  authController.resetPasswordController,
-);
 
 /**
  * @route POST api/auth/send-verification-email
@@ -120,7 +88,6 @@ router.post(
   authController.resendVerificationEmailController,
 );
 
-
 /**
  * @route GET api/auth/google
  * @desc Initiate Google OAuth login flow
@@ -133,7 +100,6 @@ router.get(
     session: false,
   }),
 );
-
 
 /**
  * @route GET api/auth/google/callback
@@ -160,5 +126,6 @@ router.get("/google/failure", (req, res) => {
     message: "Google login failed",
   });
 });
+
 
 module.exports = router;
