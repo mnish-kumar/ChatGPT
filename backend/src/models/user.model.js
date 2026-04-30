@@ -1,76 +1,81 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
-
-const planSchema = new mongoose.Schema({
+const planSchema = new mongoose.Schema(
+  {
     type: {
-        type: String,
-        enum: ["FREE", "PREMIUM"],
-        default: "FREE",
+      type: String,
+      enum: ["FREE", "PREMIUM"],
+      default: "FREE",
     },
     startDate: {
-        type: Date,
-        default: Date.now,
+      type: Date,
+      default: Date.now,
     },
     expiry: {
-        type: Date,
+      type: Date,
     },
     payment: {
-        orderId: String,
-        paymentId: String,
-        signature: String,
+      orderId: String,
+      paymentId: String,
+      signature: String,
     },
 
     razorpaySubscriptionId: {
-        type: String,
-    }
-}, { _id: false });
+      type: String,
+    },
+  },
+  { _id: false },
+);
 
-const userSchema = new mongoose.Schema({
-    email:{
-        type:String,
-        required:true,
-        unique:true,
-        index:true,
+const userSchema = new mongoose.Schema(
+  {
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+      index: true,
     },
     username: {
+      type: String,
+      required: true,
+      unique: true,
+    },
+    fullname: {
+      firstname: {
         type: String,
         required: true,
-        unique: true,
+      },
+      lastname: {
+        type: String,
+        required: true,
+      },
     },
-    fullname:{
-        firstname:{
-            type:String,
-            required:true,
-        },
-        lastname:{
-            type:String,
-            required:true,
-        }
+    password: {
+      type: String,
+      required: false,
     },
-    password:{
-        type:String,
-        required:true,
+    googleId: {
+      type: String,
+      default: null, // null for normal users
     },
-    isEmailVerified:{
-        type:Boolean,
-        default:false,
+    isEmailVerified: {
+      type: Boolean,
+      default: false,
     },
-    isActive:{
-        type:Boolean,
-        default:true,
+    isActive: {
+      type: Boolean,
+      default: true,
     },
     plan: [planSchema],
-    
+
     emailVerificationToken: String,
     emailVerificationTokenExpiry: Date,
-},
-    {
-        timestamps: true,
-    }
-)
+  },
+  {
+    timestamps: true,
+  },
+);
 
-
-
-const userModel = mongoose.model('user', userSchema);
+const userModel = mongoose.model("user", userSchema);
 
 module.exports = userModel;

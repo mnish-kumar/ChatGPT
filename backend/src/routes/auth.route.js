@@ -4,6 +4,7 @@ const authController = require("../controller/auth.controller");
 const authMiddleware = require("../middlewares/auth.middleware");
 const redisRateLimiter = require("../middlewares/rateLimiter.middleware");
 const validators = require("../middlewares/validators.middleware");
+const passport = require("../config/passport");
 
 /**
  * @route POST api/auth/register
@@ -77,7 +78,6 @@ router.post(
   authController.verifyResetTokenController,
 );
 
-
 /**
  * @route POST api/auth/reset-password
  * @desc Reset password using the token sent to email
@@ -119,5 +119,46 @@ router.post(
   validators.sendVerificationEmailValidators,
   authController.resendVerificationEmailController,
 );
+
+
+/**
+ * @route GET api/auth/google
+ * @desc Initiate Google OAuth login flow
+ * @access Public
+ * */
+router.get(
+  "/google",
+  passport.authenticate("google", {
+    scope: ["profile", "email"],
+    session: false,
+  }),
+);
+
+
+/**
+ * @route GET api/auth/google/callback
+ * @desc Handle Google OAuth callback and issue JWT token
+ * @access Public
+ * */
+router.get(
+  "/google/callback",
+  passport.authenticate("google", {
+    session: false,
+    failureRedirect: "/api/auth/google/failure",
+  }),
+  authController.googleAuthController,
+);
+
+/**
+ * @route GET api/auth/google/failure
+ * @desc Handle Google OAuth failure
+ * @access Public
+ * */
+router.get("/google/failure", (req, res) => {
+  return res.status(401).json({
+    success: false,
+    message: "Google login failed",
+  });
+});
 
 module.exports = router;

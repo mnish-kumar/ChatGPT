@@ -3,6 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const compression = require('compression');
 const helmet = require('helmet');
+const passport = require('./config/passport');
 
 /* Importing Routes */
 const authRouter = require('../src/routes/auth.route');
@@ -20,6 +21,9 @@ app.use(helmet());
 
 // trust first proxy (if behind a reverse proxy like Nginx or Heroku)
 app.set('trust proxy', 1); 
+
+// Initialize Passport for authentication
+app.use(passport.initialize());
 
 const corsOptions = {
     origin: 'http://localhost:5173',

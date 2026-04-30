@@ -50,7 +50,15 @@ async function registerController(req, res) {
     username,
     email,
     password: hashedPassword,
-    plan: [],
+    plan: [
+      {
+        type: "FREE",
+        startDate: new Date(),
+        expiry: null,
+        payment: null,
+        razorpaySubscriptionId: null,
+      },
+    ],
   });
 
   // Generate access token
@@ -374,7 +382,6 @@ async function refreshTokenController(req, res) {
   }
 }
 
-
 /**
  * @route POST api/auth/request-password-reset
  * @desc Request password reset link to be sent to email
@@ -382,9 +389,10 @@ async function refreshTokenController(req, res) {
  */
 async function requestPasswordResetController(req, res) {
   const { email } = req.body;
-  
+
   try {
-    const user = await userModel.findOne({ email })
+    const user = await userModel
+      .findOne({ email })
       .select("_id email username fullname")
       .lean();
 
@@ -403,9 +411,9 @@ async function requestPasswordResetController(req, res) {
 
     return res.status(200).json({
       success: true,
-      message: "If this email exists, a reset link has been sent. Please check your inbox.",
+      message:
+        "If this email exists, a reset link has been sent. Please check your inbox.",
     });
-
   } catch (err) {
     console.error("[requestPasswordResetController] error:", err);
     return res.status(500).json({
@@ -414,7 +422,6 @@ async function requestPasswordResetController(req, res) {
     });
   }
 }
-
 
 /**
  * @route POST api/auth/verify-reset-token
@@ -458,7 +465,7 @@ async function verifyResetTokenController(req, res) {
       success: true,
       message: "Token is valid",
     });
-  }catch (err) {
+  } catch (err) {
     console.error("[verifyResetTokenController] error:", err);
     return res.status(500).json({
       success: false,
@@ -466,7 +473,6 @@ async function verifyResetTokenController(req, res) {
     });
   }
 }
-
 
 /**
  * @route POST api/auth/reset-password
@@ -510,10 +516,10 @@ async function resetPasswordController(req, res) {
     const genSalt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(newPassword, genSalt);
 
-    await userModel.findByIdAndUpdate(id,{ 
-      password: hashedPassword
+    await userModel.findByIdAndUpdate(id, {
+      password: hashedPassword,
     });
-    
+
     // Delete the token from Redis
     await redisClient.del(key);
 
@@ -527,16 +533,14 @@ async function resetPasswordController(req, res) {
       success: true,
       message: "Password reset successful",
     });
-  }catch (err) {
+  } catch (err) {
     console.error("[resetPasswordController] error:", err);
     return res.status(500).json({
       success: false,
       message: "Internal Server Error",
     });
   }
-
 }
-
 
 /**
  * @route GET api/auth/verify-email/:token
@@ -589,8 +593,6 @@ async function verifyEmailController(req, res) {
       success: true,
       message: "Email verified successfully",
     });
-
-
   } catch (err) {
     console.error("verifyEmail error:", error);
     return res.status(500).json({
@@ -599,7 +601,6 @@ async function verifyEmailController(req, res) {
     });
   }
 }
-
 
 /**
  * @route POST api/auth/send-verification-email
@@ -643,8 +644,7 @@ async function sendVerificationEmailController(req, res) {
       success: true,
       message: "Verification email sent. Please check your inbox.",
     });
-
-  }catch (err) {
+  } catch (err) {
     console.error("sendVerificationEmailController error:", err);
     return res.status(500).json({
       success: false,
@@ -652,7 +652,6 @@ async function sendVerificationEmailController(req, res) {
     });
   }
 }
-
 
 /**
  * @route POST api/auth/resend-verification-email
@@ -678,7 +677,9 @@ async function resendVerificationEmailController(req, res) {
       });
     }
 
-    const existKey = await redisClient.keys(`emailVerification:*:${user._id.toString()}`);
+    const existKey = await redisClient.keys(
+      `emailVerification:*:${user._id.toString()}`,
+    );
     for (const key of existKey) {
       const storedUserId = await redisClient.get(key);
       if (storedUserId === user._id.toString()) {
@@ -697,15 +698,14 @@ async function resendVerificationEmailController(req, res) {
 
     const verificationLink = `${process.env.FRONTEND_URL}/api/auth/verify-email/${verificationToken}`;
 
-     // ✅ Send email (controller will catch any errors)
+    // ✅ Send email (controller will catch any errors)
     await emailService.sendVerificationEmail(email, verificationLink);
 
     return res.status(200).json({
       success: true,
       message: "Verification email resent. Please check your inbox.",
     });
-
-  }catch (err) {
+  } catch (err) {
     console.error("resendVerificationEmailController error:", err);
     return res.status(500).json({
       success: false,
@@ -715,8 +715,66 @@ async function resendVerificationEmailController(req, res) {
 }
 
 
+/**
+ * @route GET api/auth/google/callback
+ * @desc Handle Google OAuth callback and issue JWT token
+ * @access Public
+ * */
+async function googleAuthController(req, res) {
+  try {
+    const user = req.user;
 
+    // Generate access token
+    const accessToken = jwt.sign(
+      { id: user._id, username: user.username, role: user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: "15m" },
+    );
 
+    // Generate refresh token
+    const refreshToken = jwt.sign(
+      { id: user._id, username: user.username, role: user.role },
+      process.env.JWT_REFRESH_SECRET,
+      { expiresIn: "7d" },
+    );
+
+    // Store refresh token in Redis
+    const { sessionId } = await authRedisService.setRefreshToken(
+      user._id.toString(),
+      refreshToken,
+      req,
+    );
+
+    res.cookie("refreshToken", refreshToken, {
+      ...options,
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+
+    res.cookie("sessionId", sessionId, {
+      ...options,
+      maxAge: 1 * 24 * 60 * 60 * 1000,
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Google login successful",
+      user: {
+        _id: user._id,
+        email: user.email,
+        username: user.username,
+        fullname: user.fullname,
+        isEmailVerified: user.isEmailVerified,
+      },
+      token: accessToken,
+    });
+  } catch (err) {
+    console.error("googleCallback error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
+}
 
 module.exports = {
   registerController,
@@ -730,4 +788,5 @@ module.exports = {
   resendVerificationEmailController,
   verifyResetTokenController,
   resetPasswordController,
+  googleAuthController,
 };
