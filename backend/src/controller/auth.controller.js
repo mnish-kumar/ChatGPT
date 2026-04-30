@@ -468,6 +468,11 @@ async function verifyResetTokenController(req, res) {
 }
 
 
+/**
+ * @route POST api/auth/reset-password
+ * @desc Reset password using the token sent to email
+ * @access Public
+ * */
 async function resetPasswordController(req, res) {
   const { token, id, newPassword } = req.body;
 
@@ -708,6 +713,9 @@ async function resendVerificationEmailController(req, res) {
     });
   }
 }
+
+
+
 
 
 module.exports = {
