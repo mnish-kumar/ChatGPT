@@ -513,7 +513,7 @@ async function sendVerificationEmailController(req, res) {
     await redisClient.set(key, user._id.toString(), "EX", 24 * 60 * 60);
 
     // Send verification email with link to verify email address
-    const verificationLink = `http://localhost:3000/api/auth/verify-email/${verificationToken}`;
+    const verificationLink = `${process.env.FRONTEND_URL}/api/auth/verify-email/${verificationToken}`;
 
     // ✅ Send email (controller will catch any errors)
     await emailService.sendVerificationEmail(email, verificationLink);
@@ -574,7 +574,7 @@ async function resendVerificationEmailController(req, res) {
       EX: 24 * 60 * 60, // 24 hours
     });
 
-    const verificationLink = `http://localhost:3000/api/auth/verify-email/${verificationToken}`;
+    const verificationLink = `${process.env.FRONTEND_URL}/api/auth/verify-email/${verificationToken}`;
 
      // ✅ Send email (controller will catch any errors)
     await emailService.sendVerificationEmail(email, verificationLink);
