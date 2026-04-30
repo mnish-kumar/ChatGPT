@@ -86,6 +86,11 @@ const verifyResetTokenValidators = [
     .withMessage("Reset token is required")
     .isLength({ min: 64, max: 64 })
     .withMessage("Invalid token format"),
+  body("id")
+    .notEmpty()
+    .withMessage("User ID is required")
+    .isMongoId()
+    .withMessage("Invalid user ID format"),
   validateError,
 ];
 

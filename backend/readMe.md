@@ -17,7 +17,7 @@
 └── user management APIs
 
 
-## 🔐1.  Complete Auth API List
+## 🔐1.  Complete Auth API List (COMPLETE✅)
 POST /auth/register
 POST /auth/login
 POST /auth/logout
@@ -25,7 +25,7 @@ POST /auth/refresh-token
 
 
 
-## 2.  📧 Email Verification
+## 2.  📧 Email Verification (COMPLETE✅)
 POST /auth/send-verification-email   → send OTP/link to email
 GET  /auth/verify-email/:token       → verify email on click
 POST /auth/resend-verification-email → resend if expired
@@ -34,7 +34,7 @@ POST /auth/resend-verification-email → resend if expired
 
 
 
-## 🔑3.  Forgot Password
+## 🔑3.  Forgot Password (COMPLETE✅)
 POST /auth/forgot-password           → send reset link to email
 POST /auth/verify-reset-token        → validate token is valid/not expired
 POST /auth/reset-password            → set new password
@@ -46,8 +46,6 @@ POST /auth/reset-password            → set new password
 ## 🌐4.  Social Login (Google / GitHub)
 GET  /auth/google                    → redirect to Google OAuth
 GET  /auth/google/callback           → Google redirects here
-GET  /auth/github                    → redirect to GitHub OAuth
-GET  /auth/github/callback           → GitHub redirects here
 ### FLOW -> Click "Login with Google" → Google OAuth screen
             ## → callback with code → exchange for profile
             ## → find or create user → issue accessToken + refreshToken

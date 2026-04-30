@@ -77,6 +77,18 @@ router.post(
   authController.verifyResetTokenController,
 );
 
+
+/**
+ * @route POST api/auth/reset-password
+ * @desc Reset password using the token sent to email
+ * @access Public
+ */
+router.post(
+  "/reset-password",
+  validators.resetPasswordValidators,
+  authController.resetPasswordController,
+);
+
 /**
  * @route POST api/auth/send-verification-email
  * @desc Send email verification link to user's email

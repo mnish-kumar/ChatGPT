@@ -76,6 +76,8 @@ async function passwordResetTokenSet(userId) {
 
    const key = `passwordReset:${userId}`;
    await redisClient.set(key, hashedToken, "EX", 15 * 60);
+
+   return resetToken;
 }
 
 module.exports = {
