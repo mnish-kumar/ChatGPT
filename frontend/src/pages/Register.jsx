@@ -1,8 +1,10 @@
-import { MagicCard } from "@/components/ui/magic-card";
+import { ShineBorder } from "@/components/ui/shine-border";
 import { registerUser } from "@/store/userAction";
+import { useTheme } from "next-themes";
 import { useForm } from "react-hook-form";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { googleLogin } from "../api/auth.api";
 
 const Register = () => {
   const {
@@ -12,12 +14,9 @@ const Register = () => {
     formState: { errors },
   } = useForm();
 
-
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { isLoading, error } = useSelector((state) => state.user);
-
-
 
   const onSubmit = async (data) => {
     const result = await dispatch(
@@ -38,12 +37,18 @@ const Register = () => {
     }
   };
 
+  const handleGoogleLogin = () => {
+    googleLogin();
+  };
+
+  const theme = useTheme();
   return (
     <div className="flex items-center justify-center min-h-screen bg-slate-400">
       <form
         onSubmit={handleSubmit(onSubmit)}
-        className="bg-white text-gray-500 max-w-97 mx-4 md:p-6 p-4 text-left text-sm rounded-xl shadow-[0px_0px_10px_0px] shadow-black/10"
+        className="relative overflow-hidden bg-white text-gray-500 max-w-97 mx-4 md:p-6 p-4 text-left text-sm rounded-xl shadow-[0px_0px_10px_0px] shadow-black/10"
       >
+        <ShineBorder shineColor={theme.theme === "dark" ? "white" : "black"} />
         <h2 className="text-2xl font-semibold mb-6 text-center text-gray-800">
           Create Account
         </h2>
@@ -98,18 +103,14 @@ const Register = () => {
           {...register("password", { required: true })}
           required
         />
-        <div className="text-right py-4">
-          <a className="text-blue-600 underline" href="#">
-            Forgot Password
-          </a>
-        </div>
+        
         <button
-            type="submit"
-            disabled={isLoading}
-            className="w-full mb-2.5 cursor-pointer bg-indigo-600 text-white py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {isLoading ? "Creating account..." : "Create Account"}
-          </button>
+          type="submit"
+          disabled={isLoading}
+          className="w-full mt-6 mb-2.5 cursor-pointer bg-indigo-600 text-white py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {isLoading ? "Creating account..." : "Create Account"}
+        </button>
 
         <div className="flex items-center gap-2">
           <hr className="flex-1 border-gray-300" />
@@ -119,9 +120,7 @@ const Register = () => {
 
         <button
           type="button"
-          onClick={() =>
-            (window.location.href = `${import.meta.env.VITE_BASE_URL}/auth/google`)
-          }
+          onClick={handleGoogleLogin}
           className="mt-2 w-full flex items-center justify-center gap-2 border border-gray-300 text-gray-700 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 transition cursor-pointer"
         >
           <img
@@ -132,11 +131,14 @@ const Register = () => {
           Continue with Google
         </button>
 
-        <p className="text-center mt-4">
+        <p className="text-center text-sm text-gray-500 mt-2">
           Already have an account?{" "}
-          <a href="/login" className="text-blue-500 underline">
+          <Link
+            to="/login"
+            className="text-indigo-600 font-medium hover:underline"
+          >
             Login
-          </a>
+          </Link>
         </p>
       </form>
     </div>
