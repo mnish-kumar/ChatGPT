@@ -8,10 +8,12 @@ const authRedisService = require("../services/redis.service");
 const hash = require("../utils/hash.utils");
 const emailService = require("../services/email.service");
 
+const isProduction = process.env.NODE_ENV === "production";
+
 const options = {
   httpOnly: true,
-  secure: true,
-  sameSite: "Strict",
+  secure: isProduction,
+  sameSite: isProduction ? "None" : "Lax",
 };
 
 /**
@@ -100,7 +102,7 @@ async function registerController(req, res) {
       username: user.username,
       fullname: user.fullname,
     },
-    token: accessToken,
+    accessToken: accessToken,
   });
 }
 
@@ -192,7 +194,7 @@ async function loginController(req, res) {
       username: user.username,
       fullname: user.fullname,
     },
-    token: accessToken,
+    accessToken: accessToken,
   });
 }
 
@@ -330,9 +332,13 @@ async function refreshTokenController(req, res) {
   }
 
   try {
+    // Identify the user from the refresh token itself.
+    const decodedJwt = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
+    const userId = decodedJwt?.id;
+
     const decoded = await authRedisService.verifyRefreshToken(
       refreshToken,
-      req.user.id,
+      userId,
       sessionId,
     );
 
@@ -354,13 +360,10 @@ async function refreshTokenController(req, res) {
       { expiresIn: "7d" },
     );
 
-    await authRedisService.setRefreshToken(
-      decoded.id,
-      newRefreshToken,
-      sessionId,
-    );
+    // Reuse the same sessionId so the frontend cookie remains consistent.
+    await authRedisService.setRefreshToken(decoded.id, newRefreshToken, req, sessionId);
 
-    res.cookie("refreshToken", refreshToken, {
+    res.cookie("refreshToken", newRefreshToken, {
       ...options,
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
@@ -373,7 +376,7 @@ async function refreshTokenController(req, res) {
     return res.status(200).json({
       success: true,
       message: "Token refreshed successfully",
-      token: newAccessToken,
+      accessToken: newAccessToken,
     });
   } catch (error) {
     if (
@@ -616,7 +619,7 @@ async function googleAuthController(req, res) {
         fullname: user.fullname,
         isEmailVerified: user.isEmailVerified,
       },
-      token: accessToken,
+      accessToken: accessToken,
     });
   } catch (err) {
     console.error("googleCallback error:", error);
