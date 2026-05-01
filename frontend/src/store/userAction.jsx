@@ -42,7 +42,7 @@ export const logoutUser = createAsyncThunk(
   }
 );
 
-// ─── Check Auth (App start pe) ────────────────────────────
+// ─── Check Auth (App start) ────────────────────────────
 export const checkAuth = createAsyncThunk(
   "user/checkAuth",
   async (_, { rejectWithValue }) => {

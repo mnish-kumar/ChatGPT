@@ -13,7 +13,6 @@ export async function register({ fullname, username, email, password }) {
       password,
     });
     
-    console.log("Registration successful:", response);
     return response.data;
   } catch (error) {
     throw error.response?.data || { message: "Registration failed" };
@@ -122,7 +121,6 @@ export async function resendVerificationEmail({ email }) {
 
 // ─── Google Login ─────────────────────────────────────────
 export function googleLogin() {
-  // Browser redirect hoga — axios nahi
   window.location.href = `${import.meta.env.VITE_BASE_URL}/api/auth/google`;
 }
 
