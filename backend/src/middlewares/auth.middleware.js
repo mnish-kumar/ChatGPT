@@ -23,19 +23,22 @@ function createAuthMiddleware(roles = []) {
     try {
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-      if (roles.length > 0 && !roles.includes(decoded.role)) {
-        return res.status(403).json({
-          success: false,
-          message: "Forbidden: You don't have access to this resource",
-        });
-      }
-
-      const user = await userModel.findById(decoded.id).select("isEmailVerified role");
+      const user = await userModel.findById(decoded.id).select("_id isEmailVerified role");
 
       if (!user) {
         return res.status(401).json({
           success: false,
           message: "Unauthorized",
+        });
+      }
+
+      // Default to "user" role if not set (for backward compatibility with existing users)
+      const userRole = user.role || "user";
+
+      if (roles.length > 0 && !roles.includes(userRole)) {
+        return res.status(403).json({
+          success: false,
+          message: "Forbidden: You don't have access to this resource",
         });
       }
 

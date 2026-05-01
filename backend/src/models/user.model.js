@@ -67,6 +67,11 @@ const userSchema = new mongoose.Schema(
       default: true,
     },
     plan: [planSchema],
+    role: {
+      type: String,
+      enum: ["user", "admin"],
+      default: "user",
+    },
 
     emailVerificationToken: String,
     emailVerificationTokenExpiry: Date,

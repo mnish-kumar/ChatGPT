@@ -36,7 +36,7 @@ router.post(
  * @desc Clear token from user cookies and add token to blacklist
  * @access Public
  */
-router.post("/logout", authController.logoutController);
+router.post("/logout", authMiddleware.createAuthMiddleware(), authController.logoutController);
 
 /**
  * @route GET api/auth/get-me

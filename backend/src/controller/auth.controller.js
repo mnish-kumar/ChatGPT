@@ -63,14 +63,14 @@ async function registerController(req, res) {
 
   // Generate access token
   const accessToken = jwt.sign(
-    { id: user._id, username: user.username, role: user.role },
+    { id: user._id, role: user.role },
     process.env.JWT_SECRET,
     { expiresIn: "15m" },
   );
 
   // Generate refresh token
   const refreshToken = jwt.sign(
-    { id: user._id, username: user.username, role: user.role },
+    { id: user._id, role: user.role },
     process.env.JWT_REFRESH_SECRET,
     { expiresIn: "7d" },
   );
@@ -110,16 +110,25 @@ async function registerController(req, res) {
  * @access Public
  */
 async function loginController(req, res) {
-  // Implementation for login
   const { username, email, password } = req.body;
-  const user = await userModel.findOne({
-    $or: [{ email: email }, { username: username }],
-  });
+
+  const query = [];
+  if (email) query.push({ email });
+  if (username) query.push({ username });
+
+  const user = await userModel.findOne({ $or: query });
 
   if (!user) {
     return res.status(400).json({
       success: false,
       message: "Invalid email or password",
+    });
+  }
+
+  if (!username){
+    return res.status(400).json({
+      success: false,
+      message: "Username is required",
     });
   }
 
@@ -137,7 +146,6 @@ async function loginController(req, res) {
   const accessToken = jwt.sign(
     {
       id: user._id,
-      username: user.username,
       role: user.role,
     },
     process.env.JWT_SECRET,
@@ -150,7 +158,6 @@ async function loginController(req, res) {
   const refreshToken = jwt.sign(
     {
       id: user._id,
-      username: user.username,
       role: user.role,
     },
     process.env.JWT_REFRESH_SECRET,
@@ -195,9 +202,15 @@ async function loginController(req, res) {
  * @access Private
  */
 async function logoutController(req, res) {
+  if (!req.user) {
+    return res.status(401).json({
+      message: "Unauthorized user",
+    });
+  }
+
   const accessToken = req.headers.authorization?.split(" ")[1];
   const sessionId = req.cookies.sessionId;
-  const userId = req.user.id;
+  const userId = req.user._id;
 
   if (!accessToken || !sessionId) {
     return res.status(401).json({
@@ -208,7 +221,7 @@ async function logoutController(req, res) {
   try {
     let decoded;
     try {
-      decoded = jwt.verify(accessToken, process.env.JWT_SECRET);
+      decoded = accessToken ? jwt.verify(accessToken, process.env.JWT_SECRET) : null; 
     } catch (err) {
       res.clearCookie("refreshToken", options);
       res.clearCookie("sessionId", options);
@@ -218,7 +231,7 @@ async function logoutController(req, res) {
     const ttl = decoded.exp - Math.floor(Date.now() / 1000);
 
     if (ttl > 0) {
-      await redisClient.set(`blacklist:${accessToken}`, "blacklisted", {
+      await redisClient.set(`blacklisted:${accessToken}`, "blacklisted", {
         EX: ttl, // blacklist until token would have expired
       });
     }
@@ -283,6 +296,7 @@ async function getMeController(req, res) {
       email: user.email,
       username: user.username,
       fullname: user.fullname,
+      role: user.role,
     };
 
     // 4. Set cache
@@ -325,7 +339,6 @@ async function refreshTokenController(req, res) {
     const newAccessToken = jwt.sign(
       {
         id: decoded.id,
-        username: decoded.username,
         role: decoded.role,
       },
       process.env.JWT_SECRET,
@@ -335,7 +348,6 @@ async function refreshTokenController(req, res) {
     const newRefreshToken = jwt.sign(
       {
         id: decoded.id,
-        username: decoded.username,
         role: decoded.role,
       },
       process.env.JWT_REFRESH_SECRET,
@@ -565,14 +577,14 @@ async function googleAuthController(req, res) {
 
     // Generate access token
     const accessToken = jwt.sign(
-      { id: user._id, username: user.username, role: user.role },
+      { id: user._id, role: user.role },
       process.env.JWT_SECRET,
       { expiresIn: "15m" },
     );
 
     // Generate refresh token
     const refreshToken = jwt.sign(
-      { id: user._id, username: user.username, role: user.role },
+      { id: user._id, role: user.role },
       process.env.JWT_REFRESH_SECRET,
       { expiresIn: "7d" },
     );
