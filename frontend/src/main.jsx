@@ -5,6 +5,9 @@ import App from "./App.jsx";
 import { BrowserRouter } from "react-router-dom";
 import { store } from "./store/store.jsx";
 import { Provider } from "react-redux";
+import { setApiStore } from "./api/storeBridge.js";
+
+setApiStore(store);
 
 createRoot(document.getElementById("root")).render(
   <Provider store={store}>

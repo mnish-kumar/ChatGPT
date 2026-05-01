@@ -1,4 +1,7 @@
+import { loginUser } from "@/store/userAction";
 import { useForm } from "react-hook-form";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 
 const Login = () => {
   const {
@@ -8,8 +11,24 @@ const Login = () => {
     formState: { errors },
   } = useForm();
 
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const { isLoading, error } = useSelector((state) => state.user);
+
+
   const onSubmit = (data) => {
-    console.log(data);
+    const result = dispatch(
+      loginUser({
+        username: data.username,
+        email: data.email,
+        password: data.password,
+      }),
+    );
+
+    if (loginUser.fulfilled.match(result)) {
+      reset();
+      navigate("/dashboard");
+    }
   };
 
   return (

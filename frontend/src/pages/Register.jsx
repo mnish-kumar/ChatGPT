@@ -1,23 +1,58 @@
 import { MagicCard } from "@/components/ui/magic-card";
+import { registerUser } from "@/store/userAction";
 import { useForm } from "react-hook-form";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 
 const Register = () => {
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm();
 
-  const { register, handleSubmit, reset, formState: { errors } } = useForm();
 
-  const onSubmit = (data) => {
-    
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const { isLoading, error } = useSelector((state) => state.user);
 
-    reset();
+
+
+  const onSubmit = async (data) => {
+    const result = await dispatch(
+      registerUser({
+        fullname: {
+          firstname: data.firstname,
+          lastname: data.lastname,
+        },
+        username: data.username,
+        email: data.email,
+        password: data.password,
+      }),
+    );
+
+    if (registerUser.fulfilled.match(result)) {
+      reset();
+      navigate("/dashboard");
+    }
   };
-
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-slate-400">
-      <form onSubmit={handleSubmit(onSubmit)} className="bg-white text-gray-500 max-w-97 mx-4 md:p-6 p-4 text-left text-sm rounded-xl shadow-[0px_0px_10px_0px] shadow-black/10">
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        className="bg-white text-gray-500 max-w-97 mx-4 md:p-6 p-4 text-left text-sm rounded-xl shadow-[0px_0px_10px_0px] shadow-black/10"
+      >
         <h2 className="text-2xl font-semibold mb-6 text-center text-gray-800">
-          Register Now
+          Create Account
         </h2>
+
+        {error && (
+          <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">
+            {error}
+          </div>
+        )}
 
         <div className="flex gap-1">
           <input
@@ -69,11 +104,34 @@ const Register = () => {
           </a>
         </div>
         <button
-          type="submit"
-          className="w-full mb-3 bg-indigo-500 hover:bg-indigo-600/90 active:scale-95 transition py-2.5 rounded-full text-white cursor-pointer"
+            type="submit"
+            disabled={isLoading}
+            className="w-full mb-2.5 cursor-pointer bg-indigo-600 text-white py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isLoading ? "Creating account..." : "Create Account"}
+          </button>
+
+        <div className="flex items-center gap-2">
+          <hr className="flex-1 border-gray-300" />
+          <span className="text-xs text-gray-400">OR</span>
+          <hr className="flex-1 border-gray-300" />
+        </div>
+
+        <button
+          type="button"
+          onClick={() =>
+            (window.location.href = `${import.meta.env.VITE_BASE_URL}/auth/google`)
+          }
+          className="mt-2 w-full flex items-center justify-center gap-2 border border-gray-300 text-gray-700 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 transition cursor-pointer"
         >
-          Register
+          <img
+            src="https://www.google.com/favicon.ico"
+            alt="Google"
+            className="w-4 h-4"
+          />
+          Continue with Google
         </button>
+
         <p className="text-center mt-4">
           Already have an account?{" "}
           <a href="/login" className="text-blue-500 underline">

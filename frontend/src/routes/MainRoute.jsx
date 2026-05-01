@@ -2,14 +2,24 @@ import { Route, Routes } from 'react-router-dom'
 import Home from '../pages/Home'
 import Login from '../pages/Login'
 import Register from '../pages/Register'
+import PublicRoute from '@/components/PublicRoute'
+import ProtectedRoute from '@/components/ProtectedRoute'
+import Dashboard from '@/pages/Dashboard'
 
 const MainRoute = () => {
   return (
     <div>
         <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
+
+            <Route element={<ProtectedRoute />}>
+              <Route path="/dashboard" element={<Dashboard />} />
+            </Route>
+
+            <Route element={<PublicRoute />}>
+              <Route path="/" element={<Home />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+            </Route>
         </Routes>
     </div>
   )

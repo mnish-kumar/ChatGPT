@@ -1,9 +1,8 @@
-import axios from 'axios';
-import { store } from '../store/store.jsx';
-import { setAccessToken, resetAuth } from '../store/reducers/userSlice';
+import axios from "axios";
+import { getApiStore } from "./storeBridge";
 
 const api = axios.create({
-  baseURL: 'http://localhost:3000/api',
+  baseURL: 'http://localhost:3000',
   withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
@@ -12,7 +11,8 @@ const api = axios.create({
 
 api.interceptors.request.use(
   (config) => {
-    const accessToken = store.getState().user.accessToken;
+    const store = getApiStore();
+    const accessToken = store?.getState?.()?.user?.accessToken;
     if (accessToken) {
       config.headers.Authorization = `Bearer ${accessToken}`;
     }
@@ -53,10 +53,11 @@ api.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        const response = await api.post("/auth/refresh-token");
+        const response = await api.post("/api/auth/refresh-token");
         const newAccessToken = response.data.accessToken;
 
-        store.dispatch(setAccessToken(newAccessToken));
+        const store = getApiStore();
+        store?.dispatch?.({ type: "user/setAccessToken", payload: newAccessToken });
         processQueue(null, newAccessToken);
 
         originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
@@ -64,7 +65,8 @@ api.interceptors.response.use(
 
       } catch (refreshError) {
         processQueue(refreshError, null);
-        store.dispatch(resetAuth());                    
+        const store = getApiStore();
+        store?.dispatch?.({ type: "user/resetAuth" });
         window.location.href = "/login";
         return Promise.reject(refreshError);
 

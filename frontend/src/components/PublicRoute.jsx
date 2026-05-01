@@ -1,7 +1,7 @@
 import { useSelector } from "react-redux";
-import { Outlet, Navigate } from "react-router-dom";
+import { Navigate, Outlet } from "react-router-dom";
 
-const ProtectedRoute = () => {
+const PublicRoute = () => {
   const { isAuthenticated, isLoading } = useSelector((state) => state.user);
 
   if (isLoading) {
@@ -12,12 +12,13 @@ const ProtectedRoute = () => {
     );
   }
 
-  
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
+  // Already logged in hai → dashboard pe redirect karo
+  if (isAuthenticated) {
+    return <Navigate to="/dashboard" replace />;
   }
 
+  // Not logged in → public page show karo
   return <Outlet />;
 };
 
-export default ProtectedRoute;
+export default PublicRoute;

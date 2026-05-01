@@ -3,7 +3,7 @@ import api from "../api/axios";
 // ─── Register ───────────────────────────────
 export async function register({ fullname, username, email, password }) {
   try {
-    const response = await api.post("/auth/register", {
+    const response = await api.post("/api/auth/register", {
       fullname: {
         firstname: fullname.firstname,
         lastname: fullname.lastname,
@@ -13,7 +13,8 @@ export async function register({ fullname, username, email, password }) {
       password,
     });
     
-    console.log("Registration successful:", response.data);
+    console.log("Registration successful:", response);
+    return response.data;
   } catch (error) {
     throw error.response?.data || { message: "Registration failed" };
   }
@@ -22,7 +23,7 @@ export async function register({ fullname, username, email, password }) {
 // ─── Login ─────────────────────────────────
 export async function login({ username, email, password }) {
   try {
-    const response = await api.post("/auth/login", {
+    const response = await api.post("/api/auth/login", {
       username,
       email,
       password,
@@ -37,7 +38,7 @@ export async function login({ username, email, password }) {
 // ─── Logout ───────────────────────────────
 export async function logout() {
   try {
-    await api.post("/auth/logout");
+    await api.post("/api/auth/logout");
   } catch (error) {
     throw error.response?.data || { message: "Logout failed" };
   }
@@ -46,7 +47,7 @@ export async function logout() {
 // ─── Check Authentication ───────────────────────────────
 export async function getMe() {
   try {
-    const response = await api.get("/auth/me");
+    const response = await api.get("/api/auth/get-me");
     return response.data;
   } catch (error) {
     throw error.response?.data || { message: "Failed to fetch user data" };
@@ -56,7 +57,7 @@ export async function getMe() {
 // ─── Request Password Reset ───────────────────────────────
 export async function requestPasswordReset({ email }) {
   try {
-    const response = await api.post("/auth/request-password-reset", { email });
+    const response = await api.post("/api/auth/request-password-reset", { email });
     return response.data;
   } catch (error) {
     throw error.response?.data || { message: "Failed to send reset email" };
@@ -66,7 +67,7 @@ export async function requestPasswordReset({ email }) {
 // ─── Verify Reset Token ───────────────────────────────────
 export async function verifyResetToken({ token, id }) {
   try {
-    const response = await api.post("/auth/verify-reset-token", { token, id });
+    const response = await api.post("/api/auth/verify-reset-token", { token, id });
     return response.data;
   } catch (error) {
     throw error.response?.data || { message: "Invalid or expired token" };
@@ -81,7 +82,7 @@ export async function resetPassword({
   confirmPassword,
 }) {
   try {
-    const response = await api.post("/auth/reset-password", {
+    const response = await api.post("/api/auth/reset-password", {
       token,
       id,
       newPassword,
@@ -96,7 +97,7 @@ export async function resetPassword({
 // ─── Send Verification Email ──────────────────────────────
 export async function sendVerificationEmail({ email }) {
   try {
-    const response = await api.post("/auth/send-verification-email", { email });
+    const response = await api.post("/api/auth/send-verification-email", { email });
     return response.data;
   } catch (error) {
     throw (
@@ -108,7 +109,7 @@ export async function sendVerificationEmail({ email }) {
 // ─── Resend Verification Email ────────────────────────────
 export async function resendVerificationEmail({ email }) {
   try {
-    const response = await api.post("/auth/resend-verification-email", {
+    const response = await api.post("/api/auth/resend-verification-email", {
       email,
     });
     return response.data;
@@ -122,13 +123,13 @@ export async function resendVerificationEmail({ email }) {
 // ─── Google Login ─────────────────────────────────────────
 export function googleLogin() {
   // Browser redirect hoga — axios nahi
-  window.location.href = `${import.meta.env.VITE_BASE_URL}/auth/google`;
+  window.location.href = `${import.meta.env.VITE_BASE_URL}/api/auth/google`;
 }
 
 // ─── 2FA Setup ────────────────────────────────────────────
 export async function setup2FA() {
   try {
-    const response = await api.post("/auth/2fa/setup");
+    const response = await api.post("/api/auth/2fa/setup");
     return response.data;
   } catch (error) {
     throw error.response?.data || { message: "Failed to setup 2FA" };
@@ -138,7 +139,7 @@ export async function setup2FA() {
 // ─── 2FA Enable ───────────────────────────────────────────
 export async function enable2FA({ otp }) {
   try {
-    const response = await api.post("/auth/2fa/enable", { otp });
+    const response = await api.post("/api/auth/2fa/enable", { otp });
     return response.data;
   } catch (error) {
     throw error.response?.data || { message: "Failed to enable 2FA" };
@@ -148,7 +149,7 @@ export async function enable2FA({ otp }) {
 // ─── 2FA Verify ───────────────────────────────────────────
 export async function verify2FA({ userId, otp }) {
   try {
-    const response = await api.post("/auth/2fa/verify", { userId, otp });
+    const response = await api.post("/api/auth/2fa/verify", { userId, otp });
     return response.data;
   } catch (error) {
     throw error.response?.data || { message: "Invalid OTP" };
@@ -158,7 +159,7 @@ export async function verify2FA({ userId, otp }) {
 // ─── 2FA Disable ──────────────────────────────────────────
 export async function disable2FA({ otp }) {
   try {
-    const response = await api.post("/auth/2fa/disable", { otp });
+    const response = await api.post("/api/auth/2fa/disable", { otp });
     return response.data;
   } catch (error) {
     throw error.response?.data || { message: "Failed to disable 2FA" };
