@@ -578,6 +578,8 @@ async function googleAuthController(req, res) {
   try {
     const user = req.user;
 
+    const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
+
     // Generate access token
     const accessToken = jwt.sign(
       { id: user._id, role: user.role },
@@ -609,20 +611,9 @@ async function googleAuthController(req, res) {
       maxAge: 1 * 24 * 60 * 60 * 1000,
     });
 
-    return res.status(200).json({
-      success: true,
-      message: "Google login successful",
-      user: {
-        _id: user._id,
-        email: user.email,
-        username: user.username,
-        fullname: user.fullname,
-        isEmailVerified: user.isEmailVerified,
-      },
-      accessToken: accessToken,
-    });
+    return res.redirect(302, `${frontendUrl}/dashboard`);
   } catch (err) {
-    console.error("googleCallback error:", error);
+    console.error("googleCallback error:", err);
     return res.status(500).json({
       success: false,
       message: "Internal server error",
