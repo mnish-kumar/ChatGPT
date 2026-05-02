@@ -24,6 +24,36 @@ const ResetPassword = () => {
     formState: { errors },
   } = useForm();
 
+  useEffect(() => {
+    let isMounted = true;
+
+    const verify = async () => {
+      try {
+        if (!token || !id) {
+          throw new Error("Reset link is missing required parameters.");
+        }
+
+        await verifyResetToken({ token, id });
+
+        if (!isMounted) return;
+        setIsTokenValid(true);
+      } catch (err) {
+        if (!isMounted) return;
+        setIsTokenValid(false);
+        setError(err?.message || "This link is invalid or has expired.");
+      } finally {
+        if (!isMounted) return;
+        setIsVerifying(false);
+      }
+    };
+
+    verify();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [token, id]);
+
   const onSubmit = async (data) => {
     setIsLoading(true);
     setError(null);
@@ -85,7 +115,7 @@ const ResetPassword = () => {
           </p>
 
           <Link
-            to="/forgot-password"
+            to="/forget-password"
             className="w-full inline-block bg-indigo-600 text-white py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 transition text-center"
           >
             Request New Link
@@ -165,12 +195,12 @@ const ResetPassword = () => {
             </label>
             <input
               type="password"
-              placeholder="Min 8 characters"
+              placeholder="Min 6 characters"
               {...register("newPassword", {
                 required: "Password is required",
                 minLength: {
-                  value: 8,
-                  message: "Min 8 characters",
+                  value: 6,
+                  message: "Min 6 characters",
                 },
                 pattern: {
                   value: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])/,

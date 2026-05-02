@@ -20,7 +20,6 @@ const registerValidators = [
   body("email")
     .trim()
     .isEmail()
-    .normalizeEmail()
     .withMessage("Invalid email address"),
   body("password")
     .isLength({ min: 6 })
@@ -74,11 +73,13 @@ const loginValidators = [
 // Request Password Reset validators
 const requestPasswordResetValidators = [
   body("email")
+    .trim()
     .notEmpty()
     .withMessage("Email is required")
     .isEmail()
-    .withMessage("Invalid email format"),
-    
+    .withMessage("Invalid email format")
+    .toLowerCase(),
+
   validateError,
 ];
 
