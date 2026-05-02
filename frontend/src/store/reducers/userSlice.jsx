@@ -7,6 +7,8 @@ const initialState = {
   isAuthenticated: false,
   isLoading: true,
   error: null,
+  twoFactorRequired: false,
+  tempToken: null,
 };
 
 const userSlice = createSlice({
@@ -63,6 +65,20 @@ const userSlice = createSlice({
       .addCase(loginUser.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload;
+      })
+      .addCase(verify2FALogin.fulfilled, (state, action) => {
+        state.isLoading = false;
+
+        if (action.payload.twoFactorRequired) {
+          state.twoFactorRequired = true;
+          state.tempToken = action.payload.tempToken;
+        } else {
+          state.user = action.payload.user;
+          state.accessToken = action.payload.accessToken;
+          state.isAuthenticated = true;
+          state.twoFactorRequired = false;
+          state.tempToken = null;
+        }
       });
 
     // ─── Logout ────────────────────────────────
@@ -90,6 +106,25 @@ const userSlice = createSlice({
         state.user = null;
         state.accessToken = null;
         state.isAuthenticated = false;
+      });
+
+      // ─── Verify 2FA ─────────────────────────────────
+    builder
+      .addCase(verify2FALogin.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(verify2FALogin.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.user = action.payload.user;
+        state.accessToken = action.payload.accessToken;
+        state.isAuthenticated = true;
+        state.twoFactorRequired = false;
+        state.tempToken = null;
+      })
+      .addCase(verify2FALogin.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload;
       });
   },
 });

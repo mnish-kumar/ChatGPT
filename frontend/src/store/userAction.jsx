@@ -1,5 +1,5 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
-import { login, register, logout } from "../api/auth.api";
+import { login, register, logout, verify2FA } from "../api/auth.api";
 import api from "../api/axios";
 
 export const registerUser = createAsyncThunk(
@@ -51,6 +51,19 @@ export const checkAuth = createAsyncThunk(
       return response.data; // { accessToken, user }
     } catch (error) {
       return rejectWithValue("Not authenticated");
+    }
+  }
+);
+
+// ─── Verify 2FA ─────────────────────────────────────────
+export const verify2FALogin = createAsyncThunk(
+  "user/verify2FA",
+  async ({ tempToken, otp }, { rejectWithValue }) => {
+    try {
+      const data = await verify2FA({ tempToken, otp });
+      return data;
+    } catch (error) {
+      return rejectWithValue(error.message || "Invalid OTP");
     }
   }
 );

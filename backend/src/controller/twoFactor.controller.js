@@ -3,7 +3,8 @@ const qrcode = require("qrcode");
 const userModel = require("../models/user.model");
 const bcrypt = require("bcrypt");
 const { success, jwt } = require("zod");
-const authRedisService = require("../services/redis.service");
+const redisClient = require("../config/redis");
+const jwt = require("jsonwebtoken");
 
 // ─── Generate QR code for 2FA setup
 async function setup2FAController(req, res) {
@@ -124,12 +125,37 @@ async function enable2FAController(req, res) {
 // ─── Verify OTP during login
 async function verify2FAController(req, res) {
   try {
-    const { userId, otp } = req.body;
+    const { userId, otp, tempToken } = req.body;
 
     if (!userId || !otp) {
       return res.status(400).json({
         success: false,
         message: "User ID and OTP code are required",
+      });
+    }
+
+    let decoded;
+    try {
+      decoded = jwt.verify(tempToken, process.env.JWT_SECRET);
+    } catch (err) {
+      return res.status(401).json({
+        success: false,
+        message: "Session expired. Please login again.",
+      });
+    }
+
+    if (!decoded.twoFactorPending) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid token",
+      });
+    }
+
+    const storedToken = await redisClient.get(`2fa:pending:${decoded.id}`);
+    if (!storedToken || storedToken !== tempToken) {
+      return res.status(401).json({
+        success: false,
+        message: "Session expired. Please login again.",
       });
     }
 
@@ -157,15 +183,15 @@ async function verify2FAController(req, res) {
       });
     }
 
-    const accessToken = jwt.sign(
-        { userId: user._id }, 
-        process.env.JWT_SECRET, 
-        { expiresIn: "15m" }
-    );
+    await redisClient.del(`2fa:pending:${decoded.id}`);
+
+    const accessToken = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
+      expiresIn: "15m",
+    });
 
     const refreshToken = jwt.sign(
       { userId: user._id },
-      process.env.JWT_SECRET,
+      process.env.JWT_REFRESH_SECRET,
       {
         expiresIn: "7d",
       },

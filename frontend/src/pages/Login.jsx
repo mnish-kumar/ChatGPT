@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { BorderBeam } from "@/components/ui/border-beam";
 import { googleLogin } from "../api/auth.api";
+import { useEffect } from "react";
 
 const Login = () => {
   const {
@@ -15,7 +16,20 @@ const Login = () => {
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { isLoading, error } = useSelector((state) => state.user);
+  const { isLoading, error, twoFactorRequired, isAuthenticated } = useSelector((state) => state.user);
+
+  useEffect(() => {
+    if (twoFactorRequired) {
+      navigate("/verify-2fa");
+    }
+  }, [twoFactorRequired, navigate]);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate("/dashboard");
+    }
+  }, [isAuthenticated, navigate]);
+
 
   const onSubmit = (data) => {
     const result = dispatch(

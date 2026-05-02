@@ -144,6 +144,33 @@ async function loginController(req, res) {
     });
   }
 
+  if (user.twoFactorAuth?.enabled) {
+    // Generate a temporary token with 2FA claim and short expiry (e.g., 5 minutes)
+    const tempToken = jwt.sign(
+      {
+        id: user._id,
+        role: user.role,
+        twoFactorAuth: true,
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: "5m" },
+    );
+
+    await redisClient.set(
+      `2fa:pending:${user._id}`,
+      tempToken,
+      "EX",
+      5 * 60, 
+    );
+
+    return res.status(200).json({
+      success: true,
+      twFactorRequired: true,
+      message: "OTP required",
+      tempToken,
+    });
+  }
+
   // Generate access token
   const accessToken = jwt.sign(
     {
@@ -188,6 +215,7 @@ async function loginController(req, res) {
   return res.status(200).json({
     success: true,
     message: "Login successful",
+    twFactorRequired: false,
     user: {
       _id: user._id,
       email: user.email,
