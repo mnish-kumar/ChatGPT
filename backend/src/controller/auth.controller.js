@@ -212,7 +212,7 @@ async function logoutController(req, res) {
 
   const accessToken = req.headers.authorization?.split(" ")[1];
   const sessionId = req.cookies.sessionId;
-  const userId = req.user._id;
+  const userId = req.user._id.toString();
 
   if (!accessToken || !sessionId) {
     return res.status(401).json({
@@ -233,9 +233,7 @@ async function logoutController(req, res) {
     const ttl = decoded.exp - Math.floor(Date.now() / 1000);
 
     if (ttl > 0) {
-      await redisClient.set(`blacklisted:${accessToken}`, "blacklisted", {
-        EX: ttl, // blacklist until token would have expired
-      });
+      await redisClient.set(`blacklist:${accessToken}`, "blacklist", "EX", ttl);
     }
 
     await authRedisService.deleteRefreshToken(userId, sessionId);

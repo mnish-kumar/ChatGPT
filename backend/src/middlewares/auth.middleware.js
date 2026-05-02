@@ -4,15 +4,14 @@ const redisClient = require("../config/redis");
 
 function createAuthMiddleware(roles = []) {
   return async function authMiddleware(req, res, next) {
-    const token =
-      req.cookies?.token || req.headers?.authorization?.split(" ")[1];
+    const token = req.headers?.authorization?.split(" ")[1];
 
     if (!token) {
       return res.status(401).json({ message: "Unauthorized" });
     }
 
     // Check if token is blacklisted (logged out)
-    const isBlacklisted = await redisClient.get(`blacklisted:${token}`);
+    const isBlacklisted = await redisClient.get(`blacklist:${token}`);
     if (isBlacklisted) {
       return res.status(401).json({
         success: false,
