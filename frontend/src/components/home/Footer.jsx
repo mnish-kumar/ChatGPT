@@ -35,7 +35,7 @@ export default function Footer() {
         <div className="grid gap-10 lg:grid-cols-2">
           <div>
             <a href="#top" className="inline-flex items-center gap-2">
-              <span className="text-lg font-semibold text-slate-900">JarviSync</span>
+              <span className="text-base font-semibold text-slate-900 sm:text-lg">JarviSync</span>
               <span className="rounded-full border border-white/60 bg-white/30 px-2 py-0.5 text-[10px] font-semibold text-slate-700 shadow-sm backdrop-blur-xl">
                 Premium
               </span>
@@ -80,7 +80,7 @@ export default function Footer() {
           <div className="grid gap-8 sm:grid-cols-3">
             {footerLinks.map((col) => (
               <div key={col.title}>
-                <div className="text-xs font-semibold uppercase tracking-wide text-slate-700">
+                <div className="text-[11px] font-semibold uppercase tracking-wide text-slate-700 sm:text-xs">
                   {col.title}
                 </div>
                 <div className="mt-4 space-y-3">

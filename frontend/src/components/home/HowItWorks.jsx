@@ -27,10 +27,12 @@ export default function HowItWorks() {
   ];
 
   return (
-    <MotionSection className="mx-auto max-w-6xl px-4 py-14 sm:px-6 lg:px-8">
+    <MotionSection id="how-it-works" className="mx-auto max-w-6xl px-4 py-14 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-3xl text-center">
-        <h2 className="text-3xl font-semibold text-slate-900">How it works</h2>
-        <p className="mt-3 text-base text-slate-700">
+        <h2 className="text-balance text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl lg:text-4xl">
+          How it works
+        </h2>
+        <p className="mt-3 text-sm leading-relaxed text-slate-700 sm:text-base">
           A simple loop that keeps you moving forward.
         </p>
       </div>
@@ -53,9 +55,13 @@ export default function HowItWorks() {
                 <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-white/70 bg-white/35 shadow-sm backdrop-blur-xl">
                   <Icon className="h-5 w-5 text-slate-900" />
                 </div>
-                <div className="text-xs font-semibold text-slate-700">Step {idx + 1}</div>
+                <div className="text-[11px] font-semibold tracking-wide text-slate-700">
+                  Step {idx + 1}
+                </div>
               </div>
-              <h3 className="mt-5 text-lg font-semibold text-slate-900">{s.title}</h3>
+              <h3 className="mt-5 text-base font-semibold text-slate-900 sm:text-lg">
+                {s.title}
+              </h3>
               <p className="mt-2 text-sm leading-relaxed text-slate-700">{s.body}</p>
             </motion.div>
           );

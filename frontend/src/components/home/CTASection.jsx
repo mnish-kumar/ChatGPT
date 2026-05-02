@@ -5,16 +5,16 @@ import MotionSection from "./MotionSection";
 
 export default function CTASection() {
   return (
-    <MotionSection className="mx-auto max-w-6xl px-4 py-14 sm:px-6 lg:px-8">
-      <div className="relative overflow-hidden rounded-[32px] border border-white/60 bg-gradient-to-br from-[#89A8B2]/65 via-white/35 to-[#B3C8CF]/65 p-8 shadow-2xl shadow-black/10 backdrop-blur-xl sm:p-10">
+    <MotionSection id="get-started" className="mx-auto max-w-6xl px-4 py-14 sm:px-6 lg:px-8">
+      <div className="relative overflow-hidden rounded-[32px] border border-white/60 bg-linear-to-br from-[#89A8B2]/65 via-white/35 to-[#B3C8CF]/65 p-8 shadow-2xl shadow-black/10 backdrop-blur-xl sm:p-10">
         <div className="absolute -top-16 -right-16 h-64 w-64 rounded-full bg-white/35 blur-3xl" />
         <div className="absolute -bottom-16 -left-16 h-64 w-64 rounded-full bg-[#E5E1DA]/70 blur-3xl" />
 
         <div className="relative">
-          <h2 className="text-balance text-3xl font-semibold text-slate-900 sm:text-4xl">
+          <h2 className="text-balance text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl lg:text-4xl">
             Ready to move faster than the job market?
           </h2>
-          <p className="mt-3 max-w-2xl text-base text-slate-800/80">
+          <p className="mt-3 max-w-2xl text-sm leading-relaxed text-slate-800/80 sm:text-base">
             Start chatting for free. Upgrade when you want deep resume insights and targeted prep.
           </p>
 

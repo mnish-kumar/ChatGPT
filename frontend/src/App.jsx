@@ -21,7 +21,7 @@ const App = () => {
   }
 
   return (
-    <div className="w-full min-h-screen bg-slate-400 p-1">
+    <div className="w-full min-h-screen">
       <MainRoute />
     </div>
   );

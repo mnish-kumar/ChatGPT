@@ -6,10 +6,10 @@ const easeOut = [0.16, 1, 0.3, 1];
 
 export default function Hero() {
   return (
-    <section className="relative overflow-hidden">
+    <section id="top" className="relative overflow-hidden">
       {/* Background gradients + blurred shapes */}
       <div className="absolute inset-0 -z-10">
-        <div className="absolute inset-0 bg-gradient-to-br from-[#B3C8CF]/55 via-[#F1F0E8] to-[#89A8B2]/35" />
+        <div className="absolute inset-0 bg-linear-to-br from-[#B3C8CF]/55 via-[#F1F0E8] to-[#89A8B2]/35" />
         <div className="absolute -top-24 -left-24 h-72 w-72 rounded-full bg-[#89A8B2]/45 blur-3xl" />
         <div className="absolute top-40 -right-24 h-80 w-80 rounded-full bg-[#B3C8CF]/55 blur-3xl" />
         <div className="absolute -bottom-28 left-1/3 h-72 w-72 rounded-full bg-[#E5E1DA]/70 blur-3xl" />
@@ -31,7 +31,7 @@ export default function Hero() {
             AI That Helps You Get Hired Faster
           </h1>
 
-          <p className="mt-5 text-pretty text-base leading-relaxed text-slate-700 sm:text-lg">
+          <p className="mt-5 text-pretty text-sm leading-relaxed text-slate-700 sm:text-base lg:text-lg">
             Chat with AI, analyze your resume, and prepare for your dream job — all in one place.
           </p>
 
@@ -76,7 +76,7 @@ export default function Hero() {
                 className="rounded-2xl border border-white/50 bg-white/30 px-4 py-3 text-left shadow-sm backdrop-blur-xl"
               >
                 <div className="text-sm font-semibold text-slate-900">{item.k}</div>
-                <div className="mt-1 text-xs text-slate-700">{item.v}</div>
+                <div className="mt-1 text-xs leading-relaxed text-slate-700">{item.v}</div>
               </div>
             ))}
           </div>

@@ -16,12 +16,18 @@ const item = {
 
 export default function FeatureSplit() {
   return (
-    <MotionSection className="mx-auto max-w-6xl px-4 py-14 sm:px-6 lg:px-8">
+    <MotionSection id="features" className="mx-auto max-w-6xl px-4 py-14 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-3xl text-center">
-        <motion.h2 variants={fadeUp} className="text-3xl font-semibold text-slate-900">
+        <motion.h2
+          variants={fadeUp}
+          className="text-balance text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl lg:text-4xl"
+        >
           Built for momentum — free to start, premium to win
         </motion.h2>
-        <motion.p variants={fadeUp} className="mt-3 text-base text-slate-700">
+        <motion.p
+          variants={fadeUp}
+          className="mt-3 text-sm leading-relaxed text-slate-700 sm:text-base"
+        >
           Everything you need to practice, iterate, and show up confident.
         </motion.p>
       </div>
@@ -43,8 +49,10 @@ export default function FeatureSplit() {
                 <BadgeCheck className="h-4 w-4" />
                 Free
               </div>
-              <h3 className="mt-4 text-xl font-semibold text-slate-900">AI Chat Workspace</h3>
-              <p className="mt-2 text-sm text-slate-700">
+              <h3 className="mt-4 text-lg font-semibold text-slate-900 sm:text-xl">
+                AI Chat Workspace
+              </h3>
+              <p className="mt-2 text-sm leading-relaxed text-slate-700">
                 A focused, ChatGPT-like experience designed for job prep.
               </p>
             </div>
@@ -68,7 +76,7 @@ export default function FeatureSplit() {
 
         {/* Premium */}
         <motion.div variants={item} className="relative">
-          <div className="absolute -inset-0.5 rounded-[28px] bg-gradient-to-br from-[#89A8B2] via-[#B3C8CF] to-[#E5E1DA] opacity-65 blur" />
+          <div className="absolute -inset-0.5 rounded-[28px] bg-linear-to-br from-[#89A8B2] via-[#B3C8CF] to-[#E5E1DA] opacity-65 blur" />
           <motion.div
             whileHover={{ y: -5, scale: 1.02 }}
             transition={{ type: "spring", stiffness: 260, damping: 22 }}
@@ -79,8 +87,10 @@ export default function FeatureSplit() {
                 <div className="inline-flex items-center gap-2 rounded-full bg-[#89A8B2]/90 px-3 py-1 text-xs font-semibold text-white shadow-sm">
                   <Crown className="h-4 w-4" /> Premium
                 </div>
-                <h3 className="mt-4 text-xl font-semibold text-slate-900">AI Resume Analyzer</h3>
-                <p className="mt-2 text-sm text-slate-700">
+                <h3 className="mt-4 text-lg font-semibold text-slate-900 sm:text-xl">
+                  AI Resume Analyzer
+                </h3>
+                <p className="mt-2 text-sm leading-relaxed text-slate-700">
                   Upload your resume and get actionable, role-specific guidance.
                 </p>
               </div>

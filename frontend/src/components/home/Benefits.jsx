@@ -49,10 +49,12 @@ export default function Benefits() {
   ];
 
   return (
-    <MotionSection className="mx-auto max-w-6xl px-4 py-14 sm:px-6 lg:px-8">
+    <MotionSection id="benefits" className="mx-auto max-w-6xl px-4 py-14 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-3xl text-center">
-        <h2 className="text-3xl font-semibold text-slate-900">Benefits that compound</h2>
-        <p className="mt-3 text-base text-slate-700">
+        <h2 className="text-balance text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl lg:text-4xl">
+          Benefits that compound
+        </h2>
+        <p className="mt-3 text-sm leading-relaxed text-slate-700 sm:text-base">
           Built to feel effortless — and make you measurably better.
         </p>
       </div>
@@ -76,11 +78,13 @@ export default function Benefits() {
                   <Icon className="h-5 w-5 text-slate-900" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold text-slate-900">{b.title}</h3>
+                  <h3 className="text-base font-semibold text-slate-900 sm:text-lg">
+                    {b.title}
+                  </h3>
                   <p className="mt-1 text-sm leading-relaxed text-slate-700">{b.body}</p>
                 </div>
               </div>
-              <div className="mt-6 h-px w-full bg-gradient-to-r from-transparent via-white/70 to-transparent" />
+              <div className="mt-6 h-px w-full bg-linear-to-r from-transparent via-white/70 to-transparent" />
               <div className="mt-4 text-xs font-semibold text-slate-700">
                 Hover for lift
               </div>
