@@ -5,11 +5,11 @@ import Register from '../pages/Register'
 import PublicRoute from '@/components/PublicRoute'
 import ProtectedRoute from '@/components/ProtectedRoute'
 import Dashboard from '@/pages/Dashboard'
-import ForgetPassword from '@/pages/ForgetPassword'
-import ResetPassword from '@/pages/ResetPassword'
+import ForgetPassword from '@/pages/user/forgetPassword/ForgetPassword'
+import ResetPassword from '@/pages/user/forgetPassword/ResetPassword'
 import UserProfile from '@/pages/user/UserProfile'
-import TwoFactorSettings from '@/pages/TwoFactorSettings'
-import ChangePassword from '@/pages/ChangePassword'
+import TwoFactorSettings from '@/pages/user/2FA/TwoFactorSettings'
+import ChangePassword from '@/pages/user/changePassword/ChangePassword'
 
 const MainRoute = () => {
   return (

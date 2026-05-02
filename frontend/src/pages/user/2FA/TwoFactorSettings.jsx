@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { setup2FA, enable2FA, disable2FA, getMe } from "../api/auth.api";
+import { setup2FA, enable2FA, disable2FA, getMe } from "../../../api/auth.api";
 import { useForm } from "react-hook-form";
 
 const TwoFactorSettings = () => {
