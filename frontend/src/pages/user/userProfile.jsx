@@ -15,18 +15,18 @@ const UserProfile = () => {
   const [error, setError] = useState(null);
 
   // ─── Fetch Profile ────────────────────────────────────
-  useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        const data = await getMe();
-        setProfileData(data);
-      } catch (err) {
-        setError(err.message || "Failed to load profile");
-      } finally {
-        setLoading(false);
-      }
-    };
-
+  const fetchProfile = async () => {
+    try {
+      setLoading(true);
+      const data = await getMe();
+      setProfileData(data);
+    } catch (err) {
+      setError(err.message || "Failed to load profile");
+    } finally {
+      setLoading(false);
+    }
+  };
+ useEffect(() => {
     fetchProfile();
   }, []);
 
@@ -227,19 +227,18 @@ const UserProfile = () => {
           {/* 2FA Settings */}
           <button
             onClick={() => navigate("/settings/2fa")}
-            className="flex w-full cursor-pointer items-center justify-between rounded-lg border border-border bg-background px-4 py-3 transition hover:bg-muted"
+            className="w-full cursor-pointer flex items-center justify-between px-4 py-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition"
           >
-            <span className="text-sm font-medium text-foreground">
+            <span className="text-sm text-gray-700 font-medium">
               🔒 Two Factor Authentication
             </span>
-            <span
-              className={`text-xs px-2 py-1 rounded-full ${
-                profile?.twoFactorAuth?.enabled
-                  ? "bg-primary/10 text-primary"
-                  : "bg-muted text-muted-foreground"
-              }`}
-            >
-              {profile?.twoFactorAuth?.enabled ? "Enabled" : "Disabled"}
+            {/* ✅ profileData se live status */}
+            <span className={`text-xs px-2 py-1 rounded-full font-medium ${
+              profileData?.twoFactorAuth?.enabled
+                ? "bg-green-100 text-green-600"
+                : "bg-gray-100 text-gray-500"
+            }`}>
+              {profileData?.twoFactorAuth?.enabled ? "✅ Enabled" : "❌ Disabled"}
             </span>
           </button>
 

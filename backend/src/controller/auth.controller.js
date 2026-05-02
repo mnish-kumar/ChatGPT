@@ -127,7 +127,7 @@ async function loginController(req, res) {
     });
   }
 
-  if (!username){
+  if (!username) {
     return res.status(400).json({
       success: false,
       message: "Username is required",
@@ -223,7 +223,9 @@ async function logoutController(req, res) {
   try {
     let decoded;
     try {
-      decoded = accessToken ? jwt.verify(accessToken, process.env.JWT_SECRET) : null; 
+      decoded = accessToken
+        ? jwt.verify(accessToken, process.env.JWT_SECRET)
+        : null;
     } catch (err) {
       res.clearCookie("refreshToken", options);
       res.clearCookie("sessionId", options);
@@ -261,7 +263,14 @@ async function logoutController(req, res) {
  */
 
 async function getMeController(req, res) {
-  const userId = req.user.id;
+  const userId = req.user?.id;
+
+  if (!userId) {
+    return res.status(401).json({
+      success: false,
+      message: "Unauthorized",
+    });
+  }
 
   try {
     // 1. Cache first
@@ -280,7 +289,9 @@ async function getMeController(req, res) {
     // ── 2. DB query
     const user = await userModel
       .findById(userId)
-      .select("_id email username fullname")
+      .select(
+        "email username fullname role createdAt plan twoFactorAuth.enabled isEmailVerified googleId",
+      )
       .lean();
 
     if (!user) {
@@ -297,12 +308,22 @@ async function getMeController(req, res) {
       username: user.username,
       fullname: user.fullname,
       role: user.role,
+      createdAt: user.createdAt,
+      isEmailVerified: user.isEmailVerified,
+      googleId: user.googleId,
+      twoFactorAuth: {
+        enabled: user?.twoFactorAuth?.enabled || false,
+      },
+      plan: Array.isArray(user.plan) ? user.plan : [],
     };
 
     // 4. Set cache
     userCache.setUserCache(userId, response);
 
-    return res.status(200).json(response);
+    return res.status(200).json({
+      success: true,
+      data: response,
+    });
   } catch (err) {
     console.error("[getMeController] error:", err);
 
@@ -359,7 +380,12 @@ async function refreshTokenController(req, res) {
     );
 
     // Reuse the same sessionId so the frontend cookie remains consistent.
-    await authRedisService.setRefreshToken(decoded.id, newRefreshToken, req, sessionId);
+    await authRedisService.setRefreshToken(
+      decoded.id,
+      newRefreshToken,
+      req,
+      sessionId,
+    );
 
     res.cookie("refreshToken", newRefreshToken, {
       ...options,

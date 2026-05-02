@@ -8,6 +8,8 @@ import Dashboard from '@/pages/Dashboard'
 import ForgetPassword from '@/pages/ForgetPassword'
 import ResetPassword from '@/pages/ResetPassword'
 import UserProfile from '@/pages/user/UserProfile'
+import TwoFactorSettings from '@/pages/TwoFactorSettings'
+import ChangePassword from '@/pages/ChangePassword'
 
 const MainRoute = () => {
   return (
@@ -17,6 +19,8 @@ const MainRoute = () => {
             <Route element={<ProtectedRoute />}>
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/profile" element={<UserProfile />} />
+              <Route path="/settings/2fa" element={<TwoFactorSettings />} />
+              <Route path="/change-password" element={<ChangePassword />} />
             </Route>
 
             <Route element={<PublicRoute />}>
