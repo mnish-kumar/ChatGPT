@@ -1,21 +1,45 @@
-import { useMemo, useState } from "react";
+import { use, useMemo, useState } from "react";
 import { useSelector } from "react-redux";
 import { Link, useLocation } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
+import { useEffect } from "react";
 
 const Navbar = () => {
   const [open, setOpen] = useState(false);
+  const [showNav, setShowNav] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
   const user = useSelector((state) => state.user.currentUser);
   const location = useLocation();
 
   const links = useMemo(
     () => [
-      { label: "Home", to: '/' },
+      { label: "Home", to: "/" },
       { label: "Features", to: "/#dsjfb" },
       { label: "How it works", to: "/#dsnbd" },
+      { label: "Contact", to: "/#89A8B2" },
     ],
-    []
+    [],
   );
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+
+      if (currentScrollY > lastScrollY && currentScrollY > 80) {
+        // scroll down
+        setShowNav(false);
+      } else {
+        // scroll up
+        setShowNav(true);
+      }
+
+      setLastScrollY(currentScrollY);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [lastScrollY]);
 
   const activeTo = useMemo(() => {
     const current = `${location.pathname}${location.hash}`;
@@ -28,7 +52,10 @@ const Navbar = () => {
   return (
     <motion.header
       initial={{ opacity: 0, y: -10 }}
-      animate={{ opacity: 1, y: 0 }}
+      animate={{
+        opacity: showNav ? 1 : 0,
+        y: showNav ? 0 : -100,
+      }}
       transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
       className="sticky top-3 z-50"
     >
@@ -60,7 +87,11 @@ const Navbar = () => {
                     <motion.div
                       layoutId="navbar-active"
                       className="pointer-events-none absolute inset-0 -z-10 rounded-full border border-white/70 bg-white/30 shadow-sm"
-                      transition={{ type: "spring", stiffness: 360, damping: 28 }}
+                      transition={{
+                        type: "spring",
+                        stiffness: 360,
+                        damping: 28,
+                      }}
                     />
                   )}
                 </div>
@@ -110,7 +141,7 @@ const Navbar = () => {
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: -8, scale: 0.98 }}
                 transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
-                className="absolute left-0 right-0 top-[calc(100%+10px)] z-50 overflow-hidden rounded-3xl border border-white/60 bg-white/30 p-3 shadow-2xl shadow-black/10 backdrop-blur-xl md:hidden"
+                className="absolute left-0 right-0 top-[calc(100%+10px)] z-50 overflow-hidden rounded-3xl border border-white/60 bg-muted-foreground p-3 shadow-2xl shadow-black/10 backdrop-blur-xl md:hidden"
               >
                 <div className="flex flex-col">
                   {links.map((l) => (
@@ -118,7 +149,7 @@ const Navbar = () => {
                       key={l.to}
                       to={l.to}
                       onClick={closeMenu}
-                      className="rounded-2xl px-4 py-3 text-sm font-medium text-slate-800 transition-colors hover:bg-white/35"
+                      className="rounded-2xl px-4 py-3 text-sm font-medium text-black transition-colors hover:bg-white/35"
                     >
                       {l.label}
                     </Link>
@@ -126,11 +157,18 @@ const Navbar = () => {
 
                   <div className="my-2 h-px w-full bg-linear-to-r from-transparent via-white/70 to-transparent" />
 
-                  <Link to={user ? "/dashboard" : "/register"} onClick={closeMenu}>
+                  <Link
+                    to={user ? "/dashboard" : "/register"}
+                    onClick={closeMenu}
+                  >
                     <motion.button
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
-                      transition={{ type: "spring", stiffness: 320, damping: 22 }}
+                      transition={{
+                        type: "spring",
+                        stiffness: 320,
+                        damping: 22,
+                      }}
                       className="w-full cursor-pointer rounded-2xl bg-[#89A8B2] px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-black/10 transition-colors hover:bg-[#89A8B2]/90"
                     >
                       {user ? "Dashboard" : "Get Started"}

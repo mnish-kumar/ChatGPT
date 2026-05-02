@@ -20,7 +20,7 @@ export default function Hero() {
           initial={{ opacity: 0, y: 18 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.75, ease: easeOut }}
-          className="mx-auto max-w-3xl"
+          className="mx-auto max-w-4xl"
         >
           <div className="inline-flex items-center gap-2 rounded-full border border-white/50 bg-white/35 px-3 py-1 text-xs font-medium text-slate-800 shadow-sm backdrop-blur-xl">
             <Sparkles className="h-4 w-4 text-slate-700" />
