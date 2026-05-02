@@ -42,13 +42,6 @@ function createAuthMiddleware(roles = []) {
         });
       }
 
-      if (!user.isEmailVerified) {
-        return res.status(403).json({
-          success: false,
-          message: "Please verify your email to access this resource",
-        });
-      }
-
       req.user = user;
 
       next();

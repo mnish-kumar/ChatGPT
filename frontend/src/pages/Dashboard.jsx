@@ -1,9 +1,13 @@
-import React from 'react'
+import PixelCard from "@/components/PixelCard";
 
 const Dashboard = () => {
   return (
-    <div>Dashboard</div>
-  )
-}
+    <div>
+      <PixelCard variant="pink">
+        <h1 className="absolute">Hey</h1>
+      </PixelCard>
+    </div>
+  );
+};
 
-export default Dashboard
+export default Dashboard;

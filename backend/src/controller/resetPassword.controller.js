@@ -29,7 +29,7 @@ async function requestPasswordResetController(req, res) {
     // Store hashed token in Redis (15 min TTL)
     const resetToken = await authRedisService.passwordResetTokenSet(user._id);
 
-    const resetLink = `http://localhost:3000/api/auth/reset-password?token=${resetToken}&id=${user._id}`;
+    const resetLink = `${process.env.FRONTEND_URL}/api/auth/reset-password?token=${resetToken}&id=${user._id}`;
     await emailService.sendPasswordResetEmail(email, resetLink);
 
     return res.status(200).json({

@@ -68,7 +68,9 @@ const Login = () => {
           required
         />
         {errors.email && (
-          <p className="mt-1 text-xs text-destructive">{errors.email.message}</p>
+          <p className="mt-1 text-xs text-destructive">
+            {errors.email.message}
+          </p>
         )}
 
         <input
@@ -80,17 +82,20 @@ const Login = () => {
           required
         />
         {errors.password && (
-          <p className="mt-1 text-xs text-destructive">{errors.password.message}</p>
+          <p className="mt-1 text-xs text-destructive">
+            {errors.password.message}
+          </p>
         )}
 
-
         <div className="text-right py-4">
-          <a className="text-primary underline underline-offset-4 hover:text-primary/80" href="#">
+          <a
+            className="text-primary underline underline-offset-4 hover:text-primary/80 cursor-pointer"
+            onClick={() => navigate("/forget-password")}
+          >
             Forgot Password
           </a>
         </div>
 
-        
         <button
           type="submit"
           disabled={isLoading}

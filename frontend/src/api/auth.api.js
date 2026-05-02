@@ -47,7 +47,7 @@ export async function logout() {
 export async function getMe() {
   try {
     const response = await api.get("/api/auth/get-me");
-    return response.data;
+    return response.data.data;
   } catch (error) {
     throw error.response?.data || { message: "Failed to fetch user data" };
   }
