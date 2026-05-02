@@ -37,23 +37,23 @@ const Login = () => {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-slate-400">
+    <div className="flex min-h-screen items-center justify-center bg-background px-4 text-foreground">
       {error && (
-        <div className="bg-red-50 text-red-600 text-sm px-4 py-3 rounded-lg mb-4 border border-red-200">
+        <div className="mb-4 rounded-lg border border-destructive/20 bg-destructive/10 px-4 py-3 text-sm text-destructive">
           {error}
         </div>
       )}
       <form
         onSubmit={handleSubmit(onSubmit)}
-        className="relative overflow-hidden bg-white text-gray-500 max-w-89 mx-4 md:p-6 p-4 text-left text-sm rounded-xl shadow-[0px_0px_10px_0px] shadow-black/10"
+        className="relative mx-4 max-w-89 overflow-hidden rounded-xl border border-border bg-card p-4 text-left text-sm text-muted-foreground shadow-sm md:p-6"
       >
-        <h2 className="text-2xl font-semibold mb-6 text-center text-gray-800">
+        <h2 className="mb-6 text-center text-2xl font-semibold text-foreground">
           Login
         </h2>
 
         <input
           id="username"
-          className="w-full border my-3 border-gray-500/30 outline-none rounded-full py-2.5 px-4"
+          className="my-3 w-full rounded-full border border-input bg-background px-4 py-2.5 text-foreground outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
           type="text"
           placeholder="Enter your username"
           {...register("username", { required: true })}
@@ -61,31 +61,31 @@ const Login = () => {
         />
         <input
           id="email"
-          className="w-full border my-3 border-gray-500/30 outline-none rounded-full py-2.5 px-4"
+          className="my-3 w-full rounded-full border border-input bg-background px-4 py-2.5 text-foreground outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
           type="email"
           placeholder="Enter your email"
           {...register("email", { required: true })}
           required
         />
         {errors.email && (
-          <p className="text-red-500 text-xs mt-1">{errors.email.message}</p>
+          <p className="mt-1 text-xs text-destructive">{errors.email.message}</p>
         )}
 
         <input
           id="password"
-          className="w-full border mt-1 border-gray-500/30 outline-none rounded-full py-2.5 px-4"
+          className="mt-1 w-full rounded-full border border-input bg-background px-4 py-2.5 text-foreground outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
           type="password"
           placeholder="Enter your password"
           {...register("password", { required: true })}
           required
         />
         {errors.password && (
-          <p className="text-red-500 text-xs mt-1">{errors.password.message}</p>
+          <p className="mt-1 text-xs text-destructive">{errors.password.message}</p>
         )}
 
 
         <div className="text-right py-4">
-          <a className="text-blue-600 underline" href="#">
+          <a className="text-primary underline underline-offset-4 hover:text-primary/80" href="#">
             Forgot Password
           </a>
         </div>
@@ -94,21 +94,21 @@ const Login = () => {
         <button
           type="submit"
           disabled={isLoading}
-          className="w-full cursor-pointer bg-indigo-600 text-white py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full cursor-pointer rounded-lg bg-primary py-2 text-sm font-medium text-primary-foreground transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {isLoading ? "Logging in..." : "Login"}
         </button>
 
         <div className="flex items-center gap-2 my-5">
-          <hr className="flex-1 border-gray-300" />
-          <span className="text-xs text-gray-400">OR</span>
-          <hr className="flex-1 border-gray-300" />
+          <hr className="flex-1 border-border" />
+          <span className="text-xs text-muted-foreground">OR</span>
+          <hr className="flex-1 border-border" />
         </div>
 
         <button
           type="button"
           onClick={handleGoogleLogin}
-          className="w-full cursor-pointer flex items-center justify-center gap-2 border border-gray-300 text-gray-700 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 transition"
+          className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg border border-border bg-background py-2 text-sm font-medium text-foreground transition hover:bg-muted"
         >
           <img
             src="https://www.google.com/favicon.ico"
@@ -119,7 +119,10 @@ const Login = () => {
         </button>
         <p className="text-center mt-4">
           Don't have an account?{" "}
-          <a href="/register" className="text-blue-500 underline">
+          <a
+            href="/register"
+            className="text-primary underline underline-offset-4 hover:text-primary/80"
+          >
             Register
           </a>
         </p>
