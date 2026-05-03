@@ -232,7 +232,7 @@ const UserProfile = () => {
             <span className="text-sm text-gray-700 font-medium">
               🔒 Two Factor Authentication
             </span>
-            {/* ✅ profileData se live status */}
+            {/* profileData se live status */}
             <span className={`text-xs px-2 py-1 rounded-full font-medium ${
               profileData?.twoFactorAuth?.enabled
                 ? "bg-green-100 text-green-600"

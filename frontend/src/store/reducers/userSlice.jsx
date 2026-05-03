@@ -1,5 +1,11 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { loginUser, registerUser, logoutUser, checkAuth } from "../userAction";
+import {
+  loginUser,
+  registerUser,
+  logoutUser,
+  checkAuth,
+  verify2FALogin,
+} from "../userAction";
 
 const initialState = {
   user: null,
@@ -31,6 +37,13 @@ const userSlice = createSlice({
       state.isAuthenticated = false;
       state.error = null;
     },
+
+    cancelTwoFactor: (state) => {
+      state.twoFactorRequired = false;
+      state.tempToken = null;
+      state.error = null;
+      state.isLoading = false;
+    },
   },
   extraReducers: (builder) => {
     // ─── Register ──────────────────────────────
@@ -58,6 +71,16 @@ const userSlice = createSlice({
       })
       .addCase(loginUser.fulfilled, (state, action) => {
         state.isLoading = false;
+
+        if (action.payload?.twoFactorRequired) {
+          state.twoFactorRequired = true;
+          state.tempToken = action.payload.tempToken;
+          state.user = null;
+          state.accessToken = null;
+          state.isAuthenticated = false;
+          return;
+        }
+
         state.user = action.payload.user;
         state.accessToken = action.payload.accessToken;
         state.isAuthenticated = true;
@@ -65,20 +88,6 @@ const userSlice = createSlice({
       .addCase(loginUser.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload;
-      })
-      .addCase(verify2FALogin.fulfilled, (state, action) => {
-        state.isLoading = false;
-
-        if (action.payload.twoFactorRequired) {
-          state.twoFactorRequired = true;
-          state.tempToken = action.payload.tempToken;
-        } else {
-          state.user = action.payload.user;
-          state.accessToken = action.payload.accessToken;
-          state.isAuthenticated = true;
-          state.twoFactorRequired = false;
-          state.tempToken = null;
-        }
       });
 
     // ─── Logout ────────────────────────────────
@@ -129,5 +138,6 @@ const userSlice = createSlice({
   },
 });
 
-export const { setAccessToken, clearError, resetAuth } = userSlice.actions;
+export const { setAccessToken, clearError, resetAuth, cancelTwoFactor } =
+  userSlice.actions;
 export default userSlice.reducer;

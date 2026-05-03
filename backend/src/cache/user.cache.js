@@ -2,7 +2,7 @@ const redisClient = require("../config/redis");
 
 const CACHE_TTL_SECONDS = 60 * 10; // 10 minutes
 // Bump this when the cached payload shape changes.
-const CACHE_VERSION = "v2";
+const CACHE_VERSION = "v3";
 
 const userKey = (userId) => `user:${CACHE_VERSION}:${userId}`;
 

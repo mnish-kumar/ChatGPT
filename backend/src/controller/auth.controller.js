@@ -149,8 +149,7 @@ async function loginController(req, res) {
     const tempToken = jwt.sign(
       {
         id: user._id,
-        role: user.role,
-        twoFactorAuth: true,
+        twoFactorPending: true,
       },
       process.env.JWT_SECRET,
       { expiresIn: "5m" },
@@ -165,7 +164,7 @@ async function loginController(req, res) {
 
     return res.status(200).json({
       success: true,
-      twFactorRequired: true,
+      twoFactorRequired: true,
       message: "OTP required",
       tempToken,
     });
@@ -215,7 +214,7 @@ async function loginController(req, res) {
   return res.status(200).json({
     success: true,
     message: "Login successful",
-    twFactorRequired: false,
+    twoFactorRequired: false,
     user: {
       _id: user._id,
       email: user.email,

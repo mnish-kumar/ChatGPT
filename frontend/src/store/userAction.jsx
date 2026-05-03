@@ -47,8 +47,23 @@ export const checkAuth = createAsyncThunk(
   "user/checkAuth",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await api.post("/api/auth/refresh-token");
-      return response.data; // { accessToken, user }
+      const refreshRes = await api.post("/api/auth/refresh-token");
+      const accessToken = refreshRes.data?.accessToken;
+
+      if (!accessToken) {
+        return rejectWithValue("Not authenticated");
+      }
+
+      // refresh-token does not return user
+      const meRes = await api.get("/api/auth/get-me", {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+
+      const user = meRes.data?.data;
+
+      return { accessToken, user };
     } catch (error) {
       return rejectWithValue("Not authenticated");
     }

@@ -8,7 +8,7 @@ const TwoFactorSettings = () => {
   const navigate = useNavigate();
   const { user } = useSelector((state) => state.user);
 
-  const [step, setStep] = useState("idle"); // idle | setup | enable | disable
+  const [step, setStep] = useState("idle");
   const [qrCode, setQrCode] = useState(null);
   const [secret, setSecret] = useState(null);
   const [backupCodes, setBackupCodes] = useState([]);
@@ -28,16 +28,19 @@ const TwoFactorSettings = () => {
         if (!isMounted) return;
         setIs2FAEnabled(!!me?.twoFactorAuth?.enabled);
       } catch {
-        // Non-blocking: page still works with local state.
+       
       }
     };
 
-    sync2FAStatus();
+    // If redux user isn't ready (e.g. hard refresh), fetch server truth.
+    if (!user) {
+      sync2FAStatus();
+    }
 
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [user]);
 
   const {
     register,

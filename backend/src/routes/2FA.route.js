@@ -30,11 +30,10 @@ router.post(
 /**
  * @route POST api/auth/2fa/verify
  * @desc Verify OTP during login
- * @access Private
+ * @access Public (requires tempToken)
  */
 router.post(
   "/verify",
-  authMiddleware.createAuthMiddleware(["user"]),
   redisRateLimiter.twoFactorRateLimiter,
   twoFactorController.verify2FAController,
 );

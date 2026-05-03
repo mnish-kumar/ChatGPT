@@ -2,9 +2,18 @@ const speakeasy = require("speakeasy");
 const qrcode = require("qrcode");
 const userModel = require("../models/user.model");
 const bcrypt = require("bcrypt");
-const { success, jwt } = require("zod");
 const redisClient = require("../config/redis");
 const jwt = require("jsonwebtoken");
+const authRedisService = require("../services/redis.service");
+const userCache = require("../cache/user.cache");
+
+const isProduction = process.env.NODE_ENV === "production";
+
+const cookieOptions = {
+  httpOnly: true,
+  secure: isProduction,
+  sameSite: isProduction ? "None" : "Lax",
+};
 
 // ─── Generate QR code for 2FA setup
 async function setup2FAController(req, res) {
@@ -63,14 +72,14 @@ async function enable2FAController(req, res) {
 
     // Get user with 2FA secret
     const user = await userModel.findById(userId);
-    if (!user.twoFactorAuth.secret) {
+    if (!user.twoFactorAuth?.secret) {
       return res.status(400).json({
         success: false,
         message: "2FA setup not initiated",
       });
     }
 
-    if (user.twoFactorAuth.enabled) {
+    if (user.twoFactorAuth?.enabled) {
       return res.status(400).json({
         success: false,
         message: "2FA is already enabled",
@@ -108,6 +117,9 @@ async function enable2FAController(req, res) {
       "twoFactorAuth.backupCodes": hashedBackupCodes,
     });
 
+    // Invalidate cached /get-me payload so UI shows enabled immediately
+    await userCache.deleteUsersCache([userId]);
+
     return res.status(200).json({
       success: true,
       message: "2FA enabled successfully",
@@ -125,12 +137,12 @@ async function enable2FAController(req, res) {
 // ─── Verify OTP during login
 async function verify2FAController(req, res) {
   try {
-    const { userId, otp, tempToken } = req.body;
+    const { otp, tempToken } = req.body;
 
-    if (!userId || !otp) {
+    if (!otp || !tempToken) {
       return res.status(400).json({
         success: false,
-        message: "User ID and OTP code are required",
+        message: "OTP code and temp token are required",
       });
     }
 
@@ -151,7 +163,9 @@ async function verify2FAController(req, res) {
       });
     }
 
-    const storedToken = await redisClient.get(`2fa:pending:${decoded.id}`);
+    const userId = decoded.id;
+
+    const storedToken = await redisClient.get(`2fa:pending:${userId}`);
     if (!storedToken || storedToken !== tempToken) {
       return res.status(401).json({
         success: false,
@@ -165,6 +179,13 @@ async function verify2FAController(req, res) {
       return res.status(404).json({
         success: false,
         message: "User not found",
+      });
+    }
+
+    if (!user.twoFactorAuth?.enabled || !user.twoFactorAuth?.secret) {
+      return res.status(400).json({
+        success: false,
+        message: "2FA is not enabled for this account",
       });
     }
 
@@ -183,18 +204,18 @@ async function verify2FAController(req, res) {
       });
     }
 
-    await redisClient.del(`2fa:pending:${decoded.id}`);
+    await redisClient.del(`2fa:pending:${userId}`);
 
-    const accessToken = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
-      expiresIn: "15m",
-    });
+    const accessToken = jwt.sign(
+      { id: user._id, role: user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: "15m" },
+    );
 
     const refreshToken = jwt.sign(
-      { userId: user._id },
+      { id: user._id, role: user.role },
       process.env.JWT_REFRESH_SECRET,
-      {
-        expiresIn: "7d",
-      },
+      { expiresIn: "7d" },
     );
 
     const { sessionId } = await authRedisService.setRefreshToken(
@@ -204,22 +225,24 @@ async function verify2FAController(req, res) {
     );
 
     res.cookie("refreshToken", refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
+      ...cookieOptions,
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
 
     res.cookie("sessionId", sessionId, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
+      ...cookieOptions,
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
 
     return res.status(200).json({
       success: true,
       message: "2FA verification successful",
+      user: {
+        _id: user._id,
+        email: user.email,
+        username: user.username,
+        fullname: user.fullname,
+      },
       accessToken,
     });
   } catch (err) {
@@ -246,7 +269,7 @@ async function disable2FAController(req, res) {
 
     // Step 1: Get user
     const user = await userModel.findById(userId);
-    if (!user.twoFactorAuth.enabled) {
+    if (!user.twoFactorAuth?.enabled) {
       return res.status(400).json({
         success: false,
         message: "2FA is not enabled",
@@ -274,6 +297,9 @@ async function disable2FAController(req, res) {
       "twoFactorAuth.secret": null,
       "twoFactorAuth.backupCodes": [],
     });
+
+    // Invalidate cached /get-me payload so UI shows disabled immediately
+    await userCache.deleteUsersCache([userId]);
 
     return res.status(200).json({
       success: true,

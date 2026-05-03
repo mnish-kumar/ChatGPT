@@ -145,9 +145,9 @@ export async function enable2FA({ otp }) {
 }
 
 // ─── 2FA Verify ───────────────────────────────────────────
-export async function verify2FA({ userId, otp, tempToken }) {
+export async function verify2FA({ otp, tempToken }) {
   try {
-    const response = await api.post("/api/auth/2fa/verify", { userId, otp, tempToken });
+    const response = await api.post("/api/auth/2fa/verify", { otp, tempToken });
     return response.data;
   } catch (error) {
     throw error.response?.data || { message: "Invalid OTP" };

@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { BorderBeam } from "@/components/ui/border-beam";
 import { googleLogin } from "../api/auth.api";
 import { useEffect } from "react";
+import Verify2FA from "@/pages/user/2FA/Verify2FA";
 
 const Login = () => {
   const {
@@ -19,20 +20,14 @@ const Login = () => {
   const { isLoading, error, twoFactorRequired, isAuthenticated } = useSelector((state) => state.user);
 
   useEffect(() => {
-    if (twoFactorRequired) {
-      navigate("/verify-2fa");
-    }
-  }, [twoFactorRequired, navigate]);
-
-  useEffect(() => {
     if (isAuthenticated) {
       navigate("/dashboard");
     }
   }, [isAuthenticated, navigate]);
 
 
-  const onSubmit = (data) => {
-    const result = dispatch(
+  const onSubmit = async (data) => {
+    const resultAction = await dispatch(
       loginUser({
         username: data.username,
         email: data.email,
@@ -40,9 +35,8 @@ const Login = () => {
       }),
     );
 
-    if (loginUser.fulfilled.match(result)) {
+    if (loginUser.fulfilled.match(resultAction) && !resultAction.payload?.twoFactorRequired) {
       reset();
-      navigate("/dashboard");
     }
   };
 
@@ -52,7 +46,7 @@ const Login = () => {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4 text-foreground">
-      {error && (
+      {error && !twoFactorRequired && (
         <div className="mb-4 rounded-lg border border-destructive/20 bg-destructive/10 px-4 py-3 text-sm text-destructive">
           {error}
         </div>
@@ -160,6 +154,12 @@ const Login = () => {
           className={"from-transparent via-blue-500 to-transparent"}
         />
       </form>
+
+      {twoFactorRequired && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 p-4 backdrop-blur-sm">
+          <Verify2FA />
+        </div>
+      )}
     </div>
   );
 };
