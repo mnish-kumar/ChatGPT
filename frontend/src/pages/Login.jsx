@@ -45,7 +45,7 @@ const Login = () => {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4 text-foreground">
+    <div className="flex min-h-screen items-center justify-center bg-chart-1 px-4 text-foreground">
       {error && !twoFactorRequired && (
         <div className="mb-4 rounded-lg border border-destructive/20 bg-destructive/10 px-4 py-3 text-sm text-destructive">
           {error}

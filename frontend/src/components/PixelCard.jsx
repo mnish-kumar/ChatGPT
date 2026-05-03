@@ -1,3 +1,4 @@
+import { motion } from 'framer-motion';
 import { useEffect, useRef } from 'react';
 
 class Pixel {
@@ -121,7 +122,20 @@ const VARIANTS = {
   }
 };
 
-export default function PixelCard({ variant = 'default', gap, speed, colors, noFocus, className = '', children }) {
+export default function PixelCard({
+  variant = 'default',
+  gap,
+  speed,
+  colors,
+  noFocus,
+  className = '',
+  children,
+  onClick,
+  onKeyDown,
+  role,
+  tabIndex,
+  ...rest
+}) {
   const containerRef = useRef(null);
   const canvasRef = useRef(null);
   const pixelsRef = useRef([]);
@@ -231,17 +245,37 @@ export default function PixelCard({ variant = 'default', gap, speed, colors, noF
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [finalGap, finalSpeed, finalColors, finalNoFocus]);
 
+  const handleKeyDown = e => {
+    onKeyDown?.(e);
+    if (e.defaultPrevented) return;
+    if (!e.currentTarget || typeof e.currentTarget.click !== 'function') return;
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      e.currentTarget.click();
+    }
+  };
+
+  const whileHover = onClick && !reducedMotion ? { scale: 1.02, y: -2 } : undefined;
+  const whileTap = onClick && !reducedMotion ? { scale: 0.99, y: 0 } : undefined;
+
   return (
-    <div
+    <motion.div
       ref={containerRef}
-      className={`h-[400px] w-[300px] relative overflow-hidden grid place-items-center aspect-[4/5] border border-[#27272a] rounded-[25px] isolate transition-colors duration-200 ease-[cubic-bezier(0.5,1,0.89,1)] select-none ${className}`}
+      className={`h-[400px] w-[300px] relative overflow-hidden grid place-items-center aspect-[4/5] bg-card text-card-foreground border border-border rounded-2xl isolate select-none shadow-sm transition-all duration-200 ease-[cubic-bezier(0.5,1,0.89,1)] hover:shadow-xl hover:z-10 ${className}`}
+      {...rest}
+      whileHover={whileHover}
+      whileTap={whileTap}
+      transition={reducedMotion ? undefined : { type: 'spring', stiffness: 260, damping: 20 }}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
       onFocus={finalNoFocus ? undefined : onFocus}
       onBlur={finalNoFocus ? undefined : onBlur}
-      tabIndex={finalNoFocus ? -1 : 0}>
-      <canvas className="w-full h-full block" ref={canvasRef} />
+      onKeyDown={finalNoFocus ? onKeyDown : handleKeyDown}
+      onClick={onClick}
+      tabIndex={finalNoFocus ? -1 : (tabIndex ?? 0)}
+      role={role ?? (onClick ? 'button' : undefined)}>
+      <canvas className="w-full h-full block pointer-events-none" ref={canvasRef} />
       {children}
-    </div>
+    </motion.div>
   );
 }

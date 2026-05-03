@@ -21,19 +21,19 @@ export const getUserChats = async () => {
 }
 
 // ─── Get Chat Messages ───────────────────────────────
-export const getChatMessages = async ({ chatId, page = 1, limit = 20 }) => {
+export const getChatMessages = async (chatId, page = 1, limit = 20) => {
     try {
         const response = await api.get(`/api/chat/${chatId}/messages`, {
             params: { page, limit }
         });
-        return response.data.messages;
+        return response.data;
     }catch (error) {
         throw error.response?.data || { message: "Failed to fetch messages" };
     }
 }
 
 // ─── Delete Chat ───────────────────────────────
-export const deleteChat = async ({ chatId }) => {
+export const deleteChat = async (chatId) => {
     try {
         await api.delete(`/api/chat/deleteChat/chatID/${chatId}`);
     }catch (error) {
