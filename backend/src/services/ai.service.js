@@ -25,7 +25,7 @@ async function generateResponse(content) {
     model: process.env.GEMINI_MODEL_NAME,
     contents: content,
     config: {
-      temperature: 0.7,
+      temperature: 0.2,
       systemInstruction:
         "You are a helpful assistant for answering user queries.",
     },
@@ -52,7 +52,7 @@ async function GenerateContentStream(content, onChunk) {
       contents: content,
 
       config: {
-        temperature: 0.7,
+        temperature: 0.2,
         systemInstruction:
           "You are a helpful assistant for answering user queries.",
       },
