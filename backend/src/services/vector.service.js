@@ -42,7 +42,6 @@ async function deleteVectorsByChatId(chatId) {
 
   if (error) throw new Error(error.message);
   return data;
-
 }
 
 module.exports = {

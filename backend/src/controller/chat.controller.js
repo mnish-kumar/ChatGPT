@@ -1,3 +1,4 @@
+const { default: mongoose } = require("mongoose");
 const { chatModel } = require("../models/chat.model");
 const messageModel = require("../models/message.model");
 const vectorService = require("../services/vector.service");
@@ -47,6 +48,12 @@ async function getChatMessages(req, res) {
   const limit = parseInt(req.query.limit) || 20;
   const skip = (page - 1) * limit;
 
+  if (!chatId || !mongoose.Types.ObjectId.isValid(chatId)) {
+    return res.status(400).json({
+      message: "Invalid chat ID.",
+    });
+  }
+
   const messages = await messageModel
     .find({ chat: chatId })
     .sort({ createdAt: -1 })
@@ -66,6 +73,12 @@ async function getChatMessages(req, res) {
 async function deleteChat(req, res) {
   const user = req.user;
   const { chatId } = req.params;
+
+  if (!chatId || !mongoose.Types.ObjectId.isValid(chatId)) {
+    return res.status(400).json({
+      message: "Invalid chat ID.",
+    });
+  }
 
   const chat = await chatModel.findOneAndDelete({
     _id: chatId,
