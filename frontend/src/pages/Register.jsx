@@ -1,10 +1,10 @@
-import { ShineBorder } from "@/components/ui/shine-border";
 import { registerUser } from "@/store/userAction";
 import { useTheme } from "next-themes";
 import { useForm } from "react-hook-form";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import { googleLogin } from "../api/auth.api";
+import { BorderBeam } from "@/components/ui/border-beam";
 
 const Register = () => {
   const {
@@ -43,12 +43,11 @@ const Register = () => {
 
   const theme = useTheme();
   return (
-    <div className="flex items-center justify-center min-h-screen bg-slate-400">
+    <div className="flex items-center justify-center min-h-screen bg-chart-1">
       <form
         onSubmit={handleSubmit(onSubmit)}
         className="relative overflow-hidden bg-white text-gray-500 max-w-97 mx-4 md:p-6 p-4 text-left text-sm rounded-xl shadow-[0px_0px_10px_0px] shadow-black/10"
       >
-        <ShineBorder shineColor={theme.theme === "dark" ? "white" : "black"} />
         <h2 className="text-2xl font-semibold mb-6 text-center text-gray-800">
           Create Account
         </h2>
@@ -103,7 +102,7 @@ const Register = () => {
           {...register("password", { required: true })}
           required
         />
-        
+
         <button
           type="submit"
           disabled={isLoading}
@@ -140,6 +139,20 @@ const Register = () => {
             Login
           </Link>
         </p>
+
+        <BorderBeam
+          duration={6}
+          size={400}
+          borderWidth={2}
+          className={"from-transparent via-red-700 to-transparent"}
+        />
+        <BorderBeam
+          duration={6}
+          delay={3}
+          size={400}
+          borderWidth={3}
+          className={"from-transparent via-blue-500 to-transparent"}
+        />
       </form>
     </div>
   );
