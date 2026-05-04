@@ -6,6 +6,7 @@ import { BrowserRouter } from "react-router-dom";
 import { store } from "./store/store.jsx";
 import { Provider } from "react-redux";
 import { setApiStore } from "./api/storeBridge.js";
+import "./style.scss";
 
 setApiStore(store);
 

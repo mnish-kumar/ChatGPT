@@ -5,7 +5,6 @@ import { appendChunk, finalizeResponse, setError } from "../../store/reducers/ch
 import { getUserChatsAction } from "../../store/chatAction";
 import Sidebar from "./Sidebar";
 import ChatWindow from "./ChatWindow";
-import { Menu } from "lucide-react/dist/cjs/lucide-react";
 
 export default function ChatPage() {
   const dispatch = useDispatch();
@@ -31,23 +30,38 @@ export default function ChatPage() {
   }, [dispatch, accessToken]);
 
   return (
-    <div className="flex h-screen overflow-hidden relative">
-    {/* Sidebar toggle button */}
-    {!sidebarOpen && (
-      <button
-        onClick={() => setSidebarOpen(true)}
-        className="absolute top-4 left-4 z-50 w-8 h-8 flex items-center justify-center rounded-md border border-white/10 text-white/50 hover:bg-white/5 hover:text-white transition-all bg-[#111318]"
-      >
-        <Menu size={16} />
-      </button>
-    )}
+    <div className="flex-1 flex h-dvh overflow-hidden bg-[#0a0c10]">
+      {/* Sidebar: inline on desktop, overlay on mobile */}
+      <div className="hidden md:flex md:flex-none">
+        <Sidebar onClose={() => {}} />
+      </div>
 
-    {sidebarOpen && <Sidebar onClose={() => setSidebarOpen(false)} />}
+      {/* Mobile sidebar */}
+      {sidebarOpen && (
+        <>
+          <button
+            type="button"
+            aria-label="Close sidebar"
+            onClick={() => setSidebarOpen(false)}
+            className="fixed inset-0 z-40 bg-black/60 md:hidden"
+          />
+          <div className="fixed inset-y-0 left-0 z-50 md:hidden">
+            <Sidebar onClose={() => setSidebarOpen(false)} />
+          </div>
+        </>
+      )}
 
-    {/* ✅ flex-1 add karo taaki poori remaining width le */}
-    <div className="flex-1 min-w-0 overflow-hidden">
-      <ChatWindow />
+      {/* Main area */}
+      <div className="flex-1 min-w-0 overflow-hidden">
+        <div className="h-full w-full p-3 md:p-6">
+          <div className="h-full w-full overflow-hidden rounded-2xl border border-[#89A8B2]/15 bg-[#0f1219]/35 backdrop-blur flex flex-col">
+            <ChatWindow
+              sidebarOpen={sidebarOpen}
+              onOpenSidebar={() => setSidebarOpen(true)}
+            />
+          </div>
+        </div>
+      </div>
     </div>
-  </div>
   );
 }

@@ -56,7 +56,7 @@ async function getChatMessages(req, res) {
 
   const messages = await messageModel
     .find({ chat: chatId })
-    .sort({ createdAt: -1 })
+    .sort({ createdAt: 1 })
     .skip(skip)
     .limit(limit);
 

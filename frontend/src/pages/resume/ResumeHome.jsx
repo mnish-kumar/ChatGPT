@@ -2,7 +2,7 @@ import React from 'react'
 
 const ResumeHome = () => {
   return (
-    <div>ResumeHome</div>
+    <div className='resume-home'>ResumeHome</div>
   )
 }
 

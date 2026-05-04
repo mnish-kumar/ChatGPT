@@ -101,38 +101,72 @@ export default function Sidebar({ onClose }) {
 
   return (
     <>
-      <aside className="w-64 min-w-[256px] bg-[#111318] border-r border-white/5 flex flex-col overflow-hidden">
+      <aside className="h-full w-[280px] min-w-[280px] bg-[#0f1219] border-r border-[#89A8B2]/15 flex flex-col overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between px-4 py-[18px] border-b border-white/5">
-          <div className="text-[15px] font-semibold text-white">JarviSync</div>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setIsModalOpen(true)}
-              className="w-[30px] h-[30px] rounded-md border border-white/10 text-white/50 flex items-center justify-center hover:bg-white/5 hover:text-white transition-all"
-            >
-              <PlusIcon />
-            </button>
-            <X
-              className="w-5 h-5 text-white/50 cursor-pointer hover:text-white transition"
-              onClick={onClose}
-            />
+        <div className="flex items-center justify-between px-4 py-4">
+          <div className="flex flex-col leading-tight">
+            <div className="text-[15px] font-semibold text-white">JarviSync</div>
+            <div className="text-[11px] mt-2 tracking-wide uppercase text-[#B3C8CF]/40">
+              AI Get Hired Faster
+            </div>
           </div>
+          <X
+            className="w-5 h-5 text-[#B3C8CF]/60 cursor-pointer hover:text-[#B3C8CF] transition md:hidden"
+            onClick={onClose}
+          />
         </div>
 
-        {/* Chat List */}
-        <nav className="flex-1 overflow-y-auto px-2 py-2">
+        {/* Primary action */}
+        <div className="px-4">
+          <button
+            type="button"
+            onClick={() => setIsModalOpen(true)}
+            className="w-full h-10 rounded-xl bg-[#89A8B2] text-[#0f1219] text-[13px] font-medium flex items-center justify-center gap-2 hover:bg-[#B3C8CF] hover:shadow-lg hover:shadow-[#89A8B2]/25 transition-all"
+          >
+            <PlusIcon />
+            New Chat
+          </button>
+        </div>
+
+        {/* Nav */}
+        <div className="px-4 mt-5">
+          <div className="text-[10px] tracking-wider uppercase text-[#B3C8CF]/30 mb-2">
+            Main navigation
+          </div>
+          <button
+            type="button"
+            onClick={() => setIsModalOpen(true)}
+            className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-[#B3C8CF]/70 hover:bg-[#89A8B2]/10 hover:text-[#B3C8CF] transition"
+          >
+            <MessageIcon />
+            <span className="text-[13px]">New Chat</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => navigate("/profile")}
+            className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-[#B3C8CF]/70 hover:bg-[#89A8B2]/10 hover:text-[#B3C8CF] transition"
+          >
+            <span className="w-[14px] h-[14px] rounded-full border border-[#89A8B2]/35 inline-flex items-center justify-center text-[10px] text-[#B3C8CF]/60">
+              U
+            </span>
+            <span className="text-[13px]">Profile</span>
+          </button>
+        </div>
+
+        {/* Recent Activity */}
+        <div className="flex-1 overflow-y-auto px-2 pt-4 pb-2">
+          <div className="px-2 text-[10px] tracking-wider uppercase text-[#B3C8CF]/30 mb-2">
+            Recent activity
+          </div>
           {isLoadingChats ? (
-            <div className="flex flex-col gap-4 mt-2">
-              {[1, 2, 3].map((i) => (
-                <div
-                  key={i}
-                  className="h-9 rounded-lg bg-white/5 animate-pulse"
-                />
+            <div className="flex flex-col gap-3 mt-2 px-2">
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} className="h-9 rounded-xl bg-white/5 animate-pulse" />
               ))}
             </div>
           ) : chats.length === 0 ? (
             <div className="text-center py-8">
-              <p className="text-sm text-white/40">No chats yet</p>
+              <p className="text-sm text-[#B3C8CF]/50">No chats yet</p>
             </div>
           ) : (
             chats.map((chat, index) => (
@@ -141,21 +175,24 @@ export default function Sidebar({ onClose }) {
                 onClick={() => handleSelectChat(chat._id)}
                 onMouseEnter={() => setHoveredId(chat._id)}
                 onMouseLeave={() => setHoveredId(null)}
-                className={`flex mt-2 items-center gap-2 px-4 py-3 rounded-lg cursor-pointer group
+                className={`flex items-center gap-2 px-3 py-2 rounded-xl cursor-pointer group transition-all
                   ${
                     activeChatId === chat._id
-                      ? "bg-white/10 text-white"
-                      : "text-white/50 hover:bg-white/5 hover:text-white"
+                      ? "bg-[#89A8B2]/20 text-white"
+                      : "text-[#B3C8CF]/70 hover:bg-[#89A8B2]/10 hover:text-[#B3C8CF]"
                   }`}
               >
-                <MessageIcon />
+                <span className="w-5 h-5 rounded-lg bg-[#89A8B2]/10 border border-[#89A8B2]/20 flex items-center justify-center text-[#B3C8CF]/70">
+                  <MessageIcon />
+                </span>
                 <span className="text-[13px] truncate flex-1">
                   {chat.title || "Untitled"}
                 </span>
                 {(hoveredId === chat._id || activeChatId === chat._id) && (
                   <button
+                    type="button"
                     onClick={(e) => handleDelete(e, chat._id)}
-                    className="text-white/30 hover:text-red-400 cursor-pointer hover:bg-red-500/10 p-1 rounded transition"
+                    className="text-[#B3C8CF]/40 hover:text-red-400 cursor-pointer hover:bg-red-500/15 p-1 rounded transition"
                   >
                     <TrashIcon />
                   </button>
@@ -163,27 +200,27 @@ export default function Sidebar({ onClose }) {
               </div>
             ))
           )}
-        </nav>
+        </div>
 
         {/* Footer */}
-        <div className="px-3 py-3 border-t  border-white/5 flex items-center gap-3 cursor-pointer rounded m-1"
+        <div className="px-3 py-3 border-t border-[#89A8B2]/15 flex items-center gap-3 cursor-pointer rounded m-1 hover:bg-[#89A8B2]/10 transition-all"
         onClick={() => navigate("/profile")}>
-          <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-sm font-semibold ">
+          <div className="w-8 h-8 rounded-full bg-[#89A8B2] flex items-center justify-center text-sm font-semibold text-[#0f1219]">
             {user?.fullname?.firstname?.charAt(0)?.toUpperCase() || "U"}{" "}
           </div>
           <div>
-            <p className="text-sm text-white">
-              {user?.fullname?.firstname || "User"} {/* ✅ fix */}
+            <p className="text-sm text-white font-medium">
+              {user?.fullname?.firstname || "User"}
             </p>
-            <p className="text-xs text-white/30">{user?.email}</p>
+            <p className="text-xs text-[#B3C8CF]/50">{user?.email}</p>
           </div>
         </div>
       </aside>
 
       {/* Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-[#1a1d24]/80 border border-white/10 rounded-2xl p-6 w-[90%] max-w-sm">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center z-50">
+          <div className="bg-[#0f1219]/95 border border-[#89A8B2]/20 rounded-2xl p-6 w-[90%] max-w-sm shadow-2xl">
             <h2 className="text-white text-lg font-semibold mb-4">
               Create New Chat
             </h2>
@@ -192,7 +229,7 @@ export default function Sidebar({ onClose }) {
               value={chatTitle}
               onChange={(e) => setChatTitle(e.target.value)}
               placeholder="Enter chat name..."
-              className="w-full px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-white outline-none"
+              className="w-full px-4 py-2 rounded-lg bg-white/5 border border-[#89A8B2]/30 text-white placeholder:text-[#B3C8CF]/40 focus:border-[#89A8B2]/60 focus:bg-white/10 outline-none transition-all"
               onKeyDown={(e) => e.key === "Enter" && handleCreateChat()}
               autoFocus
             />
@@ -202,13 +239,13 @@ export default function Sidebar({ onClose }) {
                   setIsModalOpen(false);
                   setChatTitle("");
                 }}
-                className="text-sm text-white/60"
+                className="text-sm text-[#B3C8CF]/60 hover:text-[#B3C8CF] transition"
               >
                 Cancel
               </button>
               <button
                 onClick={handleCreateChat}
-                className="px-4 py-2 bg-[#89A8B2] text-white rounded-lg hover:scale-105 transition"
+                className="px-4 py-2 bg-[#89A8B2] text-[#0f1219] rounded-lg font-medium hover:bg-[#B3C8CF] hover:shadow-lg hover:shadow-[#89A8B2]/30 transition-all"
               >
                 Create
               </button>
