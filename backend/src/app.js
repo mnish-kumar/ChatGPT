@@ -12,6 +12,7 @@ const orderRoute = require('../src/routes/order.route');
 const paymentRoute = require('../src/routes/payment.route');
 const twoFA_Route = require('../src/routes/2FA.route');
 const resetPasswordRoute = require('../src/routes/resetPassword.route');
+const resumeRoute = require('../src/routes/resume.route');
 
 const rateLimiter = require('./middlewares/rateLimiter.middleware');
 
@@ -48,5 +49,6 @@ app.use('/api/orders', orderRoute);
 app.use('/api/payment', paymentRoute);
 app.use('/api/auth/2fa', twoFA_Route);
 app.use('/api/auth', resetPasswordRoute);
+app.use('/api/resume', resumeRoute);
 
 module.exports = app;
