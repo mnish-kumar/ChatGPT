@@ -2,137 +2,107 @@ const orderModel = require("../models/order.model");
 const paymentModel = require("../models/payment.model");
 const userModel = require("../models/user.model");
 const hashSignature = require("../utils/hash.utils");
-const axios = require('axios');
+const axios = require("axios");
 
 const logger = console;
 
 async function createPayment(req, res) {
-  const token = req.cookies?.token || req.headers?.authorization?.split(" ")[1];
-
-  if (!token) {
-    return res.status(401).json({
-      success: false,
-      message: "Unauthorized: No token provided",
-    });
-  }
-
   try {
-
-    const orderId = req.params?.orderId;
-
-    if (!orderId) {
-      return res.status(400).json({
-        success: false,
-        message: "Order ID is required",
-      });
-    }
+    const { orderId } = req.params;
+    if (!orderId) return res.status(400).json({ 
+      success: false, 
+      message: "Order ID required" 
+    });
 
     const order = await orderModel.findById(orderId);
-    if (!order) {
-      return res.status(404).json({
-        success: false,
-        message: "Order not found",
-      });
+    if (!order)return res.status(404).json({ 
+      success: false,
+      message: "Order not found" 
+    });
+
+    // User sirf apna order access kar sake
+    if (order.user.toString() !== req.user.id) {
+      return res.status(403).json({ success: false, message: "Forbidden" });
     }
 
     const payment = await paymentModel.create({
-      razorpayOrderId: order.id,
+      orderId: order._id, 
+      razorpayOrderId: order.razorpayOrderId,
       user: req.user.id,
       price: {
-        amount: order.amount,
-        currency: order.currency,
+        amount: order.price.amount,
+        currency: order.price.currency,
       },
+      status: "PENDING",
     });
 
     return res.status(201).json({
       success: true,
-      message: "Payment initialized successfully",
-      razorpayOrderId: order.id,
-      amount: order.amount,
-      currency: order.currency,
+      razorpayOrderId: order.razorpayOrderId,
+      amount: order.price.amount,
+      currency: order.price.currency,
       payment,
     });
   } catch (err) {
-    const status = err?.response?.status || 500;
-    const details = err?.response?.data || err?.message;
-    return res.status(status).json({
-      success: false,
-      message: "Failed to create payment",
-      error: details,
-    });
+    return res
+      .status(500)
+      .json({
+        success: false,
+        message: "Failed to create payment",
+        error: err.message,
+      });
   }
 }
 
 async function verifyPayment(req, res) {
-    const token = req.cookies?.token || req.headers?.authorization?.split(" ")[1];
-
-  if (!token) {
-    return res.status(401).json({
-      success: false,
-      message: "Unauthorized: No token provided",
-    });
-  }
-
-  
   if (!process.env.RAZORPAY_KEY_SECRET) {
-    logger.error("Razorpay secret not configured", {
-      route: "verifyPayment",
-      userId: req.user?.id,
-    });
-    return res.status(500).json({
-      success: false,
-      message: "Payment provider is not configured",
-    });
+    return res
+      .status(500)
+      .json({ success: false, message: "Payment provider not configured" });
   }
 
   const { razorpayPaymentId, razorpayOrderId, razorpaySignature } = req.body;
   if (!razorpayPaymentId || !razorpayOrderId || !razorpaySignature) {
-    console.warn("verifyPayment missing required fields", {
-      route: "verifyPayment",
-      userId: req.user?.id,
-    });
-    return res.status(400).json({
-      success: false,
-      message: "Missing required fields",
-    });
+    return res
+      .status(400)
+      .json({ success: false, message: "Missing required fields" });
   }
 
-  // Verify the HMAC payment signature
-  const expectedSignature = hashSignature.expectedSignature(razorpayOrderId, razorpayPaymentId);
-
+  const expectedSignature = hashSignature.expectedSignature(
+    razorpayOrderId,
+    razorpayPaymentId,
+  );
   if (expectedSignature !== razorpaySignature) {
-    return res.status(400).json({
-      success: false,
-      message: "Invalid payment signature",
-    });
+    return res
+      .status(400)
+      .json({ success: false, message: "Invalid payment signature" });
   }
 
   try {
-
     const payment = await paymentModel.findOneAndUpdate(
       { razorpayOrderId, status: "PENDING" },
       {
         $set: {
-          razorpayPaymentId: razorpayPaymentId,
-          razorpaySignature: razorpaySignature,
+          razorpayPaymentId,
+          razorpaySignature,
           status: "COMPLETED",
+          rawResponse: req.body,
         },
       },
       { new: true },
     );
 
     if (!payment) {
-      return res.status(404).json({
-        success: false,
-        message: "Payment not found",
-      });
+      return res
+        .status(404)
+        .json({ success: false, message: "Payment not found" });
     }
-
-    await userModel.findByIdAndUpdate(order.user, {
+    
+    await userModel.findByIdAndUpdate(payment.user, {
       plan: {
         type: "PREMIUM",
         startDate: new Date(),
-        expiry: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
+        expiry: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
         payment: {
           orderId: razorpayOrderId,
           paymentId: razorpayPaymentId,
@@ -141,16 +111,19 @@ async function verifyPayment(req, res) {
       },
     });
 
-    res.status(200).json({
-      success: true,
-      message: "Payment verified successfully",
-      payment,
-    });
+    // ✅ Order status bhi update karo
+    await orderModel.findOneAndUpdate(
+      { razorpayOrderId },
+      { $set: { status: "COMPLETED" } },
+    );
+
+    return res
+      .status(200)
+      .json({ success: true, message: "Payment verified", payment });
   } catch (err) {
-    return res.status(500).json({
-      success: false,
-      message: "Failed to verify payment",
-    });
+    return res
+      .status(500)
+      .json({ success: false, message: "Failed to verify payment" });
   }
 }
 

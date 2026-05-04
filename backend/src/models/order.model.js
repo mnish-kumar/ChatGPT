@@ -6,6 +6,11 @@ const orderSchema = new mongoose.Schema({
         required: true,
         index: true,
     },
+    razorpayOrderId: {
+        type: String,
+        required: true,
+        unique: true,
+    },
     price: {
         amount: {
             type: Number,
@@ -24,7 +29,7 @@ const orderSchema = new mongoose.Schema({
     },
     notes: {
         planType: String,
-        userMail: String,
+        userEmail: String,
     }
 
 }, { timestamps: true });

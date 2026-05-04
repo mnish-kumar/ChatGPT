@@ -44,6 +44,15 @@ const userSlice = createSlice({
       state.error = null;
       state.isLoading = false;
     },
+    setPremium: (state) => {
+      if (state.user) {
+        state.user.plan = {
+          type: "PREMIUM",
+          startDate: new Date().toISOString(),
+          expiry: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+        };
+      }
+    },
   },
   extraReducers: (builder) => {
     // ─── Register ──────────────────────────────
@@ -117,7 +126,7 @@ const userSlice = createSlice({
         state.isAuthenticated = false;
       });
 
-      // ─── Verify 2FA ─────────────────────────────────
+    // ─── Verify 2FA ─────────────────────────────────
     builder
       .addCase(verify2FALogin.pending, (state) => {
         state.isLoading = true;
@@ -138,6 +147,6 @@ const userSlice = createSlice({
   },
 });
 
-export const { setAccessToken, clearError, resetAuth, cancelTwoFactor } =
+export const { setAccessToken, clearError, resetAuth, cancelTwoFactor, setPremium } =
   userSlice.actions;
 export default userSlice.reducer;

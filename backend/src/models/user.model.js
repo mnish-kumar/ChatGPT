@@ -66,7 +66,13 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
-    plan: [planSchema],
+    plan: {
+      type: planSchema,
+      default: () => ({
+        type: "FREE",
+        startDate: new Date()
+      }),
+    },
     role: {
       type: String,
       enum: ["user", "admin"],

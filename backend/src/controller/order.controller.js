@@ -31,24 +31,17 @@ function getRazorpayClient() {
 
 async function createOrderController(req, res) {
   const userId = req.user.id;
-
   try {
     let razorpay;
     try {
       razorpay = getRazorpayClient();
     } catch (err) {
-      return res.status(500).json({
-        success: false,
-        message: "Payment provider is not configured",
-      });
+      return res.status(500).json({ success: false, message: "Payment provider not configured" });
     }
 
-
-    const planPrice = 399;
-    const amountInPaise = planPrice * 100;
-
-    
+    const amountInPaise = 399 * 100;
     const receipt = crypto.randomBytes(10).toString("hex");
+
     const razorpayOrder = await razorpay.orders.create({
       amount: amountInPaise,
       currency: "INR",
@@ -57,29 +50,24 @@ async function createOrderController(req, res) {
 
     const order = await orderModel.create({
       user: userId,
-      price: {
-        amount: amountInPaise,
-        currency: "INR",
-      },
+      razorpayOrderId: razorpayOrder.id,  // ✅ Fix
+      price: { amount: amountInPaise, currency: "INR" },
       status: "PENDING",
       notes: {
         planType: "PREMIUM",
-        userEmail: req.user.email,
+        userEmail: req.user.email,          // ✅ Typo fix
       },
     });
 
     return res.status(201).json({
       success: true,
-      message: "Order created successfully",
-      order,
       razorpayOrderId: razorpayOrder.id,
+      orderId: order._id,                  // ✅ Frontend ke liye
+      amount: order.price.amount,
+      currency: order.price.currency,
     });
   } catch (error) {
-    return res.status(500).json({
-      success: false,
-      message: "Failed to create order",
-      error: error.message,
-    });
+    return res.status(500).json({ success: false, message: "Failed to create order", error: error.message });
   }
 }
 
