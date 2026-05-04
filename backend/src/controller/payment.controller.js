@@ -9,16 +9,18 @@ const logger = console;
 async function createPayment(req, res) {
   try {
     const { orderId } = req.params;
-    if (!orderId) return res.status(400).json({ 
-      success: false, 
-      message: "Order ID required" 
-    });
+    if (!orderId)
+      return res.status(400).json({
+        success: false,
+        message: "Order ID required",
+      });
 
     const order = await orderModel.findById(orderId);
-    if (!order)return res.status(404).json({ 
-      success: false,
-      message: "Order not found" 
-    });
+    if (!order)
+      return res.status(404).json({
+        success: false,
+        message: "Order not found",
+      });
 
     // User sirf apna order access kar sake
     if (order.user.toString() !== req.user.id) {
@@ -26,7 +28,7 @@ async function createPayment(req, res) {
     }
 
     const payment = await paymentModel.create({
-      orderId: order._id, 
+      orderId: order._id,
       razorpayOrderId: order.razorpayOrderId,
       user: req.user.id,
       price: {
@@ -44,13 +46,11 @@ async function createPayment(req, res) {
       payment,
     });
   } catch (err) {
-    return res
-      .status(500)
-      .json({
-        success: false,
-        message: "Failed to create payment",
-        error: err.message,
-      });
+    return res.status(500).json({
+      success: false,
+      message: "Failed to create payment",
+      error: err.message,
+    });
   }
 }
 
@@ -97,7 +97,7 @@ async function verifyPayment(req, res) {
         .status(404)
         .json({ success: false, message: "Payment not found" });
     }
-    
+
     await userModel.findByIdAndUpdate(payment.user, {
       plan: {
         type: "PREMIUM",
@@ -129,5 +129,5 @@ async function verifyPayment(req, res) {
 
 module.exports = {
   createPayment,
-  verifyPayment,
+  verifyPayment
 };

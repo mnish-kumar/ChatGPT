@@ -52,15 +52,14 @@ async function registerController(req, res) {
     username,
     email,
     password: hashedPassword,
-    plan: [
-      {
-        type: "FREE",
-        startDate: new Date(),
-        expiry: null,
-        payment: null,
-        razorpaySubscriptionId: null,
-      },
-    ],
+    // plan is an object (see user.model.js) and has a default; keep it consistent
+    plan: {
+      type: "FREE",
+      startDate: new Date(),
+      expiry: null,
+      payment: null,
+      razorpaySubscriptionId: null,
+    },
   });
 
   // Generate access token
@@ -341,7 +340,7 @@ async function getMeController(req, res) {
       twoFactorAuth: {
         enabled: user?.twoFactorAuth?.enabled || false,
       },
-      plan: Array.isArray(user.plan) ? user.plan : [],
+      plan: user.plan || null,
     };
 
     // 4. Set cache
@@ -500,7 +499,7 @@ async function verifyEmailController(req, res) {
       message: "Email verified successfully",
     });
   } catch (err) {
-    console.error("verifyEmail error:", error);
+    console.error("verifyEmail error:", err);
     return res.status(500).json({
       success: false,
       message: "Internal server error",

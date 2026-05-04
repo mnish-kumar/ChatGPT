@@ -26,7 +26,8 @@ const UserProfile = () => {
       setLoading(false);
     }
   };
- useEffect(() => {
+
+  useEffect(() => {
     fetchProfile();
   }, []);
 
@@ -62,6 +63,7 @@ const UserProfile = () => {
   }
 
   const profile = profileData || user;
+  const plan = profile?.plan;
 
   return (
     <div className="min-h-screen bg-background px-4 py-10 font-sans text-foreground">
@@ -79,94 +81,98 @@ const UserProfile = () => {
           colors={["#c084fc", "#f472b6", "#38bdf8"]}
         >
           <div className="p-6">
-          {/* Avatar + Name */}
-          <div className="flex items-center gap-4 mb-6">
-            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary text-2xl font-bold text-primary-foreground">
-              {profile?.fullname?.firstname?.charAt(0)?.toUpperCase()}
-            </div>
-            <div>
-              <h1 className="text-xl font-semibold text-foreground">
-                {profile?.fullname?.firstname} {profile?.fullname?.lastname}
-              </h1>
-              <p className="text-sm text-muted-foreground">
-                @{profile?.username}
-              </p>
+            {/* Avatar + Name */}
+            <div className="flex items-center gap-4 mb-6">
+              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary text-2xl font-bold text-primary-foreground">
+                {profile?.fullname?.firstname?.charAt(0)?.toUpperCase()}
+              </div>
+              <div>
+                <h1 className="text-xl font-semibold text-foreground">
+                  {profile?.fullname?.firstname} {profile?.fullname?.lastname}
+                </h1>
+                <p className="text-sm text-muted-foreground">
+                  @{profile?.username}
+                </p>
+              </div>
+
+              {/* Email Verified Badge */}
+              <div className="ml-auto">
+                {profile?.isEmailVerified ? (
+                  <span className="flex items-center gap-1 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-xs text-primary">
+                    <svg
+                      className="w-3 h-3"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                    Verified
+                  </span>
+                ) : (
+                  <span className="flex items-center gap-1 rounded-full border border-destructive/20 bg-destructive/10 px-3 py-1 text-xs text-destructive">
+                    ⚠️ Not Verified
+                  </span>
+                )}
+              </div>
             </div>
 
-            {/* Email Verified Badge */}
-            <div className="ml-auto">
-              {profile?.isEmailVerified ? (
-                <span className="flex items-center gap-1 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-xs text-primary">
-                  <svg
-                    className="w-3 h-3"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                  Verified
+            {/* Info Grid */}
+            <div className="grid grid-cols-1 gap-4">
+              <div className="flex items-center gap-3 rounded-lg bg-muted p-3">
+                <span className="w-24 text-sm text-muted-foreground">
+                  Email
                 </span>
-              ) : (
-                <span className="flex items-center gap-1 rounded-full border border-destructive/20 bg-destructive/10 px-3 py-1 text-xs text-destructive">
-                  ⚠️ Not Verified
+                <span className="text-sm font-medium text-foreground">
+                  {profile?.email}
                 </span>
-              )}
+              </div>
+
+              <div className="flex items-center gap-3 rounded-lg bg-muted p-3">
+                <span className="w-24 text-sm text-muted-foreground">
+                  Username
+                </span>
+                <span className="text-sm font-medium text-foreground">
+                  @{profile?.username}
+                </span>
+              </div>
+
+              <div className="flex items-center gap-3 rounded-lg bg-muted p-3">
+                <span className="w-24 text-sm text-muted-foreground">Role</span>
+                <span className="text-sm font-medium capitalize text-foreground">
+                  {profile?.role || "user"}
+                </span>
+              </div>
+
+              <div className="flex items-center gap-3 rounded-lg bg-muted p-3">
+                <span className="w-24 text-sm text-muted-foreground">
+                  Joined
+                </span>
+                <span className="text-sm font-medium text-foreground">
+                  {profile?.createdAt &&
+                  !Number.isNaN(new Date(profile.createdAt).getTime())
+                    ? new Date(profile.createdAt).toLocaleDateString("en-US", {
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                      })
+                    : "-"}
+                </span>
+              </div>
+
+              <div className="flex items-center gap-3 rounded-lg bg-muted p-3">
+                <span className="w-24 text-sm text-muted-foreground">
+                  Login via
+                </span>
+                <span className="text-sm font-medium text-foreground">
+                  {profile?.googleId ? "🌐 Google" : "📧 Email"}
+                </span>
+              </div>
             </div>
           </div>
-
-          {/* Info Grid */}
-          <div className="grid grid-cols-1 gap-4">
-            <div className="flex items-center gap-3 rounded-lg bg-muted p-3">
-              <span className="w-24 text-sm text-muted-foreground">Email</span>
-              <span className="text-sm font-medium text-foreground">
-                {profile?.email}
-              </span>
-            </div>
-
-            <div className="flex items-center gap-3 rounded-lg bg-muted p-3">
-              <span className="w-24 text-sm text-muted-foreground">
-                Username
-              </span>
-              <span className="text-sm font-medium text-foreground">
-                @{profile?.username}
-              </span>
-            </div>
-
-            <div className="flex items-center gap-3 rounded-lg bg-muted p-3">
-              <span className="w-24 text-sm text-muted-foreground">Role</span>
-              <span className="text-sm font-medium capitalize text-foreground">
-                {profile?.role || "user"}
-              </span>
-            </div>
-
-            <div className="flex items-center gap-3 rounded-lg bg-muted p-3">
-              <span className="w-24 text-sm text-muted-foreground">Joined</span>
-              <span className="text-sm font-medium text-foreground">
-                {profile?.createdAt &&
-                !Number.isNaN(new Date(profile.createdAt).getTime())
-                  ? new Date(profile.createdAt).toLocaleDateString("en-US", {
-                      year: "numeric",
-                      month: "long",
-                      day: "numeric",
-                    })
-                  : "-"}
-              </span>
-            </div>
-
-            <div className="flex items-center gap-3 rounded-lg bg-muted p-3">
-              <span className="w-24 text-sm text-muted-foreground">
-                Login via
-              </span>
-              <span className="text-sm font-medium text-foreground">
-                {profile?.googleId ? "🌐 Google" : "📧 Email"}
-              </span>
-            </div>
-          </div>
-        </div>
         </BorderGlow>
 
         {/* ── Plan Card ── */}
@@ -175,31 +181,36 @@ const UserProfile = () => {
             Current Plan
           </h2>
 
-          {profile?.plan?.length > 0 ? (
+          {plan?.type ? (
             <div className="flex items-center justify-between rounded-lg border border-border bg-muted p-4">
               <div>
                 <p className="text-lg font-semibold text-foreground">
-                  {profile.plan[0].type}
+                  {plan.type}
                 </p>
                 <p className="mt-1 text-xs text-muted-foreground">
                   Started:{" "}
-                  {new Date(profile.plan[0].startDate).toLocaleDateString()}
+                  {plan?.startDate &&
+                  !Number.isNaN(new Date(plan.startDate).getTime())
+                    ? new Date(plan.startDate).toLocaleDateString()
+                    : "-"}
                 </p>
-                {profile.plan[0].expiry && (
+                {plan?.expiry && (
                   <p className="text-xs text-muted-foreground">
                     Expires:{" "}
-                    {new Date(profile.plan[0].expiry).toLocaleDateString()}
+                    {!Number.isNaN(new Date(plan.expiry).getTime())
+                      ? new Date(plan.expiry).toLocaleDateString()
+                      : "-"}
                   </p>
                 )}
               </div>
               <span
                 className={`px-3 py-1 rounded-full text-xs font-bold ${
-                  profile.plan[0].type === "PREMIUM"
+                  plan.type === "PREMIUM"
                     ? "bg-primary text-primary-foreground"
                     : "bg-background text-muted-foreground border border-border"
                 }`}
               >
-                {profile.plan[0].type === "PREMIUM" ? "⭐ Premium" : "Free"}
+                {plan.type === "PREMIUM" ? "⭐ Premium" : "Free"}
               </span>
             </div>
           ) : (
@@ -233,12 +244,16 @@ const UserProfile = () => {
               🔒 Two Factor Authentication
             </span>
             {/* profileData se live status */}
-            <span className={`text-xs px-2 py-1 rounded-full font-medium ${
-              profileData?.twoFactorAuth?.enabled
-                ? "bg-green-100 text-green-600"
-                : "bg-gray-100 text-gray-500"
-            }`}>
-              {profileData?.twoFactorAuth?.enabled ? "✅ Enabled" : "❌ Disabled"}
+            <span
+              className={`text-xs px-2 py-1 rounded-full font-medium ${
+                profileData?.twoFactorAuth?.enabled
+                  ? "bg-green-100 text-green-600"
+                  : "bg-gray-100 text-gray-500"
+              }`}
+            >
+              {profileData?.twoFactorAuth?.enabled
+                ? "✅ Enabled"
+                : "❌ Disabled"}
             </span>
           </button>
 

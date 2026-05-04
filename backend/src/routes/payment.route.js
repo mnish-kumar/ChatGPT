@@ -9,8 +9,11 @@ const authMiddleware = require("../middlewares/auth.middleware");
  * @access Private (user)
  * @returns { payment }
  */
-router.post('/created/:orderId', authMiddleware.createAuthMiddleware(["user"]), paymentController.createPayment);
-
+router.post(
+  "/created/:orderId",
+  authMiddleware.createAuthMiddleware(["user"]),
+  paymentController.createPayment,
+);
 
 /**
  * @route POST api/payment/verify
@@ -18,6 +21,10 @@ router.post('/created/:orderId', authMiddleware.createAuthMiddleware(["user"]), 
  * @access Private (user)
  * @returns { payment }
  */
-router.post('/verify', authMiddleware.createAuthMiddleware(["user"]), paymentController.verifyPayment);
+router.post(
+  "/verify",
+  authMiddleware.createAuthMiddleware(["user"]),
+  paymentController.verifyPayment,
+);
 
 module.exports = router;
