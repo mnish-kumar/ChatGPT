@@ -1,6 +1,5 @@
 const { GoogleGenAI } = require("@google/genai");
 const { z } = require("zod");
-const { zodToJsonSchema } = require("zod-to-json-schema");
 const utils = require("../utils/stream.helper");
 
 if (!process.env.GEMINI_API_KEY) {
@@ -83,7 +82,7 @@ const interviewReportSchema = z.object({
     .min(0)
     .max(100)
     .describe(
-      "A score indicating how well the user's profile matches the job description.",
+      "A score from 0 to 100 (not 0 to 1) indicating how well the user's profile matches the job description. Example: 85 means 85% match.",
     ),
   technicalQuestions: z
     .array(
@@ -169,18 +168,22 @@ const interviewReportSchema = z.object({
     ),
 });
 
-async function generateInterviewReport({ selfDescription, jobDescription, resume }) {
-  const prompt = `Generate an interview preparation report based on the following information:
+async function generateInterviewReport({
+  selfDescription,
+  jobDescription,
+  resume,
+}) {
+  const prompt = `Generate an interview report for a candidate with the following details
+                  Resume:${resume}
                   Self Description:${selfDescription}
-                  Job Description:${jobDescription}
-                  Resume:${resume}`;
+                  Job Description:${jobDescription}`;
 
   const response = await ai.models.generateContent({
-    model: "gemini-3-flash-preview",
+    model: "gemini-2.5-flash-lite",
     contents: prompt,
     config: {
       responseMimeType: "application/json",
-      responseSchema: zodToJsonSchema(interviewReportSchema),
+      responseJsonSchema: z.toJSONSchema(interviewReportSchema),
     },
   });
 

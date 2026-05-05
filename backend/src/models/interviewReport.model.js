@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 
 const technicalQuestionsSchema = new mongoose.Schema(
   {
-    question: {
+    questions: {
       type: String,
       required: [true, "Technical question is required"],
     },
@@ -20,7 +20,7 @@ const technicalQuestionsSchema = new mongoose.Schema(
 
 const behavioralQuestionsSchema = new mongoose.Schema(
   {
-    question: {
+    questions: {
       type: String,
       required: [true, "Behavioral question is required"],
     },
