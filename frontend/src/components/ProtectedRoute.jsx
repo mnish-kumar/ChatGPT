@@ -2,15 +2,7 @@ import { useSelector } from "react-redux";
 import { Outlet, Navigate } from "react-router-dom";
 
 const ProtectedRoute = () => {
-  const { isAuthenticated, isLoading } = useSelector((state) => state.user);
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <p>Loading...</p>
-      </div>
-    );
-  }
+  const { isAuthenticated } = useSelector((state) => state.user);
 
   
   if (!isAuthenticated) {

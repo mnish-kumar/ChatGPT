@@ -12,13 +12,13 @@ const App = () => {
   }, [dispatch]);
 
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <p>Loading...</p>
-      </div>
-    )
-  }
+  // if (isLoading) {
+  //   return (
+  //     <div className="flex items-center justify-center h-screen">
+  //       <p>Loading...</p>
+  //     </div>
+  //   )
+  // }
 
   return (
     <div className="w-full ">
