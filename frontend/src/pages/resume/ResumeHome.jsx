@@ -1,6 +1,8 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { generateResumeReport } from "@/api/resumeReport.api";
 import ReportPage from "./ReportPage";
+import Dropdown from "../user/Dropdown";
+import { MenuIcon } from "lucide-react/dist/cjs/lucide-react";
 
 const ResumeHome = ({ onSubmit }) => {
   const [jobDescription, setJobDescription] = useState("");
@@ -10,12 +12,17 @@ const ResumeHome = ({ onSubmit }) => {
   const [loading, setLoading] = useState(false);
   const [report, setReport] = useState(null);
   const fileInputRef = useRef();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef(null);
 
   const handleDrop = (e) => {
     e.preventDefault();
     setDragOver(false);
     const file = e.dataTransfer.files[0];
-    if (file && (file.type === "application/pdf" || file.name.endsWith(".docx"))) {
+    if (
+      file &&
+      (file.type === "application/pdf" || file.name.endsWith(".docx"))
+    ) {
       setResumeFile(file);
     }
   };
@@ -48,7 +55,8 @@ const ResumeHome = ({ onSubmit }) => {
     }
   };
 
-  const isValid = jobDescription.trim() && (resumeFile || selfDescription.trim());
+  const isValid =
+    jobDescription.trim() && (resumeFile || selfDescription.trim());
 
   if (report) {
     return (
@@ -61,17 +69,35 @@ const ResumeHome = ({ onSubmit }) => {
     );
   }
 
+  useEffect(() => {
+    const handler = (e) => {
+      if (menuRef.current && !menuRef.current.contains(e.target))
+        setMenuOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
   return (
-    <div className="min-h-screen bg-[#0d0f14] text-white flex flex-col items-center px-4 py-12 font-sans">
+    <div className="min-h-screen bg-[#0d0f14] text-white flex flex-col items-center px-4 py-8 font-sans">
+      <div ref={menuRef} className="absolute text-accent top-6 left-6">
+        <button
+          onClick={() => setMenuOpen((p) => !p)}
+          className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg border border-border bg-card transition hover:bg-muted"
+        >
+          <MenuIcon className="text-black" size={18} />
+        </button>
+        {menuOpen && <Dropdown onClose={() => setMenuOpen(false)} />}
+      </div>
+
       {/* Header */}
-      <div className="text-center mb-10 max-w-xl">
+      <div className="text-center mb-8 max-w-xl">
         <h1 className="text-4xl font-bold mb-3">
           Create Your Custom{" "}
           <span className="text-[#ff3e7f]">Interview Plan</span>
         </h1>
         <p className="text-gray-400 text-sm leading-relaxed">
-          Let our AI analyze the job requirements and your unique profile to
-          build a winning strategy.
+          Turn your profile into a job-winning strategy 🚀.
         </p>
       </div>
 
@@ -118,21 +144,29 @@ const ResumeHome = ({ onSubmit }) => {
                 dragOver
                   ? "border-[#ff3e7f] bg-[#ff3e7f]/5"
                   : resumeFile
-                  ? "border-green-500/50 bg-green-500/5"
-                  : "border-[#1e2130] bg-[#0d0f14] hover:border-[#ff3e7f]/40"
+                    ? "border-green-500/50 bg-green-500/5"
+                    : "border-[#1e2130] bg-[#0d0f14] hover:border-[#ff3e7f]/40"
               }`}
               onClick={() => fileInputRef.current.click()}
-              onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+              onDragOver={(e) => {
+                e.preventDefault();
+                setDragOver(true);
+              }}
               onDragLeave={() => setDragOver(false)}
               onDrop={handleDrop}
             >
               {resumeFile ? (
                 <>
                   <div className="text-green-400 text-2xl mb-1">✓</div>
-                  <p className="text-green-400 text-sm font-medium">{resumeFile.name}</p>
+                  <p className="text-green-400 text-sm font-medium">
+                    {resumeFile.name}
+                  </p>
                   <p
                     className="text-xs text-gray-500 mt-1 hover:text-[#ff3e7f] transition-colors"
-                    onClick={(e) => { e.stopPropagation(); setResumeFile(null); }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setResumeFile(null);
+                    }}
                   >
                     Remove file
                   </p>
@@ -200,7 +234,7 @@ const ResumeHome = ({ onSubmit }) => {
         <button
           onClick={handleSubmit}
           disabled={!isValid || loading}
-          className={`flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm transition-all ${
+          className={`flex items-center cursor-pointer gap-2 px-6 py-3 rounded-xl font-semibold text-sm transition-all ${
             isValid && !loading
               ? "bg-[#ff3e7f] hover:bg-[#ff1a6a] text-white shadow-lg shadow-[#ff3e7f]/20 hover:shadow-[#ff3e7f]/40 active:scale-95"
               : "bg-[#1e2130] text-gray-600 cursor-not-allowed"
@@ -208,9 +242,24 @@ const ResumeHome = ({ onSubmit }) => {
         >
           {loading ? (
             <>
-              <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+              <svg
+                className="animate-spin w-4 h-4"
+                viewBox="0 0 24 24"
+                fill="none"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                />
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8v8z"
+                />
               </svg>
               Analyzing...
             </>
@@ -221,6 +270,6 @@ const ResumeHome = ({ onSubmit }) => {
       </div>
     </div>
   );
-}
+};
 
-export default ResumeHome
+export default ResumeHome;

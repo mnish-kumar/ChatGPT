@@ -1,9 +1,11 @@
 import { useSelector, useDispatch } from "react-redux";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { logoutUser } from "../../store/userAction";
 import { useNavigate } from "react-router-dom";
 import { getMe } from "@/api/auth.api";
 import BorderGlow from "@/components/BorderGlow";
+import { MenuIcon } from "lucide-react/dist/cjs/lucide-react";
+import Dropdown from "./Dropdown";
 
 const UserProfile = () => {
   const dispatch = useDispatch();
@@ -36,6 +38,18 @@ const UserProfile = () => {
     dispatch(logoutUser());
     navigate("/login");
   };
+
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef(null);
+
+  useEffect(() => {
+    const handler = (e) => {
+      if (menuRef.current && !menuRef.current.contains(e.target))
+        setMenuOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
 
   // ─── Loading ──────────────────────────────────────────
   if (loading) {
@@ -141,6 +155,15 @@ const UserProfile = () => {
 
   return (
     <div className="min-h-screen bg-background px-4 py-10 font-sans text-foreground">
+      <div ref={menuRef} className="absolute top-6 left-6">
+          <button
+            onClick={() => setMenuOpen((p) => !p)}
+            className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg border border-border bg-card transition hover:bg-muted"
+          >
+            <MenuIcon className="text-black" size={18} />
+          </button>
+          {menuOpen && <Dropdown onClose={() => setMenuOpen(false)} />}
+        </div>
       <div className="max-w-2xl mx-auto space-y-6">
         {/* ── Profile Card ── */}
         <BorderGlow

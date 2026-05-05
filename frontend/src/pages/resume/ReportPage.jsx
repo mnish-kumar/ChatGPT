@@ -160,7 +160,7 @@ export default function ReportPage({ report, onBack }) {
           <button
             key={s.key}
             onClick={() => setActiveSection(s.key)}
-            className={`flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium text-left transition-colors ${
+            className={`flex items-center cursor-pointer gap-2 px-3 py-2.5 rounded-lg text-sm font-medium text-left transition-colors ${
               activeSection === s.key
                 ? "bg-[#ff3e7f]/20 text-[#ff3e7f]"
                 : "text-gray-400 hover:bg-[#1e2130] hover:text-white"
@@ -173,7 +173,7 @@ export default function ReportPage({ report, onBack }) {
         <div className="mt-auto">
           <button
             onClick={onBack}
-            className="w-full text-xs text-gray-600 hover:text-gray-400 transition-colors py-2"
+            className="w-full text-xs text-gray-600 border border-accent-foreground hover:text-gray-400 transition-colors py-2"
           >
             ← New Analysis
           </button>

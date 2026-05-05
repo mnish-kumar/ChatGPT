@@ -96,9 +96,30 @@ const Register = () => {
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-chart-1">
+      <div
+        className="relative flex items-center justify-center w-full max-w-md rounded-2xl h-dvh"
+        style={{
+          background: "rgba(255,255,255,0.06)",
+          backdropFilter: "blur(20px)",
+          border: "1px solid rgba(255,255,255,0.15)",
+          boxShadow:
+            "0 8px 32px rgba(0,0,0,0.4), 0 0 60px rgba(120,80,255,0.15)",
+        }}
+      >
+        {/* Close button */}
+        <button
+          onClick={() => navigate("/")}
+          className="absolute bg-gray-500 top-3 right-3 w-7 h-7 rounded-full flex items-center justify-center text-sm cursor-pointer transition"
+          style={{
+            border: "1px solid rgba(255,255,255,0.2)",
+            color: "rgba(255,255,255,0.7)",
+          }}
+        >
+          ✕
+        </button>
       <form
         onSubmit={handleSubmit(onSubmit)}
-        className="relative overflow-hidden bg-white text-gray-500 max-w-97 mx-4 md:p-6 p-4 text-left text-sm rounded-xl shadow-[0px_0px_10px_0px] shadow-black/10"
+        className="relative overflow-hidden bg-white text-gray-500 max-w-97 mt-4 mx-4 md:p-6 p-4 text-left text-sm rounded-xl shadow-[0px_0px_10px_0px] shadow-black/10"
       >
         <h2 className="text-2xl font-semibold mb-6 text-center text-gray-800">
           Create Account
@@ -206,6 +227,7 @@ const Register = () => {
           className={"from-transparent via-blue-500 to-transparent"}
         />
       </form>
+      </div>
     </div>
   );
 };

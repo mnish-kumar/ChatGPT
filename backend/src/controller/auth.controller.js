@@ -100,6 +100,9 @@ async function registerController(req, res) {
       email: user.email,
       username: user.username,
       fullname: user.fullname,
+      role: user.role,
+      createdAt: user.createdAt,
+      plan: user.plan || null,
     },
     accessToken: accessToken,
   });
@@ -219,6 +222,12 @@ async function loginController(req, res) {
       email: user.email,
       username: user.username,
       fullname: user.fullname,
+      role: user.role,
+      createdAt: user.createdAt,
+      plan: user.plan || null,
+      twoFactorAuth: {
+        enabled: user?.twoFactorAuth?.enabled || false,
+      },
     },
     accessToken: accessToken,
   });

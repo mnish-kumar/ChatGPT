@@ -3,10 +3,26 @@ import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import PremiumButton from "@/components/PremiumButton";
 import TextType from "@/components/TextType";
+import { MenuIcon } from "lucide-react/dist/cjs/lucide-react";
+import { useEffect, useRef, useState } from "react";
+import Dropdown from "./user/Dropdown";
 
 const Dashboard = () => {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef(null);
   const navigate = useNavigate();
   const { user, isLoading } = useSelector((s) => s.user);
+
+  
+  useEffect(() => {
+    const handler = (e) => {
+      if (menuRef.current && !menuRef.current.contains(e.target)) {
+        setMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
 
   if (!user || isLoading) {
     return (
@@ -38,14 +54,18 @@ const Dashboard = () => {
 
   return (
     <div className="flex min-h-screen bg-chart-1 text-foreground font-sans gap-10 justify-center items-center">
-      <PixelCard
-        variant="pink"
-        className="cursor-pointer"
-        onClick={() => navigate("/chat")}
-      >
-        <h1 className="absolute font-heading text-5xl font-semibold text-center">
-          ChitChat
-        </h1>
+      <div ref={menuRef} className="absolute top-6 left-6">
+        <button
+          onClick={() => setMenuOpen((prev) => !prev)}
+          className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg border border-border bg-card transition hover:bg-muted"
+        >
+          <MenuIcon size={18} />
+        </button>
+
+        {menuOpen && <Dropdown onClose={() => setMenuOpen(false)} />}
+      </div>
+      <PixelCard variant="pink" className="cursor-pointer" onClick={() => navigate("/chat")}>
+        <h1 className="absolute font-heading text-5xl font-semibold text-center">ChitChat</h1>
       </PixelCard>
 
       <PixelCard
