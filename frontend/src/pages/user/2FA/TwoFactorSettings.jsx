@@ -16,7 +16,7 @@ const TwoFactorSettings = () => {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
   const [is2FAEnabled, setIs2FAEnabled] = useState(
-    user?.twoFactorAuth?.enabled || false
+    user?.twoFactorAuth?.enabled || false,
   );
 
   useEffect(() => {
@@ -27,9 +27,7 @@ const TwoFactorSettings = () => {
         const me = await getMe();
         if (!isMounted) return;
         setIs2FAEnabled(!!me?.twoFactorAuth?.enabled);
-      } catch {
-       
-      }
+      } catch {}
     };
 
     // If redux user isn't ready (e.g. hard refresh), fetch server truth.
@@ -41,6 +39,8 @@ const TwoFactorSettings = () => {
       isMounted = false;
     };
   }, [user]);
+
+  // const { isLoading } = useSelector((state) => state.user);
 
   const {
     register,
@@ -105,20 +105,20 @@ const TwoFactorSettings = () => {
       {/* Status */}
       <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200">
         <div>
-          <p className="font-medium text-gray-800">
-            Two Factor Authentication
-          </p>
+          <p className="font-medium text-gray-800">Two Factor Authentication</p>
           <p className="text-sm text-gray-500 mt-1">
             {is2FAEnabled
               ? "Your account is protected with 2FA"
               : "Add extra security to your account"}
           </p>
         </div>
-        <span className={`px-3 py-1 rounded-full text-xs font-bold ${
-          is2FAEnabled
-            ? "bg-green-100 text-green-600"
-            : "bg-gray-100 text-gray-500"
-        }`}>
+        <span
+          className={`px-3 py-1 rounded-full text-xs font-bold ${
+            is2FAEnabled
+              ? "bg-green-100 text-green-600"
+              : "bg-gray-100 text-gray-500"
+          }`}
+        >
           {is2FAEnabled ? "✅ Enabled" : "❌ Disabled"}
         </span>
       </div>
@@ -126,7 +126,10 @@ const TwoFactorSettings = () => {
       {/* Action Button */}
       {is2FAEnabled ? (
         <button
-          onClick={() => { setStep("disable"); setError(null); }}
+          onClick={() => {
+            setStep("disable");
+            setError(null);
+          }}
           className="w-full cursor-pointer border border-red-300 text-red-600 py-2 rounded-lg text-sm font-medium hover:bg-red-50 transition"
         >
           Disable 2FA
@@ -147,12 +150,10 @@ const TwoFactorSettings = () => {
   const EnableScreen = () => (
     <div className="space-y-4">
       <div className="text-center">
-        <h3 className="font-bold text-gray-800 mb-2">
-          Scan QR Code
-        </h3>
+        <h3 className="font-bold text-gray-800 mb-2">Scan QR Code</h3>
         <p className="text-sm text-gray-500 mb-4">
-          Open <strong>Google Authenticator</strong> or{" "}
-          <strong>Authy</strong> and scan this QR code
+          Open <strong>Google Authenticator</strong> or <strong>Authy</strong>{" "}
+          and scan this QR code
         </p>
 
         {/* QR Code */}
@@ -169,9 +170,7 @@ const TwoFactorSettings = () => {
           <p className="text-xs text-gray-500 mb-1">
             Can't scan? Enter manually:
           </p>
-          <p className="text-xs font-mono text-gray-700 break-all">
-            {secret}
-          </p>
+          <p className="text-xs font-mono text-gray-700 break-all">{secret}</p>
         </div>
       </div>
 
@@ -235,8 +234,8 @@ const TwoFactorSettings = () => {
       {/* Warning */}
       <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
         <p className="text-yellow-700 text-xs">
-          ⚠️ These codes will only be shown <strong>once</strong>.
-          If you lose your authenticator app, use these to login.
+          ⚠️ These codes will only be shown <strong>once</strong>. If you lose
+          your authenticator app, use these to login.
         </p>
       </div>
 
@@ -317,7 +316,11 @@ const TwoFactorSettings = () => {
 
         <button
           type="button"
-          onClick={() => { setStep("idle"); setError(null); reset(); }}
+          onClick={() => {
+            setStep("idle");
+            setError(null);
+            reset();
+          }}
           className="w-full text-gray-500 text-sm hover:underline"
         >
           Cancel
@@ -326,11 +329,62 @@ const TwoFactorSettings = () => {
     </div>
   );
 
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 py-10 px-4">
+        <div className="max-w-md mx-auto">
+          <style>{`
+          @keyframes shimmer {
+            0% { background-position: -600px 0; }
+            100% { background-position: 600px 0; }
+          }
+          .sk {
+            background: linear-gradient(90deg, #e2e2e2 25%, #efefef 50%, #e2e2e2 75%);
+            background-size: 1200px 100%;
+            animation: shimmer 1.6s infinite linear;
+          }
+          .dark .sk {
+            background: linear-gradient(90deg, #2a2a2a 25%, #3a3a3a 50%, #2a2a2a 75%);
+            background-size: 1200px 100%;
+          }
+        `}</style>
+
+          {/* Back button */}
+          <div className="flex items-center gap-3 mb-6">
+            <div className="sk h-4 w-28 rounded-md" />
+          </div>
+
+          <div className="bg-white rounded-xl shadow-md p-6">
+            {/* Title */}
+            <div className="sk mb-6 h-6 w-52 rounded-md" />
+
+            {/* Status row */}
+            <div className="flex items-center justify-between rounded-lg border border-gray-100 bg-gray-50 p-4 mb-4">
+              <div className="space-y-2">
+                <div className="sk h-4 w-32 rounded-md" />
+                <div className="sk h-3 w-24 rounded-md" />
+              </div>
+              <div className="sk h-6 w-16 rounded-full" />
+            </div>
+
+            {/* Description lines */}
+            <div className="space-y-2 mb-6">
+              <div className="sk h-3 w-full rounded-md" />
+              <div className="sk h-3 w-4/5 rounded-md" />
+            </div>
+
+            {/* Action button */}
+            <div className="sk h-10 w-full rounded-lg" />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   // ─── Main Render ──────────────────────────────────────
   return (
     <div className="min-h-screen bg-gray-50 py-10 px-4">
       <div className="max-w-md mx-auto">
-
         {/* Header */}
         <div className="flex items-center gap-3 mb-6">
           <button
@@ -365,7 +419,6 @@ const TwoFactorSettings = () => {
           {step === "enable" && <EnableScreen />}
           {step === "backup" && <BackupCodesScreen />}
           {step === "disable" && <DisableScreen />}
-
         </div>
       </div>
     </div>
