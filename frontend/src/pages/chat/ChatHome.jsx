@@ -30,11 +30,13 @@ export default function ChatPage() {
   }, [dispatch, accessToken]);
 
   return (
-    <div className="flex-1 flex h-dvh overflow-hidden bg-[#0a0c10]">
+    <div className="flex-1 flex h-dvh overflow-hidden bg-[#0a0c10] p-1 gap-1">
       {/* Sidebar: inline on desktop, overlay on mobile */}
-      <div className="hidden md:flex md:flex-none">
-        <Sidebar onClose={() => {}} />
-      </div>
+      {sidebarOpen && (
+        <div className="hidden md:flex md:flex-none">
+          <Sidebar onClose={() => setSidebarOpen(false)} />
+        </div>
+      )}
 
       {/* Mobile sidebar */}
       {sidebarOpen && (
@@ -53,7 +55,7 @@ export default function ChatPage() {
 
       {/* Main area */}
       <div className="flex-1 min-w-0 overflow-hidden">
-        <div className="h-full w-full p-3 md:p-6">
+        <div className="h-full w-full">
           <div className="h-full w-full overflow-hidden rounded-2xl border border-[#89A8B2]/15 bg-[#0f1219]/35 backdrop-blur flex flex-col">
             <ChatWindow
               sidebarOpen={sidebarOpen}

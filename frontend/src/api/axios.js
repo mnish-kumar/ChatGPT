@@ -4,13 +4,29 @@ import { getApiStore } from "./storeBridge";
 const api = axios.create({
   baseURL: 'http://localhost:3000',
   withCredentials: true,
-  headers: {
-    'Content-Type': 'application/json',
-  },
+  // headers: {
+  //   'Content-Type': 'application/json',
+  // },
 });
 
 api.interceptors.request.use(
   (config) => {
+    const isFormData =
+      typeof FormData !== "undefined" && config.data instanceof FormData;
+
+    if (isFormData) {
+      // Axios may carry defaults; explicitly remove content-type so multipart boundary is added.
+      if (config.headers) {
+        delete config.headers["Content-Type"];
+        delete config.headers["content-type"];
+      }
+    } else {
+      config.headers = config.headers ?? {};
+      if (!config.headers["Content-Type"] && !config.headers["content-type"]) {
+        config.headers["Content-Type"] = "application/json";
+      }
+    }
+
     const store = getApiStore();
     const accessToken = store?.getState?.()?.user?.accessToken;
     if (accessToken) {

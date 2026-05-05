@@ -64,6 +64,7 @@ export default function ChatWindow({ sidebarOpen = true, onOpenSidebar }) {
   const bottomRef = useRef(null);
   const scrollRef = useRef(null);
   const shouldAutoScrollRef = useRef(true);
+  // const [seeDropdown, setSeeDropdown] = useState(false);
 
   const activeChatTitle = chats?.find((c) => c?._id === activeChatId)?.title;
 
@@ -105,7 +106,7 @@ export default function ChatWindow({ sidebarOpen = true, onOpenSidebar }) {
                 type="button"
                 aria-label="Open sidebar"
                 onClick={onOpenSidebar}
-                className="md:hidden w-9 h-9 rounded-xl border border-[#89A8B2]/20 bg-white/[0.02] text-[#B3C8CF]/80 flex items-center justify-center hover:bg-[#89A8B2]/10 hover:text-[#B3C8CF] transition"
+                className="w-9 h-9 rounded-xl cursor-pointer border border-[#89A8B2]/20 bg-white/[0.02] text-[#B3C8CF]/80 flex items-center justify-center hover:bg-[#89A8B2]/10 hover:text-[#B3C8CF] transition"
               >
                 <Menu size={16} />
               </button>
@@ -115,7 +116,7 @@ export default function ChatWindow({ sidebarOpen = true, onOpenSidebar }) {
               <div className="text-[13px] font-medium text-white truncate">
                 {activeChatId
                   ? activeChatTitle || "Untitled Chat"
-                  : "NexusAI Studio"}
+                  : "Welcome to JarviSync!"}
               </div>
             </div>
           </div>
@@ -138,6 +139,7 @@ export default function ChatWindow({ sidebarOpen = true, onOpenSidebar }) {
             <button
               type="button"
               aria-label="More"
+              // onClick={() => seeDropdown}
               className="w-9 h-9 rounded-xl border border-[#89A8B2]/20 bg-white/[0.02] text-[#B3C8CF]/60 hover:text-[#B3C8CF] hover:bg-[#89A8B2]/10 transition flex items-center justify-center"
             >
               <MoreVertical size={16} />

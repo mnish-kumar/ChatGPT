@@ -24,11 +24,10 @@ const MainRoute = () => {
           <Route path="/settings/2fa" element={<TwoFactorSettings />} />
           <Route path="/change-password" element={<ChangePassword />} />
           <Route path="/chat" element={<ChatHome />} />
-          
+          <Route path="/resume-analyzer" element={<ResumeHome />} />
         </Route>
 
         <Route element={<PublicRoute />}>
-        <Route path="/resume-analyzer" element={<ResumeHome />} />
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />

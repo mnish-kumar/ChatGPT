@@ -2,7 +2,11 @@ import { useSelector } from "react-redux";
 import { Navigate, Outlet } from "react-router-dom";
 
 const PublicRoute = () => {
-  const { isAuthenticated } = useSelector((state) => state.user);
+  const { isAuthenticated, isLoading } = useSelector((state) => state.user);
+
+  if (isLoading) {
+    return null;
+  }
 
   // Already logged in hai → dashboard pe redirect karo
   if (isAuthenticated) {

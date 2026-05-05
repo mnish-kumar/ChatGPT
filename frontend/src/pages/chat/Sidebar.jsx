@@ -73,7 +73,7 @@ export default function Sidebar({ onClose }) {
   const res = await dispatch(createChatAction({ title: chatTitle }));
 
   if (res.payload?._id) {
-    await dispatch(getUserChatsAction()); // ✅ list refresh
+    await dispatch(getUserChatsAction());
     dispatch(setActiveChat(res.payload._id));
   }
 
@@ -101,7 +101,7 @@ export default function Sidebar({ onClose }) {
 
   return (
     <>
-      <aside className="h-full w-[280px] min-w-[280px] bg-[#0f1219] border-r border-[#89A8B2]/15 flex flex-col overflow-hidden">
+      <aside className="h-full rounded-2xl w-[280px] min-w-[280px] bg-[#0f1219] border-r border-[#89A8B2]/15 flex flex-col overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-4">
           <div className="flex flex-col leading-tight">
@@ -111,8 +111,9 @@ export default function Sidebar({ onClose }) {
             </div>
           </div>
           <X
-            className="w-5 h-5 text-[#B3C8CF]/60 cursor-pointer hover:text-[#B3C8CF] transition md:hidden"
+            className="w-8 h-8 rounded-lg text-[#B3C8CF]/60 cursor-pointer border border-[#89A8B2]/20 hover:text-[#B3C8CF] transition"
             onClick={onClose}
+            size={16}
           />
         </div>
 
@@ -144,7 +145,7 @@ export default function Sidebar({ onClose }) {
           <button
             type="button"
             onClick={() => navigate("/profile")}
-            className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-[#B3C8CF]/70 hover:bg-[#89A8B2]/10 hover:text-[#B3C8CF] transition"
+            className="w-full flex items-center cursor-pointer gap-2 px-3 py-2 rounded-xl text-[#B3C8CF]/70 hover:bg-[#89A8B2]/10 hover:text-[#B3C8CF] transition"
           >
             <span className="w-[14px] h-[14px] rounded-full border border-[#89A8B2]/35 inline-flex items-center justify-center text-[10px] text-[#B3C8CF]/60">
               U

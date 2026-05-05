@@ -4,10 +4,24 @@ const aiService = require("../services/ai.service");
 
 async function analyzeResume(req, res) {
   try {
+    if (!req.file) {
+      return res.status(400).json({ error: "Resume file is required." });
+    }
+
     const resumeContent = await new pdfParse.PDFParse(
       Uint8Array.from(req.file.buffer),
     ).getText();
     const { jobDescription, selfDescription } = req.body;
+
+    if (!jobDescription) {
+      return res.status(400).json({ error: "Job description are required." });
+    }
+
+    if (!selfDescription) {
+      return res.status(400).json({
+        error: "Either self description is required.",
+      });
+    }
 
     const interviewReportByAI = await aiService.generateInterviewReport({
       selfDescription,

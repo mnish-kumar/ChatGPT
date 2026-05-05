@@ -86,7 +86,7 @@ export default function MessageInput() {
       </div>
 
       <p className="text-center text-[11px] text-[#B3C8CF]/30 mt-2">
-        NexusAI can make mistakes. Verify important information.
+        JarviSync helps you move faster — you stay in control 🚀
       </p>
     </div>
   );
