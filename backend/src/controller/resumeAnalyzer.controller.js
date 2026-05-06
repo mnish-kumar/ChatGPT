@@ -41,12 +41,6 @@ async function analyzeResume(req, res) {
       ...interviewReportByAI,
     });
 
-    const interviewReport = await interviewReportModel
-      .findOne({
-        user: req.user._id,
-      })
-      .sort({ createdAt: -1 });
-
     // if user matchScore < 80, toh learning resources fetch
     let learningResources = null;
     let jobSuggestions = null;

@@ -15,6 +15,16 @@ const ResumeHome = ({ onSubmit }) => {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef(null);
 
+  useEffect(() => {
+    const handler = (e) => {
+      if (menuRef.current && !menuRef.current.contains(e.target)) {
+        setMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
   const handleDrop = (e) => {
     e.preventDefault();
     setDragOver(false);
@@ -68,15 +78,6 @@ const ResumeHome = ({ onSubmit }) => {
       />
     );
   }
-
-  useEffect(() => {
-    const handler = (e) => {
-      if (menuRef.current && !menuRef.current.contains(e.target))
-        setMenuOpen(false);
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, []);
 
   return (
     <div className="min-h-screen bg-[#0d0f14] text-white flex flex-col items-center px-4 py-8 font-sans">

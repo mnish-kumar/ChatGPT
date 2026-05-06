@@ -413,7 +413,7 @@ export default function ReportPage({ report, onBack }) {
         <div className="mt-auto">
           <button
             onClick={onBack}
-            className="w-full text-xs text-gray-600 border border-[#1e2130] hover:text-gray-400 transition-colors py-2 rounded-lg"
+            className="w-full text-xs cursor-pointer text-gray-600 border border-[#1e2130] hover:text-gray-400 transition-colors py-2 rounded-lg"
           >
             ← New Analysis
           </button>
