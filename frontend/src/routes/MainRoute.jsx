@@ -4,6 +4,8 @@ import Login from "../pages/Login";
 import Register from "../pages/Register";
 import PublicRoute from "@/components/PublicRoute";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import PremiumRoute from "@/components/PremiumRoute";
+import Subscription from "@/components/Subscription";
 import Dashboard from "@/pages/Dashboard";
 import ForgetPassword from "@/pages/user/forgetPassword/ForgetPassword";
 import ResetPassword from "@/pages/user/forgetPassword/ResetPassword";
@@ -25,8 +27,13 @@ const MainRoute = () => {
           <Route path="/settings/2fa" element={<TwoFactorSettings />} />
           <Route path="/change-password" element={<ChangePassword />} />
           <Route path="/chat" element={<ChatHome />} />
-          <Route path="/resume-analyzer" element={<ResumeHome />} />
-          <Route path="/report-history" element={<ReportHistory />} />
+
+          <Route path="/subscription" element={<Subscription />} />
+
+          <Route element={<PremiumRoute />}>
+            <Route path="/resume-analyzer" element={<ResumeHome />} />
+            <Route path="/report-history" element={<ReportHistory />} />
+          </Route>
         </Route>
 
         <Route element={<PublicRoute />}>

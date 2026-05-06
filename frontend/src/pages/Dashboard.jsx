@@ -1,7 +1,6 @@
 import PixelCard from "@/components/PixelCard";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import PremiumButton from "@/components/PremiumButton";
 import TextType from "@/components/TextType";
 import { MenuIcon } from "lucide-react/dist/cjs/lucide-react";
 import { useEffect, useRef, useState } from "react";
@@ -24,33 +23,6 @@ const Dashboard = () => {
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  if (!user || isLoading) {
-    return (
-      <div className="flex min-h-screen bg-chart-1 items-center justify-center gap-10">
-        <style>{`
-          @keyframes shimmer {
-            0% { background-position: -600px 0; }
-            100% { background-position: 600px 0; }
-          }
-          .sk {
-            background: linear-gradient(90deg, #e2e2e2 25%, #efefef 50%, #e2e2e2 75%);
-            background-size: 1200px 100%;
-            animation: shimmer 1.6s infinite linear;
-          }
-          .dark .sk {
-            background: linear-gradient(90deg, #2a2a2a 25%, #3a3a3a 50%, #2a2a2a 75%);
-            background-size: 1200px 100%;
-          }
-        `}</style>
-
-        {/* PixelCard 1 — ChitChat */}
-        <div className="sk h-64 w-56 rounded-xl" />
-
-        {/* PixelCard 2 — Resume */}
-        <div className="sk h-64 w-56 rounded-xl" />
-      </div>
-    );
-  }
 
   return (
     <div className="flex min-h-screen bg-chart-1 text-foreground font-sans gap-10 justify-center items-center">
@@ -97,7 +69,13 @@ const Dashboard = () => {
               <span className="mb-1 text-sm text-center leading-relaxed">
                 Upgrade to Premium for unlimited access
               </span>
-              <PremiumButton />
+              <button
+                onClick={() => navigate("/subscription")}
+                className="w-full px-4 py-2.5 rounded-xl bg-[#89A8B2] hover:bg-[#3a9ec0]
+                  text-[#0f1219] font-semibold text-sm transition-all cursor-pointer"
+              >
+                ⚡ Upgrade to Premium
+              </button>
             </>
           ) : (
             <span className="mb-1 text-lg font-medium text-center leading-relaxed">

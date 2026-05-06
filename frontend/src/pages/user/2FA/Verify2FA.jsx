@@ -31,6 +31,31 @@ const Verify2FA = ({ onCancel }) => {
     }));
   };
 
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-chart-1 px-4">
+        <div className="relative mx-4 w-full max-w-89 overflow-hidden rounded-xl border border-border bg-card p-6 md:p-8">
+          <style>{`
+          @keyframes shimmer {
+            0% { background-position: -600px 0; }
+            100% { background-position: 600px 0; }
+          }
+          .shimmer {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 1200px 100%;
+            animation: shimmer 1.6s infinite linear;
+          }
+        `}</style>
+          <div className="h-6 w-1/2 rounded bg-gray-300 shimmer mb-4"></div>
+          <div className="h-10 w-full rounded bg-gray-300 shimmer mb-3"></div>
+          <div className="h-10 w-full rounded bg-gray-300 shimmer mb-3"></div>
+          <div className="h-10 w-full rounded bg-gray-300 shimmer mb-3"></div>
+          <div className="h-10 w-full rounded bg-gray-300 shimmer"></div>
+        </div>
+      </div>
+    );
+  }
+
   if (!twoFactorRequired) return null;
 
   return (

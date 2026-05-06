@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { useState } from "react";
+import { useRazorpay } from "@/hooks/useRazorpay";
 import {
   Star,
   MessageCircle,
@@ -11,23 +12,26 @@ import {
   Users,
   Clock,
   CheckCircle,
+  BookOpen,
 } from "lucide-react/dist/cjs/lucide-react";
 
 const FREE_FEATURES = [
-  { icon: Star,          text: "Core AI model" },
-  { icon: MessageCircle, text: "Limited chat messages" },
-  { icon: FileText,      text: "Basic resume analysis (3/month)" },
+  { icon: FileText,      text: "3 resume analyses per month" },
+  { icon: MessageCircle, text: "Basic interview Q&A (5 questions each)" },
+  { icon: BarChart2,     text: "Basic match score" },
   { icon: Clock,         text: "Standard response speed" },
   { icon: Users,         text: "Community support" },
 ];
 
 const PRO_FEATURES = [
-  { icon: Star,          text: "Advanced AI model" },
-  { icon: MessageCircle, text: "Unlimited chat messages" },
-  { icon: FileText,      text: "Unlimited resume analysis" },
-  { icon: Zap,           text: "Priority response speed" },
-  { icon: Shield,        text: "AI resume scoring & tips" },
-  { icon: BarChart2,     text: "Detailed insights dashboard" },
+  { icon: FileText,      text: "Unlimited resume analyses" },
+  { icon: MessageCircle, text: "Full interview Q&A (10+ questions each)" },
+  { icon: BarChart2,     text: "Advanced match score & skill gap analysis" },
+  { icon: Zap,           text: "Real-time job suggestions (matching your role)" },
+  { icon: BookOpen,      text: "Curated learning resources per skill gap" },
+  { icon: Shield,        text: "Resume improvement tips" },
+  { icon: Star,          text: "Priority AI model & faster responses" },
+  { icon: Clock,         text: "Analysis history (unlimited)" },
   { icon: Users,         text: "Priority support" },
 ];
 
@@ -35,17 +39,18 @@ const Subscription = () => {
   const navigate = useNavigate();
   const { user } = useSelector((s) => s.user);
   const [tab, setTab] = useState("personal");
+  const { openCheckout } = useRazorpay();
 
   const isPro = user?.plan?.type === "PREMIUM";
-  const proPrice = tab === "personal" ? "9" : "19";
+  const proPrice = tab === "personal" ? "399" : "999";
 
   return (
-    <div className="min-h-screen bg-background px-4 py-10 font-sans text-foreground">
+    <div className="min-h-screen bg-background px-4 py-7 font-sans text-foreground">
 
       {/* Close */}
       <button
         onClick={() => navigate(-1)}
-        className="absolute top-5 right-5 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border border-border bg-card text-muted-foreground transition hover:bg-muted"
+        className="absolute top-5 right-5 flex h-9 w-9 cursor-pointer items-center justify-center rounded-full border border-[#1e2130] bg-card text-muted-foreground transition hover:bg-muted"
       >
         ✕
       </button>
@@ -78,14 +83,14 @@ const Subscription = () => {
       <div className="mx-auto flex max-w-2xl flex-wrap justify-center gap-4">
 
         {/* FREE */}
-        <div className="flex w-72 flex-col rounded-xl border border-border bg-card p-6 shadow-sm">
+        <div className="flex w-80 flex-col rounded-xl border border-border bg-card p-6 shadow-sm">
           <p className="mb-2 text-lg font-medium text-foreground">Free</p>
 
           <div className="mb-1 flex items-baseline gap-1">
-            <span className="text-sm font-medium text-foreground">$</span>
+            <span className="text-sm font-medium text-foreground">₹</span>
             <span className="text-4xl font-semibold text-foreground">0</span>
             <span className="text-xs leading-tight text-muted-foreground">
-              USD /<br />month
+              INR /<br />month
             </span>
           </div>
 
@@ -113,7 +118,7 @@ const Subscription = () => {
         </div>
 
         {/* PRO */}
-        <div className="flex w-72 flex-col rounded-xl border-2 bg-card p-6 shadow-sm"
+        <div className="flex w-80 flex-col rounded-xl border-2 bg-card p-6 shadow-sm"
           style={{ borderColor: "#534AB7" }}>
 
           <div className="mb-2 flex items-center gap-2">
@@ -125,10 +130,10 @@ const Subscription = () => {
           </div>
 
           <div className="mb-1 flex items-baseline gap-1">
-            <span className="text-sm font-medium text-foreground">$</span>
+            <span className="text-sm font-medium text-foreground">₹</span>
             <span className="text-4xl font-semibold text-foreground">{proPrice}</span>
             <span className="text-xs leading-tight text-muted-foreground">
-              USD /<br />month
+              INR /<br />month
             </span>
           </div>
 
@@ -137,9 +142,9 @@ const Subscription = () => {
           </p>
 
           <button
-            onClick={() => navigate("/checkout")}
+            onClick={openCheckout}
             disabled={isPro}
-            className="mb-4 w-full rounded-lg py-2 text-sm font-medium text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+            className="mb-4 w-full cursor-pointer rounded-lg py-2 text-sm font-medium text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
             style={{ background: "#534AB7" }}
           >
             {isPro ? (
