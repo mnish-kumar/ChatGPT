@@ -4,7 +4,7 @@ let socket = null;
 
 export const getSocket = () => {
   if (!socket) {
-    socket = io(import.meta.env.VITE_SOCKET_URL || "http://localhost:3000", {
+    socket = io(import.meta.env.VITE_SOCKET_URL, {
       withCredentials: true,
       autoConnect: false,
     });

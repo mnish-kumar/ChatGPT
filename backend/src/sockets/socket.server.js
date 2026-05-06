@@ -11,7 +11,7 @@ const { chatModel } = require("../models/chat.model");
 function initSocketServer(httpServer) {
   const io = new Server(httpServer, {
     cors: {
-      origin: process.env.FRONTEND_URL || "http://localhost:5173",
+      origin: process.env.FRONTEND_URL,
       allowedHeaders: ["Content-Type", "Authorization"],
       credentials: true,
     },
