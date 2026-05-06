@@ -8,14 +8,15 @@ const severityColors = {
 
 // ─── Match Score Ring ────────────────────────────────────────────────────────
 function MatchScoreRing({ score }) {
+  const safeScore = Number.isFinite(Number(score)) ? Number(score) : 0;
   const radius = 54;
   const circumference = 2 * Math.PI * radius;
-  const offset = circumference - (score / 100) * circumference;
-  const color = score >= 80 ? "#22c55e" : score >= 60 ? "#f59e0b" : "#ef4444";
+  const offset = circumference - (safeScore / 100) * circumference;
+  const color = safeScore >= 80 ? "#22c55e" : safeScore >= 60 ? "#f59e0b" : "#ef4444";
   const label =
-    score >= 80
+    safeScore >= 80
       ? "Strong match for this role"
-      : score >= 60
+      : safeScore >= 60
       ? "Good match for this role"
       : "Partial match for this role";
 
@@ -30,7 +31,7 @@ function MatchScoreRing({ score }) {
           strokeLinecap="round" transform="rotate(-90 65 65)"
           style={{ transition: "stroke-dashoffset 1s ease" }}
         />
-        <text x="65" y="60" textAnchor="middle" fill="white" fontSize="26" fontWeight="bold">{score}</text>
+        <text x="65" y="60" textAnchor="middle" fill="white" fontSize="26" fontWeight="bold">{safeScore}</text>
         <text x="65" y="78" textAnchor="middle" fill="#6b7280" fontSize="12">%</text>
       </svg>
       <p style={{ color }} className="text-xs font-medium">{label}</p>
@@ -39,7 +40,7 @@ function MatchScoreRing({ score }) {
 }
 
 // ─── Technical Questions ─────────────────────────────────────────────────────
-function TechnicalQuestions({ questions }) {
+function TechnicalQuestions({ questions = [] }) {
   const [openIdx, setOpenIdx] = useState(null);
   return (
     <div className="flex flex-col gap-3">
@@ -74,7 +75,7 @@ function TechnicalQuestions({ questions }) {
 }
 
 // ─── Behavioral Questions ────────────────────────────────────────────────────
-function BehavioralQuestions({ questions }) {
+function BehavioralQuestions({ questions = [] }) {
   const [openIdx, setOpenIdx] = useState(null);
   return (
     <div className="flex flex-col gap-3">
@@ -109,7 +110,7 @@ function BehavioralQuestions({ questions }) {
 }
 
 // ─── Road Map ────────────────────────────────────────────────────────────────
-function RoadMap({ plan }) {
+function RoadMap({ plan = [] }) {
   return (
     <div className="relative pl-8">
       <div className="absolute left-3 top-2 bottom-2 w-px bg-[#1e2130]" />
@@ -124,7 +125,7 @@ function RoadMap({ plan }) {
               <h3 className="font-bold text-base text-white">{item.focus}</h3>
             </div>
             <ul className="flex flex-col gap-1.5">
-              {item.tasks.map((task, j) => (
+              {(Array.isArray(item.tasks) ? item.tasks : []).map((task, j) => (
                 <li key={j} className="flex items-start gap-2 text-sm text-gray-400">
                   <span className="text-[#ff3e7f] mt-0.5 shrink-0">•</span>
                   {task}
@@ -233,7 +234,11 @@ function PreparationResources({ resources }) {
     );
   }
 
-  const current = resources[activeSkill];
+  const current = resources[activeSkill] ?? resources[0];
+
+  if (!current) {
+    return null;
+  }
 
   return (
     <div className="flex gap-6">
@@ -262,7 +267,7 @@ function PreparationResources({ resources }) {
       <div className="flex-1 min-w-0">
         <h3 className="font-bold text-base text-white mb-1">{current.skill}</h3>
         <p className="text-xs text-gray-500 mb-4">
-          {current.documentation?.length + current.videos?.length} resources available
+          {(current.documentation?.length ?? 0) + (current.videos?.length ?? 0)} resources available
         </p>
 
         {/* Tabs */}
@@ -379,7 +384,18 @@ function PreparationResources({ resources }) {
 export default function ReportPage({ report, onBack }) {
   const [activeSection, setActiveSection] = useState("roadmap");
 
-  const hasJobs = report.matchScore >= 80;
+  const normalizedReport = {
+    ...(report ?? {}),
+    matchScore: Number.isFinite(Number(report?.matchScore)) ? Number(report?.matchScore) : 0,
+    technicalQuestions: Array.isArray(report?.technicalQuestions) ? report.technicalQuestions : [],
+    behavioralQuestions: Array.isArray(report?.behavioralQuestions) ? report.behavioralQuestions : [],
+    preparationPlan: Array.isArray(report?.preparationPlan) ? report.preparationPlan : [],
+    jobSuggestions: Array.isArray(report?.jobSuggestions) ? report.jobSuggestions : [],
+    learningResources: Array.isArray(report?.learningResources) ? report.learningResources : [],
+    skillGaps: Array.isArray(report?.skillGaps) ? report.skillGaps : [],
+  };
+
+  const hasJobs = normalizedReport.matchScore >= 80;
 
   // Dynamic sections based on matchScore
   const SECTIONS = [
@@ -426,9 +442,9 @@ export default function ReportPage({ report, onBack }) {
           <div>
             <h2 className="text-xl font-bold mb-1">Technical Questions</h2>
             <p className="text-sm text-gray-500 mb-6">
-              {report.technicalQuestions.length} questions based on your profile
+              {normalizedReport.technicalQuestions.length} questions based on your profile
             </p>
-            <TechnicalQuestions questions={report.technicalQuestions} />
+            <TechnicalQuestions questions={normalizedReport.technicalQuestions} />
           </div>
         )}
 
@@ -436,9 +452,9 @@ export default function ReportPage({ report, onBack }) {
           <div>
             <h2 className="text-xl font-bold mb-1">Behavioral Questions</h2>
             <p className="text-sm text-gray-500 mb-6">
-              {report.behavioralQuestions.length} questions to assess your soft skills
+              {normalizedReport.behavioralQuestions.length} questions to assess your soft skills
             </p>
-            <BehavioralQuestions questions={report.behavioralQuestions} />
+            <BehavioralQuestions questions={normalizedReport.behavioralQuestions} />
           </div>
         )}
 
@@ -447,10 +463,10 @@ export default function ReportPage({ report, onBack }) {
             <div className="flex items-center gap-3 mb-6">
               <h2 className="text-xl font-bold">Preparation Road Map</h2>
               <span className="bg-[#1e2130] text-gray-400 text-xs px-3 py-1 rounded-full">
-                {report.preparationPlan.length}-day plan
+                {normalizedReport.preparationPlan.length}-day plan
               </span>
             </div>
-            <RoadMap plan={report.preparationPlan} />
+            <RoadMap plan={normalizedReport.preparationPlan} />
           </div>
         )}
 
@@ -458,9 +474,9 @@ export default function ReportPage({ report, onBack }) {
           <div>
             <h2 className="text-xl font-bold mb-1">Job Suggestions</h2>
             <p className="text-sm text-gray-500 mb-6">
-              {report.jobSuggestions?.length ?? 0} recent openings matching your profile
+              {normalizedReport.jobSuggestions.length} recent openings matching your profile
             </p>
-            <JobSuggestions jobs={report.jobSuggestions} />
+            <JobSuggestions jobs={normalizedReport.jobSuggestions} />
           </div>
         )}
 
@@ -470,7 +486,7 @@ export default function ReportPage({ report, onBack }) {
             <p className="text-sm text-gray-500 mb-6">
               Curated docs & videos for each skill gap
             </p>
-            <PreparationResources resources={report.learningResources} />
+            <PreparationResources resources={normalizedReport.learningResources} />
           </div>
         )}
       </main>
@@ -480,21 +496,22 @@ export default function ReportPage({ report, onBack }) {
         {/* Match Score */}
         <div className="mb-6">
           <p className="text-xs text-gray-600 uppercase font-bold tracking-widest mb-4">Match Score</p>
-          <MatchScoreRing score={report.matchScore} />
+          <MatchScoreRing score={normalizedReport.matchScore} />
         </div>
 
         {/* Skill Gaps */}
         <div>
           <p className="text-xs text-gray-600 uppercase font-bold tracking-widest mb-3">Skill Gaps</p>
           <div className="flex flex-col gap-2">
-            {report.skillGaps.map((gap, i) => (
+            {normalizedReport.skillGaps.map((gap, i) => (
               <div
                 key={i}
-                className={`px-3 py-2 rounded-lg text-xs font-medium ${severityColors[gap.severity]}`}
+                className={`px-3 py-2 rounded-lg text-xs font-medium ${severityColors[gap.severity] ?? "bg-[#1e2130] text-gray-400 border border-[#1e2130]"}`}
               >
-                <p className="font-semibold">{gap.skill}</p>
+                <p className="font-semibold">{gap.skill ?? "Unknown"}</p>
                 <p className="text-[10px] mt-0.5 opacity-75 font-normal">
-                  {gap.recommendation.slice(0, 80)}...
+                  {(gap.recommendation ?? "").slice(0, 80)}
+                  {(gap.recommendation ?? "").length > 80 ? "..." : ""}
                 </p>
               </div>
             ))}

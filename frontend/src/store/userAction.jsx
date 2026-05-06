@@ -9,12 +9,14 @@ export const registerUser = createAsyncThunk(
       const response = await register(userData);
       return response;
     } catch (error) {
-      const errorMsg = typeof error === 'string' ? error : error?.message || error?.errors?.[0]?.msg || "Registration failed";
+      const errorMsg =
+        typeof error === "string"
+          ? error
+          : error?.message || error?.errors?.[0]?.msg || "Registration failed";
       return rejectWithValue(errorMsg);
     }
-  }
+  },
 );
-
 
 // ─── Login ────────────────────────────────────────────────
 export const loginUser = createAsyncThunk(
@@ -22,11 +24,31 @@ export const loginUser = createAsyncThunk(
   async (credentials, { rejectWithValue }) => {
     try {
       const data = await login(credentials);
+
+      // If 2FA is required, backend returns a temp token and no access token.
+      if (data?.twoFactorRequired) {
+        return data;
+      }
+
+      // Ensure we hydrate the latest user snapshot (includes `plan`, etc.)
+      const accessToken = data?.accessToken;
+      if (accessToken) {
+        const meRes = await api.get("/api/auth/get-me", {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        });
+        const user = meRes.data?.data;
+        if (user) {
+          return { ...data, user };
+        }
+      }
+
       return data;
     } catch (error) {
       return rejectWithValue(error.message || "Login failed");
     }
-  }
+  },
 );
 
 // ─── Logout ───────────────────────────────────────────────
@@ -39,7 +61,7 @@ export const logoutUser = createAsyncThunk(
     } catch (error) {
       return rejectWithValue(error.message || "Logout failed");
     }
-  }
+  },
 );
 
 // ─── Check Auth (App start) ────────────────────────────
@@ -67,7 +89,7 @@ export const checkAuth = createAsyncThunk(
     } catch (error) {
       return rejectWithValue("Not authenticated");
     }
-  }
+  },
 );
 
 // ─── Verify 2FA ─────────────────────────────────────────
@@ -76,9 +98,24 @@ export const verify2FALogin = createAsyncThunk(
   async ({ tempToken, otp }, { rejectWithValue }) => {
     try {
       const data = await verify2FA({ tempToken, otp });
+
+      // Backend verify2FA response may not include `plan`. Hydrate full user.
+      const accessToken = data?.accessToken;
+      if (accessToken) {
+        const meRes = await api.get("/api/auth/get-me", {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        });
+        const user = meRes.data?.data;
+        if (user) {
+          return { ...data, user };
+        }
+      }
+
       return data;
     } catch (error) {
       return rejectWithValue(error.message || "Invalid OTP");
     }
-  }
+  },
 );

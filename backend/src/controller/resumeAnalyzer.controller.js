@@ -1,4 +1,6 @@
 const interviewReportModel = require("../models/interviewReport.model");
+const JobSuggestion = require("../models/jobSuggestion.model");
+const learningResourcesModel = require("../models/LearningResources.model");
 const pdfParse = require("pdf-parse");
 const aiService = require("../services/ai.service");
 const searchLearningResources = require("../services/tavily.service");
@@ -83,18 +85,45 @@ async function analyzeResume(req, res) {
 async function getResumeHistory(req, res) {
   try {
     const userId = req.user._id;
-    const report = await interviewReportModel
+    const reports = await interviewReportModel
       .find({ user: userId })
       .select(
-        "jobDescription matchScore skillGaps technicalQuestions preparationPlan createdAt",
+        "jobDescription matchScore skillGaps technicalQuestions behavioralQuestions preparationPlan createdAt",
       )
       .sort({ createdAt: -1 })
-      .limit(10);
+      .limit(10)
+      .lean();
+
+    const reportIds = reports.map((r) => r._id);
+
+    const [jobSuggestionDocs, learningResourceDocs] = await Promise.all([
+      JobSuggestion.find({ user: userId, interviewReport: { $in: reportIds } })
+        .select("interviewReport jobs")
+        .lean(),
+      learningResourcesModel
+        .find({ user: userId, interviewReport: { $in: reportIds } })
+        .select("interviewReport resources")
+        .lean(),
+    ]);
+
+    const jobsByReportId = Object.fromEntries(
+      jobSuggestionDocs.map((d) => [String(d.interviewReport), d.jobs ?? []]),
+    );
+    const resourcesByReportId = Object.fromEntries(
+      learningResourceDocs.map((d) => [String(d.interviewReport), d.resources ?? []]),
+    );
+
+    const enrichedReports = reports.map((r) => ({
+      ...r,
+      jobSuggestions: jobsByReportId[String(r._id)] ?? [],
+      learningResources: resourcesByReportId[String(r._id)] ?? [],
+    }));
+
     res
       .status(200)
       .json({
         message: "Resume history fetched successfully",
-        reports: report,
+        reports: enrichedReports,
       });
   } catch (error) {
     console.error("Error fetching resume history:", error);

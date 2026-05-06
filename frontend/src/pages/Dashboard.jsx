@@ -5,12 +5,31 @@ import TextType from "@/components/TextType";
 import { MenuIcon } from "lucide-react/dist/cjs/lucide-react";
 import { useEffect, useRef, useState } from "react";
 import Dropdown from "./user/Dropdown";
+import { getMe } from "@/api/auth.api";
 
 const Dashboard = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef(null);
   const navigate = useNavigate();
   const { user, isLoading } = useSelector((s) => s.user);
+
+  const fetchUser = async () => {
+    try {
+      await getMe();
+    } catch (error) {
+      console.error("Error fetching user data:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchUser();
+  }, []);
+
+  useEffect(() => {
+    if (!isLoading && !user) {
+      navigate("/login");
+    }
+  }, []);
 
   
   useEffect(() => {
