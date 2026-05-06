@@ -99,17 +99,28 @@ async function verifyPayment(req, res) {
         .json({ success: false, message: "Payment not found" });
     }
 
-    await userModel.findByIdAndUpdate(payment.user, {
-      plan: {
-        type: "PREMIUM",
-        startDate: new Date(),
-        expiry: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-        payment: {
-          orderId: razorpayOrderId,
-          paymentId: razorpayPaymentId,
-          signature: razorpaySignature,
+    const user = await userModel.findByIdAndUpdate(
+      payment.user,
+      {
+        plan: {
+          type: "PREMIUM",
+          startDate: new Date(),
+          expiry: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+          payment: {
+            orderId: razorpayOrderId,
+            paymentId: razorpayPaymentId,
+            signature: razorpaySignature,
+          },
         },
       },
+      { new: true },
+    );
+
+    sendPlanUpgradeEmail(user.email, user.fullname.firstname, {
+      orderId: razorpayOrderId,
+      paymentId: razorpayPaymentId,
+      startDate: user.plan.startDate,
+      expiry: user.plan.expiry,
     });
 
     // Invalidate cached /get-me so plan reflects instantly
@@ -133,5 +144,5 @@ async function verifyPayment(req, res) {
 
 module.exports = {
   createPayment,
-  verifyPayment
+  verifyPayment,
 };

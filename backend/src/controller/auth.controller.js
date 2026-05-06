@@ -62,6 +62,9 @@ async function registerController(req, res) {
     },
   });
 
+  // Send welcome email (controller will catch any errors)
+  await emailService.sendWelcomeEmail(email, firstname);
+
   // Generate access token
   const accessToken = jwt.sign(
     { id: user._id, role: user.role },
@@ -171,6 +174,8 @@ async function loginController(req, res) {
       tempToken,
     });
   }
+
+  await emailService.sendLoginAlertEmail(email, user.fullname.firstname, req);  
 
   // Generate access token
   const accessToken = jwt.sign(
