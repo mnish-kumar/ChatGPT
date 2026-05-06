@@ -1,6 +1,7 @@
 const orderModel = require("../models/order.model");
 const paymentModel = require("../models/payment.model");
 const userModel = require("../models/user.model");
+const userCache = require("../cache/user.cache");
 const hashSignature = require("../utils/hash.utils");
 const axios = require("axios");
 
@@ -110,6 +111,9 @@ async function verifyPayment(req, res) {
         },
       },
     });
+
+    // Invalidate cached /get-me so plan reflects instantly
+    userCache.deleteUsersCache([payment.user]);
 
     // ✅ Order status bhi update karo
     await orderModel.findOneAndUpdate(

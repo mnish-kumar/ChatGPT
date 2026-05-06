@@ -39,13 +39,20 @@ async function createOrderController(req, res) {
       return res.status(500).json({ success: false, message: "Payment provider not configured" });
     }
 
-    const amountInPaise = 399 * 100;
+    const plan = String(req.body?.plan || "personal").toLowerCase();
+    const amountInPaise = plan === "business" ? 999 * 100 : 399 * 100;
     const receipt = crypto.randomBytes(10).toString("hex");
 
     const razorpayOrder = await razorpay.orders.create({
       amount: amountInPaise,
       currency: "INR",
       receipt: `receipt_${receipt}`,
+      notes: {
+        plan,
+        planType: "PREMIUM",
+        userId,
+        userEmail: req.user.email,
+      },
     });
 
     const order = await orderModel.create({
@@ -55,12 +62,13 @@ async function createOrderController(req, res) {
       status: "PENDING",
       notes: {
         planType: "PREMIUM",
-        userEmail: req.user.email,          // ✅ Typo fix
+        userEmail: req.user.email,    
       },
     });
 
     return res.status(201).json({
       success: true,
+      keyId: process.env.RAZORPAY_KEY_ID,
       razorpayOrderId: razorpayOrder.id,
       orderId: order._id,                  // ✅ Frontend ke liye
       amount: order.price.amount,

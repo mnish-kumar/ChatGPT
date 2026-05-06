@@ -57,7 +57,7 @@ const Subscription = () => {
 
       {/* Title */}
       <h1 className="mb-5 text-center text-2xl font-medium text-foreground">
-        Upgrade your plan
+        {isPro ? "Your plan" : "Upgrade your plan"}
       </h1>
 
       {/* Toggle */}
@@ -142,7 +142,7 @@ const Subscription = () => {
           </p>
 
           <button
-            onClick={openCheckout}
+            onClick={() => openCheckout({ plan: tab })}
             disabled={isPro}
             className="mb-4 w-full cursor-pointer rounded-lg py-2 text-sm font-medium text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
             style={{ background: "#534AB7" }}

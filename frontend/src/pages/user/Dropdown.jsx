@@ -5,10 +5,9 @@ import {
   FileUser,
   MessageCircle,
 } from "lucide-react/dist/cjs/lucide-react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { logoutUser } from "@/store/userAction";
-import { useSelector } from "react-redux";
 
 const Dropdown = ({ onClose }) => {
   const navigate = useNavigate();
@@ -17,14 +16,16 @@ const Dropdown = ({ onClose }) => {
 
   const handleNav = (path) => {
     navigate(path);
-    onClose();
+    onClose?.();
   };
 
   const handleLogout = () => {
     dispatch(logoutUser());
     navigate("/login");
-    onClose();
+    onClose?.();
   };
+
+  const isPremium = user?.plan?.type === "PREMIUM";
 
   return (
     <div
@@ -47,27 +48,30 @@ const Dropdown = ({ onClose }) => {
       </div>
 
       {/* Upgrade */}
-      <div className="px-2.5 pt-2 pb-1">
-        <button
-          onClick={() => handleNav("/pricing")}
-          className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-xs font-medium transition"
-          style={{ background: "#EEEDFE", color: "#3C3489" }}
-        >
-          <svg
-            width="14"
-            height="14"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="#534AB7"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
+      {!isPremium && (
+        <div className="px-2.5 pt-2 pb-1">
+          <button
+            onClick={() => handleNav("/subscription")}
+            className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-xs font-medium transition"
+            style={{ background: "#EEEDFE", color: "#3C3489" }}
           >
-            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-          </svg>
-          {user?.plan.type ? `${user.plan.type} ` : ""}
-        </button>
-      </div>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="#534AB7"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+            </svg>
+            {user?.plan?.type ? `${user.plan.type} ` : ""}
+          </button>
+        </div>
+      )}
 
       <div className="my-1 h-px bg-border" />
 
