@@ -6,11 +6,13 @@ import {
   FileText,
   ChevronRightIcon,
   LoaderCircle,
+  PanelLeftDashed,
 } from "lucide-react/dist/cjs/lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
+import Dropdown from "../user/Dropdown";
 
-// ── Main Component ────────────────────────────────────────────────────────────
+// ── Main Component
 const ResumeHome = ({ onSubmit }) => {
   const [jobDescription, setJobDescription] = useState("");
   const [selfDescription, setSelfDescription] = useState("");
@@ -23,6 +25,18 @@ const ResumeHome = ({ onSubmit }) => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
   const { user } = useSelector((s) => s.user);
+
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef(null);
+
+  useEffect(() => {
+    const handler = (e) => {
+      if (menuRef.current && !menuRef.current.contains(e.target))
+        setMenuOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
 
   const handleDrop = (e) => {
     e.preventDefault();
@@ -69,6 +83,23 @@ const ResumeHome = ({ onSubmit }) => {
 
   return (
     <div className="min-h-screen bg-[#0d0f14] text-white flex font-sans">
+      <div
+        ref={menuRef}
+        className="absolute top-6 right-8 text-gray-400 border-[#1e2130]]"
+      >
+        <button
+          onClick={() => setMenuOpen((p) => !p)}
+          className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg border border-border bg-[#0d0f14] transition hover:border-[#ff3e7f]/40 hover:bg-[#1e2130"
+        >
+          <MenuIcon size={18} />
+        </button>
+        {menuOpen && (
+          <div className="absolute top-2 right-65 ">
+            <Dropdown onClose={() => setMenuOpen(false)} />
+          </div>
+        )}
+      </div>
+
       {/* ── History Sidebar ── */}
       {sidebarOpen ? (
         <aside className="w-64 shrink-0 border-r border-[#1e2130] flex flex-col h-screen sticky top-0">
@@ -93,42 +124,42 @@ const ResumeHome = ({ onSubmit }) => {
           </div>
 
           <div className="flex-1 flex flex-col justify-between">
+            <button
+              onClick={() => navigate("/report-history")}
+              className="mx-3 mt-3 flex w-[calc(100%-1.5rem)] items-center justify-between gap-3 rounded-xl border border-[#1e2130] bg-[#13161d] px-4 py-3 text-left transition-all hover:border-[#ff3e7f]/40 hover:bg-[#1e2130] active:scale-[0.99]"
+            >
+              <div className="flex items-center gap-3">
+                <span className="flex h-9 w-9 items-center justify-center rounded-lg border border-[#1e2130] bg-[#0d0f14]">
+                  <FileText size={16} className="text-[#ff3e7f]" />
+                </span>
+                <div className="flex flex-col leading-tight cursor-pointer">
+                  <span className="text-sm font-semibold text-white">
+                    Report History
+                  </span>
+                  <span className="text-[10px] text-gray-500">
+                    View all your past analyses
+                  </span>
+                </div>
+              </div>
+              <ChevronRightIcon size={14} className="text-gray-600" />
+            </button>
 
-          <button
-            onClick={() => navigate("/report-history")}
-            className="mx-3 mt-3 flex w-[calc(100%-1.5rem)] items-center justify-between gap-3 rounded-xl border border-[#1e2130] bg-[#13161d] px-4 py-3 text-left transition-all hover:border-[#ff3e7f]/40 hover:bg-[#1e2130] active:scale-[0.99]"
-          >
-            <div className="flex items-center gap-3">
-              <span className="flex h-9 w-9 items-center justify-center rounded-lg border border-[#1e2130] bg-[#0d0f14]">
-                <FileText size={16} className="text-[#ff3e7f]" />
-              </span>
-              <div className="flex flex-col leading-tight cursor-pointer">
-                <span className="text-sm font-semibold text-white">
-                  Report History
-                </span>
-                <span className="text-[10px] text-gray-500">
-                  View all your past analyses
-                </span>
+            {/* User details */}
+            <div
+              className="px-3 py-3 border-t border-[#89A8B2]/15 flex items-center gap-3 cursor-pointer rounded m-1 hover:bg-[#1e2130] hover:border-[#ff3e7f]/40 transition-all"
+              onClick={() => navigate("/profile")}
+            >
+              <div className="w-8 h-8 rounded-full bg-[#89A8B2] flex items-center justify-center text-sm font-semibold text-[#0f1219]">
+                {user?.fullname?.firstname?.charAt(0)?.toUpperCase() ||
+                  "U"}{" "}
+              </div>
+              <div>
+                <p className="text-sm text-white font-medium">
+                  {user?.fullname?.firstname || "User"}
+                </p>
+                <p className="text-xs text-[#B3C8CF]/50">{user?.email}</p>
               </div>
             </div>
-            <ChevronRightIcon size={14} className="text-gray-600" />
-          </button>
-
-          {/* User details */}
-          <div
-            className="px-3 py-3 border-t border-[#89A8B2]/15 flex items-center gap-3 cursor-pointer rounded m-1 hover:bg-[#1e2130] hover:border-[#ff3e7f]/40 transition-all"
-            onClick={() => navigate("/profile")}
-          >
-            <div className="w-8 h-8 rounded-full bg-[#89A8B2] flex items-center justify-center text-sm font-semibold text-[#0f1219]">
-              {user?.fullname?.firstname?.charAt(0)?.toUpperCase() || "U"}{" "}
-            </div>
-            <div>
-              <p className="text-sm text-white font-medium">
-                {user?.fullname?.firstname || "User"}
-              </p>
-              <p className="text-xs text-[#B3C8CF]/50">{user?.email}</p>
-            </div>
-          </div>
           </div>
         </aside>
       ) : (
@@ -138,7 +169,7 @@ const ResumeHome = ({ onSubmit }) => {
           aria-label="Open sidebar"
           title="Open"
         >
-          <MenuIcon className="text-gray-400" size={16} />
+          <PanelLeftDashed className="text-gray-400" size={16} />
         </button>
       )}
 

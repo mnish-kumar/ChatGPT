@@ -1,12 +1,19 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Menu, MoreVertical, Share2, SlidersHorizontal } from "lucide-react";
+import {
+  Menu,
+  MenuIcon,
+  MoreVertical,
+  Share2,
+  SlidersHorizontal,
+} from "lucide-react";
 
 import { clearError } from "../../store/reducers/chatSlice";
 import { getChatMessagesAction } from "@/store/chatAction";
 
 import MessageBubble from "./MessageBubble";
 import MessageInput from "./MessageInput";
+import Dropdown from "../user/Dropdown";
 
 const WelcomeScreen = () => (
   <div className="flex-1 flex items-center justify-center">
@@ -64,7 +71,17 @@ export default function ChatWindow({ sidebarOpen = true, onOpenSidebar }) {
   const bottomRef = useRef(null);
   const scrollRef = useRef(null);
   const shouldAutoScrollRef = useRef(true);
-  // const [seeDropdown, setSeeDropdown] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef(null);
+
+  useEffect(() => {
+    const handler = (e) => {
+      if (menuRef.current && !menuRef.current.contains(e.target))
+        setMenuOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
 
   const activeChatTitle = chats?.find((c) => c?._id === activeChatId)?.title;
 
@@ -136,14 +153,22 @@ export default function ChatWindow({ sidebarOpen = true, onOpenSidebar }) {
             >
               <Share2 size={16} />
             </button>
-            <button
-              type="button"
-              aria-label="More"
-              // onClick={() => seeDropdown}
-              className="w-9 h-9 rounded-xl border border-[#89A8B2]/20 bg-white/[0.02] text-[#B3C8CF]/60 hover:text-[#B3C8CF] hover:bg-[#89A8B2]/10 transition flex items-center justify-center"
+            <div
+              ref={menuRef}
+              className=" right-8 text-gray-400 border-[#1e2130]]"
             >
-              <MoreVertical size={16} />
-            </button>
+              <button
+                onClick={() => setMenuOpen((p) => !p)}
+                className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg border border-border bg-[#0d0f14] transition hover:border-[#ff3e7f]/40 hover:bg-[#1e2130"
+              >
+                <MenuIcon size={18} />
+              </button>
+              {menuOpen && (
+                <div className="absolute top-2 right-65 ">
+                  <Dropdown onClose={() => setMenuOpen(false)} />
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>

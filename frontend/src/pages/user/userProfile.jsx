@@ -36,7 +36,7 @@ const UserProfile = () => {
   // ─── Logout Handler ───────────────────────────────────
   const handleLogout = async () => {
     dispatch(logoutUser());
-    navigate("/login");
+    navigate("/");
   };
 
   const [menuOpen, setMenuOpen] = useState(false);
