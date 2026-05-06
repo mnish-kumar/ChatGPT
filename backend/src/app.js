@@ -13,8 +13,11 @@ const paymentRoute = require('../src/routes/payment.route');
 const twoFA_Route = require('../src/routes/2FA.route');
 const resetPasswordRoute = require('../src/routes/resetPassword.route');
 const resumeRoute = require('../src/routes/resume.route');
-
 const rateLimiter = require('./middlewares/rateLimiter.middleware');
+
+
+// Cron jobs plan expiration check
+require('../src/crons/crons.PlanExpiry');
 
 
 const app = express();
@@ -29,7 +32,7 @@ app.set('trust proxy', 1);
 app.use(passport.initialize());
 
 const corsOptions = {
-    origin: 'http://localhost:5173',
+    origin: process.env.FRONTEND_URL,
     credentials: true,
 };
 

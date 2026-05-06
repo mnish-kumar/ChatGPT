@@ -69,6 +69,12 @@ async function verifyPayment(req, res) {
       .json({ success: false, message: "Missing required fields" });
   }
 
+  // Idempotency check: if payment already marked COMPLETED, return success without re-processing
+  const existingPayment = await paymentModel.findOne({ razorpayOrderId });
+  if (existingPayment?.status === "COMPLETED") {
+    return res.status(200).json({ success: true, message: "Payment already processed", payment: existingPayment });
+  }
+
   const expectedSignature = hashSignature.expectedSignature(
     razorpayOrderId,
     razorpayPaymentId,

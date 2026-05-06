@@ -234,10 +234,86 @@ const sendPlanUpgradeEmail = async (email, firstname, planDetails) => {
   }
 };
 
+// Send plan expiry reminder email 3 days before expiry with renewal link
+const sendPlanExpiryReminderEmail = async (email, firstname, expiry) => {
+  const formatDate = (date) =>
+    new Date(date).toLocaleDateString("en-IN", {
+      day: "numeric", month: "long", year: "numeric",
+      timeZone: "Asia/Kolkata",
+    });
+
+  try {
+    await transporter.sendMail({
+      from: `"${process.env.APP_NAME}" <${process.env.GMAIL_USER}>`,
+      to: email,
+      subject: "⚠️ Your Premium Plan Expires Soon!",
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2>Your Premium Plan is Expiring Soon ⏰</h2>
+          <p>Hi ${firstname}, your premium plan expires on <strong>${formatDate(expiry)}</strong>.</p>
+          <p>Renew now to keep enjoying premium features without interruption.</p>
+          <a href="${process.env.CLIENT_URL}/pricing"
+             style="
+               background: #4F46E5;
+               color: white;
+               padding: 12px 24px;
+               border-radius: 6px;
+               text-decoration: none;
+               display: inline-block;
+               margin: 16px 0;
+             ">
+            Renew Plan
+          </a>
+          <hr/>
+          <small>If you have any issues, reply to this email.</small>
+        </div>
+      `,
+    });
+  } catch (err) {
+    console.error("❌ Expiry reminder email failed:", err.message);
+  }
+};
+
+// Plan expire send email with downgrade notice and upgrade link
+const sendPlanExpiredEmail = async (email, firstname) => {
+  try {
+    await transporter.sendMail({
+      from: `"${process.env.APP_NAME}" <${process.env.GMAIL_USER}>`,
+      to: email,
+      subject: "Your Premium Plan Has Expired",
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2>Your Premium Plan Has Expired 😔</h2>
+          <p>Hi ${firstname}, your premium plan has expired and your account has been moved to the FREE plan.</p>
+          <p>Upgrade again to regain access to all premium features.</p>
+          <a href="${process.env.CLIENT_URL}/pricing"
+             style="
+               background: #4F46E5;
+               color: white;
+               padding: 12px 24px;
+               border-radius: 6px;
+               text-decoration: none;
+               display: inline-block;
+               margin: 16px 0;
+             ">
+            Upgrade Again
+          </a>
+          <hr/>
+          <small>If you have any issues, reply to this email.</small>
+        </div>
+      `,
+    });
+  } catch (err) {
+    console.error("❌ Plan expired email failed:", err.message);
+  }
+};
+
 module.exports = {
   sendPasswordResetEmail,
   sendVerificationEmail,
   sendWelcomeEmail,
   sendPlanUpgradeEmail,
   sendLoginAlertEmail,
+  sendPlanExpiryReminderEmail,
+  sendPlanExpiredEmail,
 };
