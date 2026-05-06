@@ -6,6 +6,11 @@ const jobSearchService = require("../services/jobSearch.service");
 const extractJobRole = require("../utils/jobRole");
 const searchJobListings = require("../services/jobSearch.service");
 
+/**
+ * @desc Analyze the uploaded resume and generate an interview report, learning resources, and job suggestions.
+ * @route POST /api/resume/analysis
+ * @access Private
+ */
 async function analyzeResume(req, res) {
   try {
     if (!req.file) {
@@ -75,6 +80,31 @@ async function analyzeResume(req, res) {
   }
 }
 
+async function getResumeHistory(req, res) {
+  try {
+    const userId = req.user._id;
+    const report = await interviewReportModel
+      .find({ user: userId })
+      .select(
+        "jobDescription matchScore skillGaps technicalQuestions preparationPlan createdAt",
+      )
+      .sort({ createdAt: -1 })
+      .limit(10);
+    res
+      .status(200)
+      .json({
+        message: "Resume history fetched successfully",
+        reports: report,
+      });
+  } catch (error) {
+    console.error("Error fetching resume history:", error);
+    res
+      .status(500)
+      .json({ error: "An error occurred while fetching resume history." });
+  }
+}
+
 module.exports = {
   analyzeResume,
+  getResumeHistory,
 };

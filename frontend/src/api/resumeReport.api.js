@@ -32,3 +32,8 @@ export const generateResumeReport = async ({
     throw wrapped;
   }
 };
+
+export const getResumeHistory = async () => {
+  const response = await api.get("/api/resume/history");
+  return response.data?.reports ?? [];
+};

@@ -13,6 +13,7 @@ import ChangePassword from "@/pages/user/changePassword/ChangePassword";
 import ChatHome from "@/pages/chat/ChatHome";
 import ResumeHome from "@/pages/resume/ResumeHome";
 import Dropdown from "@/pages/user/Dropdown";
+import ReportHistory from "@/pages/resume/ReportHistory";
 
 const MainRoute = () => {
   return (
@@ -25,6 +26,7 @@ const MainRoute = () => {
           <Route path="/change-password" element={<ChangePassword />} />
           <Route path="/chat" element={<ChatHome />} />
           <Route path="/resume-analyzer" element={<ResumeHome />} />
+          <Route path="/report-history" element={<ReportHistory />} />
         </Route>
 
         <Route element={<PublicRoute />}>
