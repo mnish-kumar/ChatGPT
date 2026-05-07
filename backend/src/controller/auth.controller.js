@@ -8,11 +8,9 @@ const authRedisService = require("../services/redis.service");
 const hash = require("../utils/hash.utils");
 const { emailQueue } = require("../broker/email.queue");
 
-const options = {
-  httpOnly: true,
-  secure: true,
-  sameSite: "None",
-};
+const { getCookieOptions } = require("../utils/cookieOptions");
+
+const REFRESH_COOKIE_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
 
 /**
  * @route POST api/auth/register
@@ -20,6 +18,7 @@ const options = {
  * @access Public
  */
 async function registerController(req, res) {
+  const cookieOptions = getCookieOptions(req);
   const {
     email,
     username,
@@ -89,13 +88,13 @@ async function registerController(req, res) {
   );
 
   res.cookie("refreshToken", refreshToken, {
-    ...options,
-    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    ...cookieOptions,
+    maxAge: REFRESH_COOKIE_MAX_AGE_MS,
   });
 
   res.cookie("sessionId", sessionId, {
-    ...options,
-    maxAge: 1 * 24 * 60 * 60 * 1000, // 1 day
+    ...cookieOptions,
+    maxAge: REFRESH_COOKIE_MAX_AGE_MS,
   });
 
   return res.status(201).json({
@@ -119,6 +118,7 @@ async function registerController(req, res) {
  * @access Public
  */
 async function loginController(req, res) {
+    const cookieOptions = getCookieOptions(req);
   const { username, email, password } = req.body;
 
   const query = [];
@@ -226,13 +226,13 @@ async function loginController(req, res) {
   );
 
   res.cookie("refreshToken", refreshToken, {
-    ...options,
-    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    ...cookieOptions,
+    maxAge: REFRESH_COOKIE_MAX_AGE_MS,
   });
 
   res.cookie("sessionId", sessionId, {
-    ...options,
-    maxAge: 1 * 24 * 60 * 60 * 1000, // 1 day
+    ...cookieOptions,
+    maxAge: REFRESH_COOKIE_MAX_AGE_MS,
   });
 
   return res.status(200).json({
@@ -261,6 +261,7 @@ async function loginController(req, res) {
  * @access Private
  */
 async function logoutController(req, res) {
+    const cookieOptions = getCookieOptions(req);
   if (!req.user) {
     return res.status(401).json({
       message: "Unauthorized user",
@@ -284,8 +285,8 @@ async function logoutController(req, res) {
         ? jwt.verify(accessToken, process.env.JWT_SECRET)
         : null;
     } catch (err) {
-      res.clearCookie("refreshToken", options);
-      res.clearCookie("sessionId", options);
+      res.clearCookie("refreshToken", cookieOptions);
+      res.clearCookie("sessionId", cookieOptions);
       return res.status(200).json({ success: true, message: "Logged out" });
     }
 
@@ -297,8 +298,8 @@ async function logoutController(req, res) {
 
     await authRedisService.deleteRefreshToken(userId, sessionId);
 
-    res.clearCookie("refreshToken", options);
-    res.clearCookie("sessionId", options);
+    res.clearCookie("refreshToken", cookieOptions);
+    res.clearCookie("sessionId", cookieOptions);
 
     return res.status(200).json({
       success: true,
@@ -397,6 +398,7 @@ async function getMeController(req, res) {
  * @access Private
  */
 async function refreshTokenController(req, res) {
+    const cookieOptions = getCookieOptions(req);
   const sessionId = req.cookies.sessionId;
   const refreshToken = req.cookies.refreshToken;
 
@@ -445,13 +447,13 @@ async function refreshTokenController(req, res) {
     );
 
     res.cookie("refreshToken", newRefreshToken, {
-      ...options,
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      ...cookieOptions,
+      maxAge: REFRESH_COOKIE_MAX_AGE_MS,
     });
 
     res.cookie("sessionId", sessionId, {
-      ...options,
-      maxAge: 1 * 24 * 60 * 60 * 1000, // 1 day
+      ...cookieOptions,
+      maxAge: REFRESH_COOKIE_MAX_AGE_MS,
     });
 
     return res.status(200).json({
@@ -669,6 +671,8 @@ async function googleAuthController(req, res) {
   try {
     const user = req.user;
 
+    const cookieOptions = getCookieOptions(req);
+
     const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
 
     // Generate access token
@@ -693,13 +697,13 @@ async function googleAuthController(req, res) {
     );
 
     res.cookie("refreshToken", refreshToken, {
-      ...options,
-      maxAge: 7 * 24 * 60 * 60 * 1000,
+      ...cookieOptions,
+      maxAge: REFRESH_COOKIE_MAX_AGE_MS,
     });
 
     res.cookie("sessionId", sessionId, {
-      ...options,
-      maxAge: 1 * 24 * 60 * 60 * 1000,
+      ...cookieOptions,
+      maxAge: REFRESH_COOKIE_MAX_AGE_MS,
     });
 
     return res.redirect(302, `${frontendUrl}/dashboard`);

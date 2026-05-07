@@ -11,9 +11,29 @@ async function setRefreshToken(
 ) {
   const key = `refreshToken:${userId}:${sessionId}`;
   const hashedToken = hashUtils.hashToken(refreshToken);
+  
+    // Support a short grace window for refresh-token rotation.
+    // This prevents concurrent refresh calls (e.g., during page load) from
+    // immediately invalidating the previous token.
+    let previousToken = null;
+    let previousTokenExpiresAt = null;
+    try {
+        const existing = await redisClient.get(key);
+        if (existing) {
+            const parsedExisting = JSON.parse(existing);
+            if (parsedExisting?.token) {
+                previousToken = parsedExisting.token;
+                previousTokenExpiresAt = Date.now() + 60 * 1000; // 60s grace
+            }
+        }
+    } catch (_) {
+        // Ignore parsing/redis read issues and proceed with overwriting.
+    }
 
   const value = JSON.stringify({
     token: hashedToken,
+      previousToken,
+      previousTokenExpiresAt,
     sessionId,
     ip: req.ip,
     userAgent: req.headers["user-agent"],

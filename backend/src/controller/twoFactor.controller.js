@@ -7,13 +7,9 @@ const jwt = require("jsonwebtoken");
 const authRedisService = require("../services/redis.service");
 const userCache = require("../cache/user.cache");
 
-const isProduction = process.env.NODE_ENV === "production";
+const { getCookieOptions } = require("../utils/cookieOptions");
 
-const cookieOptions = {
-  httpOnly: true,
-  secure: true,
-  sameSite: "None",
-};
+const REFRESH_COOKIE_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
 
 // ─── Generate QR code for 2FA setup
 async function setup2FAController(req, res) {
@@ -136,6 +132,7 @@ async function enable2FAController(req, res) {
 
 // ─── Verify OTP during login
 async function verify2FAController(req, res) {
+    const cookieOptions = getCookieOptions(req);
   try {
     const { otp, tempToken } = req.body;
 
@@ -226,12 +223,12 @@ async function verify2FAController(req, res) {
 
     res.cookie("refreshToken", refreshToken, {
       ...cookieOptions,
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      maxAge: REFRESH_COOKIE_MAX_AGE_MS,
     });
 
     res.cookie("sessionId", sessionId, {
       ...cookieOptions,
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      maxAge: REFRESH_COOKIE_MAX_AGE_MS,
     });
 
     return res.status(200).json({
