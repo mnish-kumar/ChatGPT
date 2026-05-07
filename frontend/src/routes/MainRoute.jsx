@@ -9,7 +9,7 @@ import Subscription from "@/components/Subscription";
 import Dashboard from "@/pages/Dashboard";
 import ForgetPassword from "@/pages/user/forgetPassword/ForgetPassword";
 import ResetPassword from "@/pages/user/forgetPassword/ResetPassword";
-import UserProfile from "@/pages/user/UserProfile";
+import UserProfile from "@/pages/user/userProfile";
 import TwoFactorSettings from "@/pages/user/2FA/TwoFactorSettings";
 import ChangePassword from "@/pages/user/changePassword/ChangePassword";
 import ChatHome from "@/pages/chat/ChatHome";
