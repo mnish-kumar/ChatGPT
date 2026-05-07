@@ -32,7 +32,7 @@ export default function MotionSection({
       whileInView="show"
       viewport={{ once: true, amount: 0.25 }}
       variants={fadeUp}
-      className={cn("relative", className)}
+      className={cn("relative scroll-mt-28", className)}
       {...props}
     >
       {children}

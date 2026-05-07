@@ -30,7 +30,7 @@ const footerLinks = [
 
 export default function Footer() {
   return (
-    <footer className="border-t border-white/55 bg-white/20 backdrop-blur-xl">
+    <footer id="contact" className="scroll-mt-28 border-t border-white/55 bg-white/20 backdrop-blur-xl">
       <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
         <div className="grid gap-10 lg:grid-cols-2">
           <div>

@@ -9,7 +9,7 @@ import HowItWorks from "@/components/home/HowItWorks";
 const Home = () => {
   return (
     <div className="min-h-screen bg-[#F1F0E8] font-sans text-slate-900 antialiased">
-      <div className="pt-4">
+      <div className="pt-16">
         <Navbar />
       </div>
 

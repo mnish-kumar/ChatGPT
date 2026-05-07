@@ -1,45 +1,52 @@
-import { use, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import { Link, useLocation } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
-import { useEffect } from "react";
 
 const Navbar = () => {
   const [open, setOpen] = useState(false);
   const [showNav, setShowNav] = useState(true);
-  const [lastScrollY, setLastScrollY] = useState(0);
+  const lastScrollYRef = useRef(0);
+  const rafRef = useRef(0);
   const user = useSelector((state) => state.user.currentUser);
   const location = useLocation();
 
   const links = useMemo(
     () => [
       { label: "Home", to: "/" },
-      { label: "Features", to: "/#dsjfb" },
-      { label: "How it works", to: "/#dsnbd" },
-      { label: "Contact", to: "/#89A8B2" },
+      { label: "Features", to: "/#features" },
+      { label: "How it works", to: "/#how-it-works" },
+      { label: "Contact", to: "/#contact" },
     ],
     [],
   );
 
   useEffect(() => {
-    const handleScroll = () => {
-      const currentScrollY = window.scrollY;
+    const update = () => {
+      const currentScrollY = window.scrollY || 0;
+      const lastScrollY = lastScrollYRef.current;
 
       if (currentScrollY > lastScrollY && currentScrollY > 80) {
-        // scroll down
         setShowNav(false);
       } else {
-        // scroll up
         setShowNav(true);
       }
 
-      setLastScrollY(currentScrollY);
+      lastScrollYRef.current = currentScrollY;
+      rafRef.current = 0;
     };
 
-    window.addEventListener("scroll", handleScroll);
+    const handleScroll = () => {
+      if (rafRef.current) return;
+      rafRef.current = window.requestAnimationFrame(update);
+    };
 
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, [lastScrollY]);
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      if (rafRef.current) window.cancelAnimationFrame(rafRef.current);
+    };
+  }, []);
 
   const activeTo = useMemo(() => {
     const current = `${location.pathname}${location.hash}`;
@@ -57,10 +64,10 @@ const Navbar = () => {
         y: showNav ? 0 : -100,
       }}
       transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-      className="sticky top-3 z-50"
+      className={`fixed top-3 left-0 right-0 z-50 ${showNav ? "pointer-events-auto" : "pointer-events-none"}`}
     >
       <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-        <nav className="relative flex items-center justify-between rounded-full border border-white/60 bg-white/25 px-4 py-3 shadow-xl shadow-black/5 backdrop-blur-xl sm:px-6">
+        <nav className="relative flex items-center justify-between rounded-full border border-white/60 bg-white/10 px-4 py-3 shadow-xl shadow-black/5 backdrop-blur-xl sm:px-6">
           {/* Logo */}
           <Link
             className="inline-flex items-center gap-2 font-semibold tracking-tight text-slate-900"
