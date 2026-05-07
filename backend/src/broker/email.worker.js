@@ -1,21 +1,25 @@
-const Brevo = require("@getbrevo/brevo");
+const SibApiV3Sdk = require("sib-api-v3-sdk");
 
-const client = Brevo.ApiClient.instance;
+const client = SibApiV3Sdk.ApiClient.instance;
 client.authentications["api-key"].apiKey = process.env.BREVO_API_KEY;
 
-const transactionalApi = new Brevo.TransactionalEmailsApi();
+const transactionalApi = new SibApiV3Sdk.TransactionalEmailsApi();
 
-// ─── Generic sender (internal use)
 const sendEmail = async ({ to, subject, html }) => {
-  await transactionalApi.sendTransacEmail({
-    sender: {
-      name: process.env.APP_NAME,
-      email: process.env.BREVO_SENDER_EMAIL,
-    },
-    to: [{ email: to }],
-    subject,
-    htmlContent: html,
-  });
+  try {
+    await transactionalApi.sendTransacEmail({
+      sender: {
+        name: process.env.APP_NAME,
+        email: process.env.BREVO_SENDER_EMAIL,
+      },
+      to: [{ email: to }],
+      subject,
+      htmlContent: html,
+    });
+    
+  } catch (error) {
+    console.error("Brevo email error ❌", error);
+  }
 };
 
 
