@@ -1,18 +1,21 @@
-const { Resend } = require("resend");
-const resend = new Resend(process.env.RESEND_API_KEY);
+const Brevo = require("@getbrevo/brevo");
 
-const FROM = `${process.env.APP_NAME} <noreply@yourdomain.com>`;
+const client = Brevo.ApiClient.instance;
+client.authentications["api-key"].apiKey = process.env.BREVO_API_KEY;
+
+const transactionalApi = new Brevo.TransactionalEmailsApi();
 
 // ─── Generic sender (internal use)
 const sendEmail = async ({ to, subject, html }) => {
-  const { data, error } = await resend.emails.send({
-    from: FROM,
-    to,
+  await transactionalApi.sendTransacEmail({
+    sender: {
+      name: process.env.APP_NAME,
+      email: process.env.BREVO_SENDER_EMAIL,
+    },
+    to: [{ email: to }],
     subject,
-    html,
+    htmlContent: html,
   });
-  if (error) throw new Error(error.message);
-  return data;
 };
 
 
