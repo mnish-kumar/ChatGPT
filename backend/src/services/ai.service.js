@@ -36,7 +36,7 @@ async function generateResponse(content) {
 
 async function generateEmbedding(content) {
   const response = await ai.models.embedContent({
-    model: "gemini-embedding-001",
+    model: process.env.GEMINI_EMBEDDING_MODEL_NAME,
     contents: content,
     config: {
       outputDimensionality: 768,
@@ -179,7 +179,7 @@ async function generateInterviewReport({
                   Job Description:${jobDescription}`;
 
   const response = await ai.models.generateContent({
-    model: "gemini-2.5-flash-lite",
+    model: process.env.GEMINI_MODEL_NAME,
     contents: prompt,
     config: {
       responseMimeType: "application/json",
