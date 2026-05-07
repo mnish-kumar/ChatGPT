@@ -696,49 +696,47 @@ async function resendVerificationEmailController(req, res) {
 async function googleAuthController(req, res) {
   try {
     const user = req.user;
+    const frontendUrl = process.env.FRONTEND_URL?.split(",")[0].trim() 
+                        || "http://localhost:5173";
 
-    const cookieOptions = getCookieOptions(req);
-
-    const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
-
-    // Generate access token
     const accessToken = jwt.sign(
       { id: user._id, role: user.role },
       process.env.JWT_SECRET,
-      { expiresIn: "15m" },
+      { expiresIn: "15m" }
     );
 
-    // Generate refresh token
     const refreshToken = jwt.sign(
       { id: user._id, role: user.role },
       process.env.JWT_REFRESH_SECRET,
-      { expiresIn: "7d" },
+      { expiresIn: "7d" }
     );
 
-    // Store refresh token in Redis
     const { sessionId } = await authRedisService.setRefreshToken(
       user._id.toString(),
       refreshToken,
-      req,
+      req
     );
 
-    res.cookie("refreshToken", refreshToken, {
-      ...cookieOptions,
+    // Cross-origin cookies ke liye SameSite=None + Secure MUST hai
+    const cookieOptions = {
+      httpOnly: true,
+      secure: true,
+      sameSite: "none",
+      path: "/",
       maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
+    };
 
-    res.cookie("sessionId", sessionId, {
-      ...cookieOptions,
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
+    res.cookie("refreshToken", refreshToken, cookieOptions);
+    res.cookie("sessionId", sessionId, cookieOptions);
 
-    return res.redirect(302, `${frontendUrl}/dashboard`);
+    // ✅ Access token URL mein — frontend save karega localStorage mein
+    return res.redirect(302, `${frontendUrl}/dashboard?token=${accessToken}`);
+
   } catch (err) {
     console.error("googleCallback error:", err);
-    return res.status(500).json({
-      success: false,
-      message: "Internal server error",
-    });
+    const frontendUrl = process.env.FRONTEND_URL?.split(",")[0].trim() 
+                        || "http://localhost:5173";
+    return res.redirect(302, `${frontendUrl}/login?error=server_error`);
   }
 }
 

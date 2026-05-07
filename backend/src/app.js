@@ -15,56 +15,50 @@ const resetPasswordRoute = require('../src/routes/resetPassword.route');
 const resumeRoute = require('../src/routes/resume.route');
 const rateLimiter = require('./middlewares/rateLimiter.middleware');
 
-
-// Cron jobs plan expiration check
 require('../src/crons/crons.PlanExpiry');
-
 
 const app = express();
 
-// Set security-related HTTP headers using Helmet
-app.use(helmet());
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: "cross-origin" }, // OAuth redirects ke liye
+}));
 
-// trust first proxy (if behind a reverse proxy like Nginx or Heroku)
-app.set('trust proxy', 1); 
+app.set('trust proxy', 1);
 
-// Initialize Passport for authentication
-app.use(passport.initialize());
 
 const allowedOrigins = (process.env.FRONTEND_URL || "")
-    .split(",")
-    .map((s) => s.trim())
-    .filter(Boolean);
+  .split(",")
+  .map((s) => s.trim())
+  .filter(Boolean);
 
 const corsOptions = {
-    origin: (origin, callback) => {
-        // Allow non-browser requests (like curl/postman) with no Origin.
-        if (!origin) return callback(null, true);
+  origin: (origin, callback) => {
+    if (!origin) return callback(null, true);
 
-        // If env is not configured, fail closed in production.
-        if (allowedOrigins.length === 0) {
-            return callback(new Error("CORS: FRONTEND_URL not configured"), false);
-        }
+    if (allowedOrigins.length === 0) {
+      return callback(new Error("CORS: FRONTEND_URL not configured"), false);
+    }
 
-        if (allowedOrigins.includes(origin)) {
-            return callback(null, true);
-        }
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
 
-        return callback(new Error(`CORS: Origin not allowed: ${origin}`), false);
-    },
-    credentials: true,
+    return callback(new Error(`CORS: Origin not allowed: ${origin}`), false);
+  },
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization", "Cookie"],
+  exposedHeaders: ["set-cookie"],
 };
 
-/* Using Middlewares */
-app.use(express.json());
-app.use(cookieParser());
 app.use(cors(corsOptions));
 
-// Apply global API rate limiter to all routes
+app.use(express.json());
+app.use(cookieParser());
+app.use(passport.initialize());
 app.use(rateLimiter.globalAPIRateLimiter);
 
-
-/* Using Route */
+/* Routes */
 app.use('/api/auth', authRouter);
 app.use('/api/chat', compression(), chatRoute);
 app.use('/api/orders', orderRoute);
