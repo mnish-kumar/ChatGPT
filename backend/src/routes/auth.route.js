@@ -5,6 +5,8 @@ const authMiddleware = require("../middlewares/auth.middleware");
 const redisRateLimiter = require("../middlewares/rateLimiter.middleware");
 const validators = require("../middlewares/validators.middleware");
 const passport = require("../config/passport");
+const authRedisService = require("../services/redis.service");
+const jwt = require("jsonwebtoken");
 
 
 /**
@@ -125,6 +127,45 @@ router.get("/google/failure", (req, res) => {
     success: false,
     message: "Google login failed",
   });
+});
+
+
+router.post("/google/exchange", authMiddleware.createAuthMiddleware(), async (req, res) => {
+  try {
+    const user = req.user;
+
+    const refreshToken = jwt.sign(
+      { id: user._id, role: user.role },
+      process.env.JWT_REFRESH_SECRET,
+      { expiresIn: "7d" }
+    );
+
+    const { sessionId } = await authRedisService.setRefreshToken(
+      user._id.toString(),
+      refreshToken,
+      req
+    );
+
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "none",
+      path: "/",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+
+    res.cookie("sessionId", sessionId, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "none",
+      path: "/",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+
+    return res.json({ success: true });
+  } catch (err) {
+    return res.status(500).json({ success: false });
+  }
 });
 
 

@@ -705,31 +705,7 @@ async function googleAuthController(req, res) {
       { expiresIn: "15m" }
     );
 
-    const refreshToken = jwt.sign(
-      { id: user._id, role: user.role },
-      process.env.JWT_REFRESH_SECRET,
-      { expiresIn: "7d" }
-    );
-
-    const { sessionId } = await authRedisService.setRefreshToken(
-      user._id.toString(),
-      refreshToken,
-      req
-    );
-
-    // Cross-origin cookies ke liye SameSite=None + Secure MUST hai
-    const cookieOptions = {
-      httpOnly: true,
-      secure: true,
-      sameSite: "none",
-      path: "/",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    };
-
-    res.cookie("refreshToken", refreshToken, cookieOptions);
-    res.cookie("sessionId", sessionId, cookieOptions);
-
-    // ✅ Access token URL mein — frontend save karega localStorage mein
+    
     return res.redirect(302, `${frontendUrl}/dashboard?token=${accessToken}`);
 
   } catch (err) {

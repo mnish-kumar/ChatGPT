@@ -5,8 +5,9 @@ import TextType from "@/components/TextType";
 import { MenuIcon } from "lucide-react/dist/cjs/lucide-react";
 import { useEffect, useRef, useState } from "react";
 import Dropdown from "./user/Dropdown";
-import { setAccessToken } from "@/store/reducers/userSlice"; 
-import { checkAuth } from "@/store/userAction";     
+import { setAccessToken } from "@/store/reducers/userSlice";
+import { checkAuth } from "@/store/userAction";
+import api from "@/api/axios";
 
 const Dashboard = () => {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -19,15 +20,25 @@ const Dashboard = () => {
     const params = new URLSearchParams(window.location.search);
     const token = params.get("token");
 
-    if (token) {
-     
-      dispatch(setAccessToken(token));
-      window.history.replaceState({}, "", "/dashboard");
+    const init = async () => {
+      if (token) {
+        
+        dispatch(setAccessToken(token));
+        window.history.replaceState({}, "", "/dashboard");
+
+        
+        try {
+          await api.post("/api/auth/google/exchange"); 
+        } catch (e) {
+          console.error("Exchange failed", e);
+        }
+      }
+
+      
       dispatch(checkAuth());
-    } else {
-  
-      dispatch(checkAuth());
-    }
+    };
+
+    init();
   }, []);
 
   useEffect(() => {
@@ -58,8 +69,14 @@ const Dashboard = () => {
         {menuOpen && <Dropdown onClose={() => setMenuOpen(false)} />}
       </div>
 
-      <PixelCard variant="pink" className="cursor-pointer" onClick={() => navigate("/chat")}>
-        <h1 className="absolute font-heading text-5xl font-semibold text-center">ChitChat</h1>
+      <PixelCard
+        variant="pink"
+        className="cursor-pointer"
+        onClick={() => navigate("/chat")}
+      >
+        <h1 className="absolute font-heading text-5xl font-semibold text-center">
+          ChitChat
+        </h1>
       </PixelCard>
 
       <PixelCard
@@ -69,7 +86,11 @@ const Dashboard = () => {
       >
         <h1 className="absolute font-heading text-3xl font-medium text-center">
           <TextType
-            text={["Get Hired Faster", "AI Resume Intelligence", "Crack Your Dream Job"]}
+            text={[
+              "Get Hired Faster",
+              "AI Resume Intelligence",
+              "Crack Your Dream Job",
+            ]}
             typingSpeed={75}
             pauseDuration={1500}
             showCursor
