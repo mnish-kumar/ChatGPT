@@ -7,7 +7,7 @@ const transactionalApi = new SibApiV3Sdk.TransactionalEmailsApi();
 
 const sendEmail = async ({ to, subject, html }) => {
   try {
-    await transactionalApi.sendTransacEmail({
+    const response = await transactionalApi.sendTransacEmail({
       sender: {
         name: process.env.APP_NAME,
         email: process.env.BREVO_SENDER_EMAIL,
@@ -16,9 +16,14 @@ const sendEmail = async ({ to, subject, html }) => {
       subject,
       htmlContent: html,
     });
-    
+
+    console.log("Email sent successfully ✅");
+    console.log(response);
   } catch (error) {
-    console.error("Brevo email error ❌", error);
+    console.error(
+      "Brevo email error ❌",
+      error.response?.body || error
+    );
   }
 };
 
