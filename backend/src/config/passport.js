@@ -41,7 +41,7 @@ passport.use(
           isEmailVerified: true,
           password: null,
           role: "user",
-          plan: [
+          plan: 
             {
               type: "FREE",
               startDate: new Date(),
@@ -49,7 +49,7 @@ passport.use(
               payment: null,
               razorpaySubscriptionId: null,
             },
-          ],
+          
         });
 
         return done(null, newUser);
