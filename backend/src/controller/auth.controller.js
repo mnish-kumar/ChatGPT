@@ -705,8 +705,23 @@ async function googleAuthController(req, res) {
       { expiresIn: "15m" }
     );
 
-    
-    return res.redirect(302, `${frontendUrl}/dashboard?token=${accessToken}`);
+    const refreshToken = jwt.sign(
+      { id: user._id, role: user.role },
+      process.env.JWT_REFRESH_SECRET,
+      { expiresIn: "7d" }
+    );
+
+    // ✅ Redis mein store karo
+    const { sessionId } = await authRedisService.setRefreshToken(
+      user._id.toString(),
+      refreshToken,
+      req
+    );
+
+    // ✅ Token aur sessionId dono URL mein bhejo
+    return res.redirect(302, 
+      `${frontendUrl}/dashboard?token=${accessToken}&refreshToken=${refreshToken}&sessionId=${sessionId}`
+    );
 
   } catch (err) {
     console.error("googleCallback error:", err);

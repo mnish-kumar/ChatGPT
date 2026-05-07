@@ -17,29 +17,34 @@ const Dashboard = () => {
   const { user, isLoading } = useSelector((s) => s.user);
 
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const token = params.get("token");
+  const params = new URLSearchParams(window.location.search);
+  const token = params.get("token");
+  const refreshToken = params.get("refreshToken");
+  const sessionId = params.get("sessionId");
 
-    const init = async () => {
-      if (token) {
-        
-        dispatch(setAccessToken(token));
-        window.history.replaceState({}, "", "/dashboard");
+  const init = async () => {
+    if (token) {
+      dispatch(setAccessToken(token));
+      window.history.replaceState({}, "", "/dashboard");
 
-        
+      
+      if (refreshToken && sessionId) {
         try {
-          await api.post("/api/auth/google/exchange"); 
+          await api.post("/api/auth/google/exchange", { 
+            refreshToken, 
+            sessionId 
+          });
         } catch (e) {
           console.error("Exchange failed", e);
         }
       }
+    }
 
-      
-      dispatch(checkAuth());
-    };
+    dispatch(checkAuth());
+  };
 
-    init();
-  }, []);
+  init();
+}, []);
 
   useEffect(() => {
     if (!isLoading && !user) {

@@ -130,37 +130,24 @@ router.get("/google/failure", (req, res) => {
 });
 
 
-router.post("/google/exchange", authMiddleware.createAuthMiddleware(), async (req, res) => {
+router.post("/google/exchange", async (req, res) => {
   try {
-    const user = req.user;
+    const { refreshToken, sessionId } = req.body;
 
-    const refreshToken = jwt.sign(
-      { id: user._id, role: user.role },
-      process.env.JWT_REFRESH_SECRET,
-      { expiresIn: "7d" }
-    );
+    if (!refreshToken || !sessionId) {
+      return res.status(400).json({ success: false });
+    }
 
-    const { sessionId } = await authRedisService.setRefreshToken(
-      user._id.toString(),
-      refreshToken,
-      req
-    );
-
-    res.cookie("refreshToken", refreshToken, {
+    const cookieOptions = {
       httpOnly: true,
       secure: true,
       sameSite: "none",
       path: "/",
       maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
+    };
 
-    res.cookie("sessionId", sessionId, {
-      httpOnly: true,
-      secure: true,
-      sameSite: "none",
-      path: "/",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
+    res.cookie("refreshToken", refreshToken, cookieOptions);
+    res.cookie("sessionId", sessionId, cookieOptions);
 
     return res.json({ success: true });
   } catch (err) {
