@@ -31,8 +31,27 @@ app.set('trust proxy', 1);
 // Initialize Passport for authentication
 app.use(passport.initialize());
 
+const allowedOrigins = (process.env.FRONTEND_URL || "")
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+
 const corsOptions = {
-    origin: process.env.FRONTEND_URL,
+    origin: (origin, callback) => {
+        // Allow non-browser requests (like curl/postman) with no Origin.
+        if (!origin) return callback(null, true);
+
+        // If env is not configured, fail closed in production.
+        if (allowedOrigins.length === 0) {
+            return callback(new Error("CORS: FRONTEND_URL not configured"), false);
+        }
+
+        if (allowedOrigins.includes(origin)) {
+            return callback(null, true);
+        }
+
+        return callback(new Error(`CORS: Origin not allowed: ${origin}`), false);
+    },
     credentials: true,
 };
 
