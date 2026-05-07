@@ -40,7 +40,7 @@ async function createOrderController(req, res) {
     }
 
     const plan = String(req.body?.plan || "personal").toLowerCase();
-    const amountInPaise = plan === "business" ? 999 * 100 : 399 * 100;
+    const amountInPaise = plan === "business" ? 999 * 100 : 1 * 100;
     const receipt = crypto.randomBytes(10).toString("hex");
 
     const razorpayOrder = await razorpay.orders.create({
@@ -57,7 +57,7 @@ async function createOrderController(req, res) {
 
     const order = await orderModel.create({
       user: userId,
-      razorpayOrderId: razorpayOrder.id,  // ✅ Fix
+      razorpayOrderId: razorpayOrder.id,
       price: { amount: amountInPaise, currency: "INR" },
       status: "PENDING",
       notes: {
@@ -70,7 +70,7 @@ async function createOrderController(req, res) {
       success: true,
       keyId: process.env.RAZORPAY_KEY_ID,
       razorpayOrderId: razorpayOrder.id,
-      orderId: order._id,                  // ✅ Frontend ke liye
+      orderId: order._id,                
       amount: order.price.amount,
       currency: order.price.currency,
     });
