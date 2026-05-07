@@ -13,8 +13,8 @@ initSocketServer(httpServer);
 
 
 // Start the server
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT;
 
-httpServer.listen(PORT, "0.0.0.0", () => {
+httpServer.listen(PORT, () => {
     console.log(`Server is running on port ${PORT} ✅`);
 });

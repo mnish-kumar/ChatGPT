@@ -34,7 +34,7 @@ api.interceptors.request.use(
     }
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => Promise.reject(error),
 );
 
 // Response Interceptor
@@ -52,8 +52,11 @@ api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
+    
+    // Don't retry the refresh-token endpoint itself
+    const isRefreshTokenRequest = originalRequest?.url?.includes("/api/auth/refresh-token");
 
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    if (error.response?.status === 401 && !originalRequest._retry && !isRefreshTokenRequest) {
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
           failedQueue.push({ resolve, reject });
@@ -73,26 +76,27 @@ api.interceptors.response.use(
         const newAccessToken = response.data.accessToken;
 
         const store = getApiStore();
-        store?.dispatch?.({ type: "user/setAccessToken", payload: newAccessToken });
+        store?.dispatch?.({
+          type: "user/setAccessToken",
+          payload: newAccessToken,
+        });
+        
         processQueue(null, newAccessToken);
-
         originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
         return api(originalRequest);
-
       } catch (refreshError) {
         processQueue(refreshError, null);
         const store = getApiStore();
         store?.dispatch?.({ type: "user/resetAuth" });
         window.location.href = "/login";
         return Promise.reject(refreshError);
-
       } finally {
         isRefreshing = false;
       }
     }
 
     return Promise.reject(error);
-  }
+  },
 );
 
 export default api;

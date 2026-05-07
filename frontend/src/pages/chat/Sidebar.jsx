@@ -58,7 +58,29 @@ export default function Sidebar({ onClose }) {
   const [hoveredId, setHoveredId] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [chatTitle, setChatTitle] = useState("");
-  
+  const [query, setQuery] = useState("");
+  const [suggestions, setSuggestions] = useState([]);
+
+  const handleSearch = (e) => {
+    const value = e.target.value;
+
+    setQuery(value);
+
+    if (!value.trim()) {
+      setSuggestions([]);
+      return;
+    }
+
+    const filtered = chats.filter((c) =>
+      c.title.toLowerCase().includes(value.toLowerCase()),
+    );
+    setSuggestions(filtered);
+  };
+
+  const handleSelect = (val) => {
+    setQuery(val);
+    setSuggestions([]);
+  };
 
   useEffect(() => {
     if (activeChatId) {
@@ -68,18 +90,18 @@ export default function Sidebar({ onClose }) {
 
   // ─── Create Chat
   const handleCreateChat = async () => {
-  if (!chatTitle.trim()) return;
+    if (!chatTitle.trim()) return;
 
-  const res = await dispatch(createChatAction({ title: chatTitle }));
+    const res = await dispatch(createChatAction({ title: chatTitle }));
 
-  if (res.payload?._id) {
-    await dispatch(getUserChatsAction());
-    dispatch(setActiveChat(res.payload._id));
-  }
+    if (res.payload?._id) {
+      await dispatch(getUserChatsAction());
+      dispatch(setActiveChat(res.payload._id));
+    }
 
-  setIsModalOpen(false);
-  setChatTitle("");
-};
+    setIsModalOpen(false);
+    setChatTitle("");
+  };
 
   // ─── Select Chat
   const handleSelectChat = (chatId) => {
@@ -105,7 +127,9 @@ export default function Sidebar({ onClose }) {
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-4">
           <div className="flex flex-col leading-tight">
-            <div className="text-[15px] font-semibold text-white">JarviSync</div>
+            <div className="text-[15px] font-semibold text-white">
+              JarviSync
+            </div>
             <div className="text-[11px] mt-2 tracking-wide uppercase text-[#B3C8CF]/40">
               AI Get Hired Faster
             </div>
@@ -142,6 +166,7 @@ export default function Sidebar({ onClose }) {
             <MessageIcon />
             <span className="text-[13px]">New Chat</span>
           </button>
+
           <button
             type="button"
             onClick={() => navigate("/profile")}
@@ -152,6 +177,16 @@ export default function Sidebar({ onClose }) {
             </span>
             <span className="text-[13px]">Profile</span>
           </button>
+
+          <input
+            type="text"
+            name=""
+            id=""
+            placeholder="Search chats..."
+            value={query}
+            onChange={handleSearch}
+            className="w-full mt-3 px-2 py-1 rounded-xl bg-white/5 border border-[#89A8B2]/30 text-white placeholder:text-[#B3C8CF]/40 focus:border-[#89A8B2]/60 focus:bg-white/10 outline-none transition-all"
+          />
         </div>
 
         {/* Recent Activity */}
@@ -159,10 +194,14 @@ export default function Sidebar({ onClose }) {
           <div className="px-2 text-[10px] tracking-wider uppercase text-[#B3C8CF]/30 mb-2">
             Recent activity
           </div>
+
           {isLoadingChats ? (
             <div className="flex flex-col gap-3 mt-2 px-2">
               {[1, 2, 3, 4].map((i) => (
-                <div key={i} className="h-9 rounded-xl bg-white/5 animate-pulse" />
+                <div
+                  key={i}
+                  className="h-9 rounded-xl bg-white/5 animate-pulse"
+                />
               ))}
             </div>
           ) : chats.length === 0 ? (
@@ -170,42 +209,54 @@ export default function Sidebar({ onClose }) {
               <p className="text-sm text-[#B3C8CF]/50">No chats yet</p>
             </div>
           ) : (
-            chats.map((chat, index) => (
-              <div
-                key={chat._id ?? index}
-                onClick={() => handleSelectChat(chat._id)}
-                onMouseEnter={() => setHoveredId(chat._id)}
-                onMouseLeave={() => setHoveredId(null)}
-                className={`flex items-center gap-2 px-3 py-2 rounded-xl cursor-pointer group transition-all
-                  ${
-                    activeChatId === chat._id
-                      ? "bg-[#89A8B2]/20 text-white"
-                      : "text-[#B3C8CF]/70 hover:bg-[#89A8B2]/10 hover:text-[#B3C8CF]"
-                  }`}
-              >
-                <span className="w-5 h-5 rounded-lg bg-[#89A8B2]/10 border border-[#89A8B2]/20 flex items-center justify-center text-[#B3C8CF]/70">
-                  <MessageIcon />
-                </span>
-                <span className="text-[13px] truncate flex-1">
-                  {chat.title || "Untitled"}
-                </span>
-                {(hoveredId === chat._id || activeChatId === chat._id) && (
-                  <button
-                    type="button"
-                    onClick={(e) => handleDelete(e, chat._id)}
-                    className="text-[#B3C8CF]/40 hover:text-red-400 cursor-pointer hover:bg-red-500/15 p-1 rounded transition"
-                  >
-                    <TrashIcon />
-                  </button>
-                )}
-              </div>
-            ))
+            <>
+              {(query.trim() ? suggestions : chats).map((chat, index) => (
+                <div
+                  key={chat._id ?? index}
+                  onClick={() => handleSelectChat(chat._id)}
+                  onMouseEnter={() => setHoveredId(chat._id)}
+                  onMouseLeave={() => setHoveredId(null)}
+                  className={`flex items-center gap-2 px-3 py-2 mb-2 rounded-xl cursor-pointer group transition-all
+            ${
+              activeChatId === chat._id
+                ? "bg-[#89A8B2]/20 text-white"
+                : "text-[#B3C8CF]/70 hover:bg-[#89A8B2]/10 hover:text-[#B3C8CF]"
+            }`}
+                >
+                  <span className="w-5 h-5 rounded-lg bg-[#89A8B2]/10 border border-[#89A8B2]/20 flex items-center justify-center text-[#B3C8CF]/70">
+                    <MessageIcon />
+                  </span>
+
+                  <span className="text-[13px] truncate flex-1">
+                    {chat.title || "Untitled"}
+                  </span>
+
+                  {(hoveredId === chat._id || activeChatId === chat._id) && (
+                    <button
+                      type="button"
+                      onClick={(e) => handleDelete(e, chat._id)}
+                      className="text-[#B3C8CF]/40 hover:text-red-400 cursor-pointer hover:bg-red-500/15 p-1 rounded transition"
+                    >
+                      <TrashIcon />
+                    </button>
+                  )}
+                </div>
+              ))}
+
+              {query.trim() && suggestions.length === 0 && (
+                <div className="text-center py-4 text-sm text-[#B3C8CF]/40">
+                  No matching chats found
+                </div>
+              )}
+            </>
           )}
         </div>
 
         {/* Footer */}
-        <div className="px-3 py-3 border-t border-[#89A8B2]/15 flex items-center gap-3 cursor-pointer rounded m-1 hover:bg-[#89A8B2]/10 transition-all"
-        onClick={() => navigate("/profile")}>
+        <div
+          className="px-3 py-3 border-t border-[#89A8B2]/15 flex items-center gap-3 cursor-pointer rounded m-1 hover:bg-[#89A8B2]/10 transition-all"
+          onClick={() => navigate("/profile")}
+        >
           <div className="w-8 h-8 rounded-full bg-[#89A8B2] flex items-center justify-center text-sm font-semibold text-[#0f1219]">
             {user?.fullname?.firstname?.charAt(0)?.toUpperCase() || "U"}{" "}
           </div>

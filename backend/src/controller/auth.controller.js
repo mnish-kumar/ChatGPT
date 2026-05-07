@@ -10,8 +10,6 @@ const { emailQueue } = require("../broker/email.queue");
 
 const { getCookieOptions } = require("../utils/cookieOptions");
 
-const REFRESH_COOKIE_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
-
 /**
  * @route POST api/auth/register
  * @desc Register a new user and return JWT token in cookie
@@ -89,12 +87,12 @@ async function registerController(req, res) {
 
   res.cookie("refreshToken", refreshToken, {
     ...cookieOptions,
-    maxAge: REFRESH_COOKIE_MAX_AGE_MS,
+    maxAge: 7 * 24 * 60 * 60 * 1000,
   });
 
   res.cookie("sessionId", sessionId, {
     ...cookieOptions,
-    maxAge: REFRESH_COOKIE_MAX_AGE_MS,
+    maxAge: 7 * 24 * 60 * 60 * 1000,
   });
 
   return res.status(201).json({
@@ -227,12 +225,12 @@ async function loginController(req, res) {
 
   res.cookie("refreshToken", refreshToken, {
     ...cookieOptions,
-    maxAge: REFRESH_COOKIE_MAX_AGE_MS,
+    maxAge: 7 * 24 * 60 * 60 * 1000,
   });
 
   res.cookie("sessionId", sessionId, {
     ...cookieOptions,
-    maxAge: REFRESH_COOKIE_MAX_AGE_MS,
+    maxAge: 7 * 24 * 60 * 60 * 1000,
   });
 
   return res.status(200).json({
@@ -402,17 +400,37 @@ async function refreshTokenController(req, res) {
   const sessionId = req.cookies.sessionId;
   const refreshToken = req.cookies.refreshToken;
 
+  // If no cookies, user is not authenticated - this is normal on app startup
   if (!refreshToken || !sessionId) {
-    return res.status(400).json({
+    return res.status(401).json({
       success: false,
-      message: "Unauthorized",
+      message: "Refresh token or session ID missing. Please login.",
     });
   }
 
   try {
     // Identify the user from the refresh token itself.
-    const decodedJwt = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
+    let decodedJwt;
+    try {
+      decodedJwt = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
+    } catch (jwtError) {
+      if (jwtError.name === "TokenExpiredError") {
+        return res.status(401).json({
+          success: false,
+          message: "Refresh token has expired. Please login again.",
+        });
+      }
+      throw jwtError;
+    }
+
     const userId = decodedJwt?.id;
+
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid refresh token payload. Please login again.",
+      });
+    }
 
     const decoded = await authRedisService.verifyRefreshToken(
       refreshToken,
@@ -448,12 +466,12 @@ async function refreshTokenController(req, res) {
 
     res.cookie("refreshToken", newRefreshToken, {
       ...cookieOptions,
-      maxAge: REFRESH_COOKIE_MAX_AGE_MS,
+      maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
     res.cookie("sessionId", sessionId, {
       ...cookieOptions,
-      maxAge: REFRESH_COOKIE_MAX_AGE_MS,
+      maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
     return res.status(200).json({
@@ -462,20 +480,28 @@ async function refreshTokenController(req, res) {
       accessToken: newAccessToken,
     });
   } catch (error) {
+    console.error("Refresh token error:", error.message);
+    
     if (
       error?.name === "TokenExpiredError" ||
       error?.name === "JsonWebTokenError"
     ) {
       return res.status(401).json({
         success: false,
-        message: "Unauthorized",
+        message: "Unauthorized - Invalid token",
+      });
+    }
+
+    if (error.message.includes("not found in redis")) {
+      return res.status(401).json({
+        success: false,
+        message: "Session expired. Please login again.",
       });
     }
 
     return res.status(401).json({
       success: false,
-      message: "Failed to refresh token",
-      error: error.message,
+      message: "Failed to refresh token. Please login again.",
     });
   }
 }
@@ -698,12 +724,12 @@ async function googleAuthController(req, res) {
 
     res.cookie("refreshToken", refreshToken, {
       ...cookieOptions,
-      maxAge: REFRESH_COOKIE_MAX_AGE_MS,
+      maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
     res.cookie("sessionId", sessionId, {
       ...cookieOptions,
-      maxAge: REFRESH_COOKIE_MAX_AGE_MS,
+      maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
     return res.redirect(302, `${frontendUrl}/dashboard`);

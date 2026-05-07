@@ -18,7 +18,6 @@ const sendEmail = async ({ to, subject, html }) => {
     });
 
     console.log("Email sent successfully ✅");
-    console.log(response);
   } catch (error) {
     console.error(
       "Brevo email error ❌",

@@ -50,7 +50,7 @@ async function setRefreshToken(
 
 async function verifyRefreshToken(refreshToken, userId, sessionId) {
   try {
-    // Verify jwt
+    // Verify jwt signature and expiration
     const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
 
     if (!decoded || !decoded.id) {
@@ -65,18 +65,28 @@ async function verifyRefreshToken(refreshToken, userId, sessionId) {
     const storedRefreshToken = await redisClient.get(key);
 
     if (!storedRefreshToken) {
-      throw new Error("Refresh token not found in redis");
+      throw new Error("Refresh token not found in redis - session may have expired or been cleared");
     }
 
     // Compare hashed tokens
     const parsed = JSON.parse(storedRefreshToken);
     const hashedToken = hashUtils.hashToken(refreshToken);
 
-    if (parsed.token !== hashedToken) {
-      throw new Error("Invalid refresh token");
+    // Check current token
+    if (parsed.token === hashedToken) {
+      return decoded;
     }
 
-    return decoded;
+    // Check previous token during grace period (60 seconds)
+    if (parsed.previousToken && parsed.previousTokenExpiresAt) {
+      if (Date.now() < parsed.previousTokenExpiresAt && parsed.previousToken === hashedToken) {
+        console.log("Token rotation grace period: Using previous token");
+        return decoded;
+      }
+    }
+
+    console.error("Token mismatch - Expected hash does not match stored hash");
+    throw new Error("Invalid refresh token - token does not match stored value");
   } catch (error) {
     console.error("verifyRefreshToken failed:", error.message);
     throw error;

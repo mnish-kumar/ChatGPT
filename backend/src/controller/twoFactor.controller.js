@@ -223,12 +223,12 @@ async function verify2FAController(req, res) {
 
     res.cookie("refreshToken", refreshToken, {
       ...cookieOptions,
-      maxAge: REFRESH_COOKIE_MAX_AGE_MS,
+      maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
     res.cookie("sessionId", sessionId, {
       ...cookieOptions,
-      maxAge: REFRESH_COOKIE_MAX_AGE_MS,
+      maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
     return res.status(200).json({
