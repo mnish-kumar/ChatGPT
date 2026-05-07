@@ -1,4 +1,4 @@
-const redisClient = require("../config/redis");
+const {redisClient} = require("../config/redis");
 
 const CACHE_TTL_SECONDS = 60 * 10; // 10 minutes
 // Bump this when the cached payload shape changes.

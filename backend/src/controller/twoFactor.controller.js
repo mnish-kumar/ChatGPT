@@ -11,8 +11,8 @@ const isProduction = process.env.NODE_ENV === "production";
 
 const cookieOptions = {
   httpOnly: true,
-  secure: isProduction,
-  sameSite: isProduction ? "None" : "Lax",
+  secure: true,
+  sameSite: "None",
 };
 
 // ─── Generate QR code for 2FA setup

@@ -12,6 +12,8 @@ export default function ChatPage() {
 
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
+  const { isLoading } = useSelector((state) => state.user);
+
   useEffect(() => {
     dispatch(getUserChatsAction());
 
@@ -28,6 +30,14 @@ export default function ChatPage() {
       disconnectSocket();
     };
   }, [dispatch, accessToken]);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-chart-4 text-gray-300">
+        <p>Loading...</p>
+      </div>
+    )
+  }
 
   return (
     <div className="flex-1 flex h-dvh overflow-hidden bg-[#0a0c10] p-1 gap-1">

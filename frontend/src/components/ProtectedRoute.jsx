@@ -5,7 +5,7 @@ const ProtectedRoute = () => {
   const { isAuthenticated, isLoading } = useSelector((state) => state.user);
 
   if (isLoading) {
-    return null;
+    return <Outlet />;
   }
 
   if (!isAuthenticated) {

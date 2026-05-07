@@ -5,7 +5,7 @@ const userModel = require("../models/user.model");
 const aiService = require("../services/ai.service");
 const messageModel = require("../models/message.model");
 const { createVector, queryVectors } = require("../services/vector.service");
-const redisClient = require("../config/redis");
+const {redisClient} = require("../config/redis");
 const { chatModel } = require("../models/chat.model");
 
 function initSocketServer(httpServer) {

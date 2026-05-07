@@ -1,7 +1,7 @@
 const { getClientIP, toManyRequest } = require("../utils/helpers/rateLimit.helper");
 const hashKey = require("../utils/hash.utils");
 const { RateLimiterRedis } = require("rate-limiter-flexible");
-const redisClient = require("../config/redis")
+const { redisClient } = require("../config/redis")
 
 
 /**

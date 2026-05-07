@@ -34,15 +34,6 @@ const App = () => {
     });
   }, [location.pathname, location.hash]);
 
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-screen bg-chart-1 text-accent-foreground">
-        <p>Loading...</p>
-      </div>
-    )
-  }
-
   return (
     <div className="w-full">
       <MainRoute />

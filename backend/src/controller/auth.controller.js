@@ -2,18 +2,16 @@ const bcrypt = require("bcryptjs");
 const userModel = require("../models/user.model");
 const jwt = require("jsonwebtoken");
 const blacklistTokenModel = require("../models/token.model");
-const redisClient = require("../config/redis");
+const {redisClient} = require("../config/redis");
 const userCache = require("../cache/user.cache");
 const authRedisService = require("../services/redis.service");
 const hash = require("../utils/hash.utils");
 const { emailQueue } = require("../broker/email.queue");
 
-const isProduction = process.env.NODE_ENV === "production";
-
 const options = {
   httpOnly: true,
-  secure: isProduction,
-  sameSite: isProduction ? "None" : "Lax",
+  secure: true,
+  sameSite: "None",
 };
 
 /**

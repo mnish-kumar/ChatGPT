@@ -1,6 +1,6 @@
 const userModel = require("../models/user.model");
 const jwt = require("jsonwebtoken");
-const redisClient = require("../config/redis");
+const {redisClient} = require("../config/redis");
 
 function createAuthMiddleware(roles = []) {
   return async function authMiddleware(req, res, next) {

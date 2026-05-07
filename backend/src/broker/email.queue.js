@@ -89,7 +89,6 @@ const emailWorker = new Worker(
         throw new Error(`Unknown email type: ${type}`);
     }
 
-    console.log(`✅ Email sent [${normalizedType}] → ${email}`);
   },
   {
     connection: bullMQRedis,
