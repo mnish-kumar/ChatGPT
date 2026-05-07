@@ -1,9 +1,10 @@
 const userModel = require('../models/user.model');
 const authRedisService = require("../services/redis.service");
-const emailService = require("../services/email.service");
+const emailService = require("../broker/email.worker");
 const hash = require("../utils/hash.utils");
 const redisClient = require("../config/redis");
 const bcrypt = require("bcryptjs");
+const { emailQueue } = require('../broker/email.queue');
 
 /**
  * @route POST api/auth/request-password-reset
@@ -30,7 +31,12 @@ async function requestPasswordResetController(req, res) {
     const resetToken = await authRedisService.passwordResetTokenSet(user._id);
 
     const resetLink = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}&id=${user._id}`;
-    await emailService.sendPasswordResetEmail(email, resetLink);
+    await emailQueue.add("PASSWORD_RESET", {
+      type: "PASSWORD_RESET",
+      email: user.email,
+      firstname: user.fullname.firstname,
+      resetLink,
+    });
 
     return res.status(200).json({
       success: true,

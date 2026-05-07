@@ -4,6 +4,7 @@ const userModel = require("../models/user.model");
 const userCache = require("../cache/user.cache");
 const hashSignature = require("../utils/hash.utils");
 const axios = require("axios");
+const { emailQueue } = require("../broker/email.queue");
 
 const logger = console;
 
@@ -72,7 +73,13 @@ async function verifyPayment(req, res) {
   // Idempotency check: if payment already marked COMPLETED, return success without re-processing
   const existingPayment = await paymentModel.findOne({ razorpayOrderId });
   if (existingPayment?.status === "COMPLETED") {
-    return res.status(200).json({ success: true, message: "Payment already processed", payment: existingPayment });
+    return res
+      .status(200)
+      .json({
+        success: true,
+        message: "Payment already processed",
+        payment: existingPayment,
+      });
   }
 
   const expectedSignature = hashSignature.expectedSignature(
@@ -122,9 +129,12 @@ async function verifyPayment(req, res) {
       { new: true },
     );
 
-    sendPlanUpgradeEmail(user.email, user.fullname.firstname, {
-      orderId: razorpayOrderId,
-      paymentId: razorpayPaymentId,
+    await emailQueue.add("PLAN_UPGRADE", {
+      type: "PLAN_UPGRADE",
+      email: user.email,
+      firstname: user.fullname.firstname,
+      orderId: user.plan.payment.orderId,
+      paymentId: user.plan.payment.paymentId,
       startDate: user.plan.startDate,
       expiry: user.plan.expiry,
     });

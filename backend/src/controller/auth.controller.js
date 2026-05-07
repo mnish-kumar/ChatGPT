@@ -6,7 +6,7 @@ const redisClient = require("../config/redis");
 const userCache = require("../cache/user.cache");
 const authRedisService = require("../services/redis.service");
 const hash = require("../utils/hash.utils");
-const emailService = require("../services/email.service");
+const { emailQueue } = require("../broker/email.queue");
 
 const isProduction = process.env.NODE_ENV === "production";
 
@@ -63,7 +63,11 @@ async function registerController(req, res) {
   });
 
   // Send welcome email (controller will catch any errors)
-  await emailService.sendWelcomeEmail(email, firstname);
+  await emailQueue.add("WELCOME", {
+    type: "WELCOME",
+    email: user.email,
+    firstname: user.fullname.firstname,
+  });
 
   // Generate access token
   const accessToken = jwt.sign(
@@ -175,7 +179,22 @@ async function loginController(req, res) {
     });
   }
 
-  await emailService.sendLoginAlertEmail(email, user.fullname.firstname, req);  
+  const ip = (req.headers["x-forwarded-for"] || "")
+    .toString()
+    .split(",")[0]
+    .trim() || req.socket.remoteAddress || "Unknown";
+  const userAgent = req.headers["user-agent"] || "Unknown";
+
+  await emailQueue.add("LOGIN", {
+    type: "LOGIN",
+    email: user.email,
+    firstname: user.fullname.firstname,
+    meta: {
+      ip,
+      userAgent,
+      time: new Date().toISOString(),
+    },
+  });
 
   // Generate access token
   const accessToken = jwt.sign(
@@ -556,8 +575,13 @@ async function sendVerificationEmailController(req, res) {
     // Send verification email with link to verify email address
     const verificationLink = `${process.env.FRONTEND_URL}/api/auth/verify-email/${verificationToken}`;
 
-    // ✅ Send email (controller will catch any errors)
-    await emailService.sendVerificationEmail(email, verificationLink);
+    // Send email (controller will catch any errors)
+    await emailQueue.add("VERIFICATION_EMAIL", {
+      type: "VERIFICATION_EMAIL",
+      email: user.email,
+      firstname: user.fullname.firstname,
+      verificationLink,
+    });
 
     return res.status(200).json({
       success: true,
@@ -618,7 +642,12 @@ async function resendVerificationEmailController(req, res) {
     const verificationLink = `${process.env.FRONTEND_URL}/api/auth/verify-email/${verificationToken}`;
 
     // ✅ Send email (controller will catch any errors)
-    await emailService.sendVerificationEmail(email, verificationLink);
+    await emailQueue.add("VERIFICATION_EMAIL", {
+      type: "VERIFICATION_EMAIL",
+      email: user.email,
+      firstname: user.fullname.firstname,
+      verificationLink,
+    });
 
     return res.status(200).json({
       success: true,
