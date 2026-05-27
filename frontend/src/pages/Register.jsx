@@ -46,9 +46,9 @@ const Register = () => {
   }
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-chart-1">
+    <div className="flex items-center justify-center min-h-screen bg-chart-1 px-4">
       <div
-        className="relative flex items-center justify-center w-full max-w-md rounded-2xl h-dvh"
+        className="relative flex items-center justify-center w-full max-w-md rounded-2xl min-h-[600px]"
         style={{
           background: "rgba(255,255,255,0.06)",
           backdropFilter: "blur(20px)",
