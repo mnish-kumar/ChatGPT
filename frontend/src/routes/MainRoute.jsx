@@ -1,21 +1,22 @@
+import { lazy } from "react";
 import { Route, Routes } from "react-router-dom";
-import Home from "../pages/Home";
-import Login from "../pages/Login";
-import Register from "../pages/Register";
+const Home = lazy(() => import("../pages/Home"));
+const Login = lazy(() => import("../pages/Login"));
+const Register = lazy(() => import("../pages/Register"));
 import PublicRoute from "@/components/PublicRoute";
 import ProtectedRoute from "@/components/ProtectedRoute";
-import PremiumRoute from "@/components/PremiumRoute";
-import Subscription from "@/components/Subscription";
-import Dashboard from "@/pages/Dashboard";
-import ForgetPassword from "@/pages/user/forgetPassword/ForgetPassword";
-import ResetPassword from "@/pages/user/forgetPassword/ResetPassword";
-import UserProfile from "@/pages/user/userProfile";
-import TwoFactorSettings from "@/pages/user/2FA/TwoFactorSettings";
-import ChangePassword from "@/pages/user/changePassword/ChangePassword";
-import ChatHome from "@/pages/chat/ChatHome";
-import ResumeHome from "@/pages/resume/ResumeHome";
-import Dropdown from "@/pages/user/Dropdown";
-import ReportHistory from "@/pages/resume/ReportHistory";
+const PremiumRoute = lazy(() => import("@/components/PremiumRoute"));
+const Subscription = lazy(() => import("@/components/Subscription"));
+const Dashboard = lazy(() => import("@/pages/Dashboard"));
+const ForgetPassword = lazy(() => import("@/pages/user/forgetPassword/ForgetPassword"));
+const ResetPassword = lazy(() => import("@/pages/user/forgetPassword/ResetPassword"));
+const UserProfile = lazy(() => import("@/pages/user/userProfile"));
+const TwoFactorSettings = lazy(() => import("@/pages/user/2FA/TwoFactorSettings"));
+const ChangePassword = lazy(() => import("@/pages/user/changePassword/ChangePassword"));
+const ChatHome = lazy(() => import("@/pages/chat/ChatHome"));
+const ResumeHome = lazy(() => import("@/pages/resume/ResumeHome"));
+const Dropdown = lazy(() => import("@/pages/user/Dropdown"));
+const ReportHistory = lazy(() => import("@/pages/resume/ReportHistory"));
 
 const MainRoute = () => {
   return (
