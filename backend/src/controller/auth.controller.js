@@ -695,39 +695,71 @@ async function resendVerificationEmailController(req, res) {
  * */
 async function googleAuthController(req, res) {
   try {
+    const cookieOptions = getCookieOptions(req);
+
     const user = req.user;
-    const frontendUrl = process.env.FRONTEND_URL?.split(",")[0].trim() 
-                        || "http://localhost:5173";
 
+    const frontendUrl =
+      process.env.FRONTEND_URL?.split(",")[0].trim() ||
+      "http://localhost:5173";
+
+    // Access Token
     const accessToken = jwt.sign(
-      { id: user._id, role: user.role },
+      {
+        id: user._id,
+        role: user.role,
+      },
       process.env.JWT_SECRET,
-      { expiresIn: "15m" }
+      {
+        expiresIn: "15m",
+      }
     );
 
+    // Refresh Token
     const refreshToken = jwt.sign(
-      { id: user._id, role: user.role },
+      {
+        id: user._id,
+        role: user.role,
+      },
       process.env.JWT_REFRESH_SECRET,
-      { expiresIn: "7d" }
+      {
+        expiresIn: "7d",
+      }
     );
 
-    // ✅ Redis mein store karo
+    // Store refresh token in Redis
     const { sessionId } = await authRedisService.setRefreshToken(
       user._id.toString(),
       refreshToken,
       req
     );
 
-    // ✅ Token aur sessionId dono URL mein bhejo
-    return res.redirect(302, 
-      `${frontendUrl}/dashboard?token=${accessToken}&refreshToken=${refreshToken}&sessionId=${sessionId}`
+    // Store cookies
+    res.cookie("refreshToken", refreshToken, {
+      ...cookieOptions,
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+
+    res.cookie("sessionId", sessionId, {
+      ...cookieOptions,
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+
+    // Redirect with ONLY access token
+    return res.redirect(
+      `${frontendUrl}/oauth-success?token=${accessToken}`
     );
 
   } catch (err) {
     console.error("googleCallback error:", err);
-    const frontendUrl = process.env.FRONTEND_URL?.split(",")[0].trim() 
-                        || "http://localhost:5173";
-    return res.redirect(302, `${frontendUrl}/login?error=server_error`);
+
+    const frontendUrl =
+      process.env.FRONTEND_URL?.split(",")[0].trim() ||
+      "http://localhost:5173";
+
+    return res.redirect(
+      `${frontendUrl}/login?error=server_error`
+    );
   }
 }
 
