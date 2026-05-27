@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { connectSocket, disconnectSocket } from "@/service/socket";
 import { appendChunk, finalizeResponse, setError } from "../../store/reducers/chatSlice";
 import { getUserChatsAction } from "../../store/chatAction";
+import { ChatPageSkeleton } from "@/components/skeletons";
 import Sidebar from "./Sidebar";
 import ChatWindow from "./ChatWindow";
 
@@ -32,11 +33,7 @@ export default function ChatPage() {
   }, [dispatch, accessToken]);
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-screen bg-chart-4 text-gray-300">
-        <p>Loading...</p>
-      </div>
-    )
+    return <ChatPageSkeleton />;
   }
 
   return (

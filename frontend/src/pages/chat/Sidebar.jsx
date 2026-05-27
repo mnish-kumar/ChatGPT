@@ -7,6 +7,7 @@ import {
   getChatMessagesAction,
   getUserChatsAction,
 } from "../../store/chatAction";
+import { ChatListSkeleton } from "@/components/skeletons";
 import { X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -195,15 +196,8 @@ export default function Sidebar({ onClose }) {
             Recent activity
           </div>
 
-          {isLoadingChats ? (
-            <div className="flex flex-col gap-3 mt-2 px-2">
-              {[1, 2, 3, 4].map((i) => (
-                <div
-                  key={i}
-                  className="h-9 rounded-xl bg-white/5 animate-pulse"
-                />
-              ))}
-            </div>
+        {isLoadingChats ? (
+            <ChatListSkeleton />
           ) : chats.length === 0 ? (
             <div className="text-center py-8">
               <p className="text-sm text-[#B3C8CF]/50">No chats yet</p>

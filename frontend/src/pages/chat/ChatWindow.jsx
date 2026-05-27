@@ -10,6 +10,7 @@ import {
 
 import { clearError } from "../../store/reducers/chatSlice";
 import { getChatMessagesAction } from "@/store/chatAction";
+import { ChatMessagesSkeleton } from "@/components/skeletons";
 
 import MessageBubble from "./MessageBubble";
 import MessageInput from "./MessageInput";
@@ -184,17 +185,7 @@ export default function ChatWindow({ sidebarOpen = true, onOpenSidebar }) {
             <WelcomeScreen />
           </div>
         ) : isLoadingMessages ? (
-          <div className="max-w-3xl mx-auto px-5 pt-6 flex flex-col gap-4">
-            {[1, 2, 3].map((i) => (
-              <div
-                key={i}
-                className={`h-16 rounded-2xl bg-[#89A8B2]/10 animate-pulse max-w-[60%] ${
-                  i % 2 === 0 ? "self-end ml-auto" : "self-start"
-                }`}
-                style={{ animationDelay: `${i * 120}ms` }}
-              />
-            ))}
-          </div>
+          <ChatMessagesSkeleton />
         ) : msgs.length === 0 ? (
           <div className="h-full flex">
             <WelcomeScreen />

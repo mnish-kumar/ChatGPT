@@ -7,6 +7,7 @@ import { useEffect, useRef, useState } from "react";
 import Dropdown from "./user/Dropdown";
 import { setAccessToken } from "@/store/reducers/userSlice";
 import { checkAuth } from "@/store/userAction";
+import { DashboardSkeleton } from "@/components/skeletons";
 import api from "@/api/axios";
 
 const Dashboard = () => {
@@ -61,6 +62,10 @@ const Dashboard = () => {
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, []);
+
+  if (isLoading) {
+    return <DashboardSkeleton />;
+  }
 
   return (
     <div className="flex min-h-screen bg-chart-1 text-foreground font-sans gap-10 justify-center items-center">

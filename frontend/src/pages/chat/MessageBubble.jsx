@@ -97,6 +97,7 @@ export default function MessageBubble({ message, isStreaming = false }) {
   const parts = formatContent(message.content);
   const [msgCopied, setMsgCopied] = useState(false);
 
+
   const handleCopyMessage = () => {
     navigator.clipboard.writeText(message.content);
     setMsgCopied(true);
