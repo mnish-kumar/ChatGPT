@@ -2,7 +2,7 @@ const userModel = require('../models/user.model');
 const authRedisService = require("../services/redis.service");
 const emailService = require("../broker/email.worker");
 const hash = require("../utils/hash.utils");
-const redisClient = require("../config/redis");
+const {redisClient} = require("../config/redis");
 const bcrypt = require("bcryptjs");
 const { emailQueue } = require('../broker/email.queue');
 
@@ -30,7 +30,9 @@ async function requestPasswordResetController(req, res) {
     // Store hashed token in Redis (15 min TTL)
     const resetToken = await authRedisService.passwordResetTokenSet(user._id);
 
-    const resetLink = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}&id=${user._id}`;
+    const frontendUrl = process.env.FRONTEND_URL?.split(",")[0].trim()
+      || "http://localhost:5173";
+    const resetLink = `${frontendUrl}/reset-password?token=${resetToken}&id=${user._id}`;
     await emailQueue.add("PASSWORD_RESET", {
       type: "PASSWORD_RESET",
       email: user.email,
