@@ -163,13 +163,7 @@ const MainRoute = () => {
           <Route
             path="/forget-password"
             element={
-              <Suspense
-                fallback={
-                  <div className="flex justify-center items-center">
-                    <p>Loading...</p>
-                  </div>
-                }
-              >
+              <Suspense fallback={<GenericPageLoader />}>
                 <ForgetPassword />
               </Suspense>
             }
