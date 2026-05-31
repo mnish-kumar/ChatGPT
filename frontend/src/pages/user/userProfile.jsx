@@ -4,7 +4,7 @@ import { logoutUser } from "../../store/userAction";
 import { useNavigate } from "react-router-dom";
 import { getMe } from "@/api/auth.api";
 import BorderGlow from "@/components/BorderGlow";
-import { MenuIcon } from "lucide-react/dist/cjs/lucide-react";
+import { MenuIcon } from "lucide-react";
 import Dropdown from "./Dropdown";
 import UserProfileSkeleton from "@/components/skeletons/UserProfileSkeleton";
 

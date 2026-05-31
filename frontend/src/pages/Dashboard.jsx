@@ -1,7 +1,7 @@
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import TextType from "@/components/TextType";
-import { MenuIcon, Zap, ArrowRight, MessageCircle, BriefcaseBusiness, Crown, Sparkles, Star } from "lucide-react/dist/cjs/lucide-react";
+import { MenuIcon, Zap, ArrowRight, MessageCircle, BriefcaseBusiness, Crown, Sparkles, Star } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import Dropdown from "./user/Dropdown";
 import { setAccessToken } from "@/store/reducers/userSlice";

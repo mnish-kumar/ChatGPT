@@ -4,7 +4,7 @@ import {
   LayoutDashboard,
   FileUser,
   MessageCircle,
-} from "lucide-react/dist/cjs/lucide-react";
+} from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { logoutUser } from "@/store/userAction";

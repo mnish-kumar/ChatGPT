@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ChevronDown, ChevronUp, ArrowLeft, Menu, X } from "lucide-react/dist/cjs/lucide-react";
+import { ChevronDown, ChevronUp, ArrowLeft, Menu, X } from "lucide-react";
 
 const severityColors = {
   High: "bg-red-500/20 text-red-400 border border-red-500/30",

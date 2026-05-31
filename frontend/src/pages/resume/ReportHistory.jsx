@@ -5,7 +5,7 @@ import {
   ClockIcon,
   ChevronRightIcon,
   ArrowLeft,
-} from "lucide-react/dist/cjs/lucide-react";
+} from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 // ── Helpers

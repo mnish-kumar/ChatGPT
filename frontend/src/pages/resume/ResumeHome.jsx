@@ -8,7 +8,7 @@ import {
   LoaderCircle,
   PanelLeftDashed,
   X,
-} from "lucide-react/dist/cjs/lucide-react";
+} from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import Dropdown from "../user/Dropdown";

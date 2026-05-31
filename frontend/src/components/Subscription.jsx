@@ -13,7 +13,7 @@ import {
   Clock,
   CheckCircle,
   BookOpen,
-} from "lucide-react/dist/cjs/lucide-react";
+} from "lucide-react";
 
 const FREE_FEATURES = [
   { icon: FileText,      text: "3 resume analyses per month" },
