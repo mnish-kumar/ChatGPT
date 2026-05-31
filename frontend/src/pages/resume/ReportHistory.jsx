@@ -8,7 +8,7 @@ import {
 } from "lucide-react/dist/cjs/lucide-react";
 import { useNavigate } from "react-router-dom";
 
-// ── Helpers ──────────────────────────────────────────────────────────────────
+// ── Helpers
 const extractRole = (jobDescription) => {
   const firstLine = jobDescription?.split("\n")[0] ?? "";
   const beforePipe = firstLine.split("|")[0].trim();
@@ -39,7 +39,7 @@ const scoreColor = (score) => {
   return { text: "text-red-400", bg: "bg-red-500", label: "Partial" };
 };
 
-// ── Skeleton Card ─────────────────────────────────────────────────────────────
+// ── Skeleton Card
 function SkeletonCard() {
   return (
     <div className="bg-[#0d0f14] border border-[#1e2130] rounded-xl p-4 animate-pulse">
@@ -55,7 +55,7 @@ function SkeletonCard() {
   );
 }
 
-// ── History Card ──────────────────────────────────────────────────────────────
+// ── History Card
 function HistoryCard({ report, onClick }) {
   const role = extractRole(report.jobDescription);
   const when = timeAgo(report.createdAt);
@@ -131,7 +131,7 @@ function HistoryCard({ report, onClick }) {
   );
 }
 
-// ── Main Component ────────────────────────────────────────────────────────────
+// ── Main Component
 const ReportHistory = () => {
   const [report, setReport] = useState(null);
   const [history, setHistory] = useState([]);
@@ -226,7 +226,7 @@ const ReportHistory = () => {
   );
 };
 
-// ── Shared History List ───────────────────────────────────────────────────────
+// ── Shared History List
 function HistoryList({ loading, history, onSelect, onNavigate }) {
   return (
     <div className="max-w-3xl mx-auto">

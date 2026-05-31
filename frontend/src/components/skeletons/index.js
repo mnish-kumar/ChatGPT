@@ -8,3 +8,8 @@ export { default as DashboardSkeleton } from "./DashboardSkeleton";
 export { default as ChatMessagesSkeleton } from "./ChatMessagesSkeleton";
 export { default as LoginSkeleton } from "./LoginSkeleton";
 export { default as RegisterSkeleton } from "./RegisterSkeleton";
+export { default as UserProfileSkeleton } from "./UserProfileSkeleton";
+export { default as TwoFactorSettingSkeleton } from "./TwoFactorSettingSkeleton";
+export { default as ResumeHomeSkeleton } from "./ResumeHomeSkeleton";
+export { default as ReportHistorySkeleton } from "./ReportHistorySkeleton";
+export { default as GenericPageLoader } from "./GenericPageLoader";

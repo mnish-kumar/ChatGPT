@@ -22,7 +22,6 @@ const Home = () => {
         </div>
         <main className="relative">
           <HeroSkeleton />
-          <FeatureSplitSkeleton />
         </main>
       </div>
     )

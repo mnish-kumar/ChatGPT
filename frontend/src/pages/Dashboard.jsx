@@ -9,7 +9,7 @@ import { checkAuth } from "@/store/userAction";
 import { DashboardSkeleton } from "@/components/skeletons";
 import api from "@/api/axios";
 
-// ── Premium Footer Banner ─────────────────────────────────────────────────────
+// ── Premium Footer Banner
 function PremiumBanner({ plan, onUpgrade }) {
   const isPremium = plan?.type === "PREMIUM";
 
@@ -80,7 +80,7 @@ function PremiumBanner({ plan, onUpgrade }) {
   );
 }
 
-// ── Tool Card ─────────────────────────────────────────────────────────────────
+// ── Tool Card
 function ToolCard({ tag, tagColor, title, description, cta, onClick, accentColor, icon: Icon, children }) {
   return (
     <div
@@ -141,7 +141,7 @@ function ToolCard({ tag, tagColor, title, description, cta, onClick, accentColor
   );
 }
 
-// ── Main Dashboard ────────────────────────────────────────────────────────────
+// ── Main Dashboard
 const Dashboard = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef(null);

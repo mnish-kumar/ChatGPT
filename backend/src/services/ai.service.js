@@ -1,6 +1,8 @@
 const { GoogleGenAI } = require("@google/genai");
 const { z } = require("zod");
 const utils = require("../utils/stream.helper");
+const userModel = require("../models/user.model");
+const validateTokenLimit = require('../utils/validateTokenLimit');
 
 if (!process.env.GEMINI_API_KEY) {
   console.error("GEMINI_API_KEY is not set in environment variables.");
@@ -21,19 +23,20 @@ const structuredContentSchema = z.object({
     ),
 });
 
+
+// Generate response of user query.
 async function generateResponse(content) {
   const responce = await ai.models.generateContent({
     model: process.env.GEMINI_MODEL_NAME,
     contents: content,
     config: {
       temperature: 0.2,
-      systemInstruction:
-        "You are a helpful assistant for answering user queries.",
+      systemInstruction: "You are a helpful assistant for answering user queries.",
     },
   });
   return responce.text;
 }
-
+// Generate response embeddings for given content.
 async function generateEmbedding(content) {
   const response = await ai.models.embedContent({
     model: process.env.GEMINI_EMBEDDING_MODEL_NAME,
@@ -46,36 +49,7 @@ async function generateEmbedding(content) {
   return response.embeddings[0].values;
 }
 
-async function GenerateContentStream(content, onChunk) {
-  try {
-    const stream = await ai.models.generateContentStream({
-      model: process.env.GEMINI_MODEL_NAME,
-      contents: content,
-
-      config: {
-        temperature: 0.2,
-        systemInstruction:
-          "You are a helpful assistant for answering user queries.",
-      },
-    });
-
-    let fullText = "";
-    for await (const chunk of stream) {
-      const text = utils.extractText(chunk);
-      if (text) {
-        fullText += text;
-        if (typeof onChunk === "function") {
-          onChunk(text);
-        }
-      }
-    }
-    return fullText;
-  } catch (error) {
-    console.error("Gemini streaming error:", error);
-    throw new Error("AI response generation failed");
-  }
-}
-
+// Generate interview report based on user's resume, self description and job description.
 const interviewReportSchema = z.object({
   matchScore: z
     .number()
@@ -167,7 +141,6 @@ const interviewReportSchema = z.object({
       "A structured preparation plan outlining daily focus areas and tasks for the user to effectively prepare for their interview based on the analysis of their profile and the job description.",
     ),
 });
-
 async function generateInterviewReport({
   selfDescription,
   jobDescription,
@@ -188,6 +161,36 @@ async function generateInterviewReport({
   });
 
   return JSON.parse(response.text);
+}
+
+async function GenerateContentStream(content, onChunk) {
+  try {
+    const stream = await ai.models.generateContentStream({
+      model: process.env.GEMINI_MODEL_NAME,
+      contents: content,
+
+      config: {
+        temperature: 0.2,
+        systemInstruction:
+          "You are a helpful assistant for answering user queries.",
+      },
+    });
+
+    let fullText = "";
+    for await (const chunk of stream) {
+      const text = utils.extractText(chunk);
+      if (text) {
+        fullText += text;
+        if (typeof onChunk === "function") {
+          onChunk(text);
+        }
+      }
+    }
+    return fullText;
+  } catch (error) {
+    console.error("Gemini streaming error:", error);
+    throw new Error("AI response generation failed");
+  }
 }
 
 module.exports = {

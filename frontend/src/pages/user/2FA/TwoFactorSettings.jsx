@@ -3,6 +3,7 @@ import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { setup2FA, enable2FA, disable2FA, getMe } from "../../../api/auth.api";
 import { useForm } from "react-hook-form";
+import TwoFactorSettingSkeleton from "@/components/skeletons/TwoFactorSettingSkeleton";
 
 const TwoFactorSettings = () => {
   const navigate = useNavigate();
@@ -40,8 +41,6 @@ const TwoFactorSettings = () => {
     };
   }, [user]);
 
-  // const { isLoading } = useSelector((state) => state.user);
-
   const {
     register,
     handleSubmit,
@@ -49,7 +48,7 @@ const TwoFactorSettings = () => {
     formState: { errors },
   } = useForm();
 
-  // ─── Setup 2FA ────────────────────────────────────────
+  // ─── Setup 2FA
   const handleSetup = async () => {
     setIsLoading(true);
     setError(null);
@@ -65,7 +64,7 @@ const TwoFactorSettings = () => {
     }
   };
 
-  // ─── Enable 2FA ───────────────────────────────────────
+  // ─── Enable 2FA 
   const onEnable = async (data) => {
     setIsLoading(true);
     setError(null);
@@ -82,7 +81,7 @@ const TwoFactorSettings = () => {
     }
   };
 
-  // ─── Disable 2FA ──────────────────────────────────────
+  // ─── Disable 2FA
   const onDisable = async (data) => {
     setIsLoading(true);
     setError(null);
@@ -99,7 +98,7 @@ const TwoFactorSettings = () => {
     }
   };
 
-  // ─── Idle Screen ──────────────────────────────────────
+  // ─── Idle Screen
   const IdleScreen = () => (
     <div className="space-y-4">
       {/* Status */}
@@ -146,7 +145,7 @@ const TwoFactorSettings = () => {
     </div>
   );
 
-  // ─── QR Code + Enable Screen ──────────────────────────
+  // ─── QR Code + Enable Screen
   const EnableScreen = () => (
     <div className="space-y-4">
       <div className="text-center">
@@ -218,7 +217,7 @@ const TwoFactorSettings = () => {
     </div>
   );
 
-  // ─── Backup Codes Screen ──────────────────────────────
+  // ─── Backup Codes Screen
   const BackupCodesScreen = () => (
     <div className="space-y-4">
       {/* Success */}
@@ -272,7 +271,7 @@ const TwoFactorSettings = () => {
     </div>
   );
 
-  // ─── Disable Screen ───────────────────────────────────
+  // ─── Disable Screen
   const DisableScreen = () => (
     <div className="space-y-4">
       <div className="bg-red-50 border border-red-200 rounded-lg p-4">
@@ -331,57 +330,11 @@ const TwoFactorSettings = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 py-10 px-4">
-        <div className="max-w-md mx-auto">
-          <style>{`
-          @keyframes shimmer {
-            0% { background-position: -600px 0; }
-            100% { background-position: 600px 0; }
-          }
-          .sk {
-            background: linear-gradient(90deg, #e2e2e2 25%, #efefef 50%, #e2e2e2 75%);
-            background-size: 1200px 100%;
-            animation: shimmer 1.6s infinite linear;
-          }
-          .dark .sk {
-            background: linear-gradient(90deg, #2a2a2a 25%, #3a3a3a 50%, #2a2a2a 75%);
-            background-size: 1200px 100%;
-          }
-        `}</style>
-
-          {/* Back button */}
-          <div className="flex items-center gap-3 mb-6">
-            <div className="sk h-4 w-28 rounded-md" />
-          </div>
-
-          <div className="bg-white rounded-xl shadow-md p-6">
-            {/* Title */}
-            <div className="sk mb-6 h-6 w-52 rounded-md" />
-
-            {/* Status row */}
-            <div className="flex items-center justify-between rounded-lg border border-gray-100 bg-gray-50 p-4 mb-4">
-              <div className="space-y-2">
-                <div className="sk h-4 w-32 rounded-md" />
-                <div className="sk h-3 w-24 rounded-md" />
-              </div>
-              <div className="sk h-6 w-16 rounded-full" />
-            </div>
-
-            {/* Description lines */}
-            <div className="space-y-2 mb-6">
-              <div className="sk h-3 w-full rounded-md" />
-              <div className="sk h-3 w-4/5 rounded-md" />
-            </div>
-
-            {/* Action button */}
-            <div className="sk h-10 w-full rounded-lg" />
-          </div>
-        </div>
-      </div>
+      <TwoFactorSettingSkeleton />
     );
   }
 
-  // ─── Main Render ──────────────────────────────────────
+  // ─── Main Render
   return (
     <div className="min-h-screen bg-gray-50 py-10 px-4">
       <div className="max-w-md mx-auto">
