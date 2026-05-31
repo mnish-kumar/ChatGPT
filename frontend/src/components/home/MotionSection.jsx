@@ -19,12 +19,19 @@ export const stagger = (staggerChildren = 0.12, delayChildren = 0) => ({
   },
 });
 
-export default function MotionSection({
-  children,
-  className,
-  id,
-  ...props
-}) {
+// Mobile check
+const isMobile = window.innerWidth < 768;
+
+export default function MotionSection({ children, className, id, ...props }) {
+  if (isMobile) {
+    return (
+      <section id={id} className={cn("relative scroll-mt-28", className)}>
+        {children}
+      </section>
+    );
+  }
+
+  // Desktop full motion
   return (
     <motion.section
       id={id}
