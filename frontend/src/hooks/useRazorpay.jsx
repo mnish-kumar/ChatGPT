@@ -2,7 +2,7 @@ import { useDispatch } from "react-redux";
 import { setPremium } from "@/store/reducers/userSlice";
 import { createOrder } from "@/api/order.api";
 import { initializePayment, verifyPayment } from "@/api/paymnet.api";
-import { checkAuth } from "@/store/userAction";
+import toast from "react-hot-toast";
 
 
 const loadRazorpay = () => {
@@ -48,10 +48,10 @@ export const useRazorpay = () => {
               razorpaySignature: response.razorpay_signature,
             });
             dispatch(setPremium());
-            await dispatch(checkAuth());
-            alert("🎉 Premium activated!");
+            
+            toast.success("🎉 Premium activated! Welcome to Pro!")
           } catch (err) {
-            alert("Verification failed: " + (err.message || "Contact support"));
+            toast.error("Verification failed: " + (err.message || "Contact support"));
           }
         },
 
@@ -60,12 +60,12 @@ export const useRazorpay = () => {
 
       const rzp = new window.Razorpay(options);
       rzp.on("payment.failed", (r) =>
-        alert("Payment failed: " + r.error.description),
+        toast.error("Payment failed: " + r.error.description),
       );
       rzp.open();
     } catch (err) {
       console.error("Razorpay openCheckout error", err);
-      alert("Something went wrong: " + (err.message || "Please try again"));
+      toast.error("Something went wrong: " + (err.message || "Please try again"));
     }
   };
 
