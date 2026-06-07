@@ -21,6 +21,12 @@ const userSlice = createSlice({
   name: "user",
   initialState,
   reducers: {
+    setUser: (state, action) => {
+      state.user = action.payload;
+      state.isAuthenticated = true;
+      state.isLoading = false;
+    },
+
     // Access token set karo (refresh ke baad)
     setAccessToken: (state, action) => {
       state.accessToken = action.payload;
@@ -147,6 +153,12 @@ const userSlice = createSlice({
   },
 });
 
-export const { setAccessToken, clearError, resetAuth, cancelTwoFactor, setPremium } =
-  userSlice.actions;
+export const {
+  setAccessToken,
+  clearError,
+  resetAuth,
+  cancelTwoFactor,
+  setPremium,
+  setUser,
+} = userSlice.actions;
 export default userSlice.reducer;

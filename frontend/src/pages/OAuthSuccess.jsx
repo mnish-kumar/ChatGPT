@@ -1,8 +1,8 @@
 import { useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useDispatch } from "react-redux";
-import { setAccessToken } from "@/store/reducers/userSlice";
-import { checkAuth } from "@/store/userAction";
+import { setAccessToken, setUser } from "@/store/reducers/userSlice";
+import api from "@/api/axios";
 
 const OAuthSuccess = () => {
   const [searchParams] = useSearchParams();
@@ -17,15 +17,28 @@ const OAuthSuccess = () => {
       return;
     }
 
-    dispatch(setAccessToken(token));
+    const handleAuth = async () => {
+      try {
+        const res = await api.get("/api/auth/get-me", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
 
-    dispatch(checkAuth()).then((result) => {
-      if (result.meta.requestStatus === "fulfilled") {
-        navigate("/dashboard", { replace: true });
-      } else {
+        const user = res.data?.data;
+
+        if (user) {
+          dispatch(setAccessToken(token));
+          dispatch(setUser(user));
+          navigate("/dashboard", { replace: true });
+        } else {
+          navigate("/login", { replace: true });
+        }
+      } catch (err) {
+        console.error("OAuth error:", err);
         navigate("/login", { replace: true });
       }
-    });
+    };
+
+    handleAuth();
   }, []);
 
   return (
