@@ -33,7 +33,6 @@ export async function login({ username, email, password }) {
   }
 }
 
-
 // Logout
 export async function logout() {
   try {
