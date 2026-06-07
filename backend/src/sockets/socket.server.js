@@ -100,19 +100,20 @@ function initSocketServer(httpServer) {
             },
           });
         } catch (error) {
-          console.error("Supabase memory error", error);
+          console.error("Pinecone memory error", error);
         }
 
         const [memory, chatHistory] = await Promise.all([
           // Query Supabase to get relevant past messages based on the current message vectors
           queryVectors({
             queryVector: vectors,
-            limit: 3,
+            limit: 5,
             metadata: {
               user: socket.user.id,
+              chat: messagePayload.chat,
             },
           }).catch((err) => {
-            console.error("Supabase query error", err);
+            console.error("Pinecone query error", err);
             return [];
           }),
 
@@ -195,7 +196,7 @@ function initSocketServer(httpServer) {
             },
           });
         } catch (error) {
-          console.error("Supabase memory error", error);
+          console.error("Pinecone memory error", error);
         }
       } catch (error) {
         console.error("ai-message handler error", error);
