@@ -148,10 +148,6 @@ const Dashboard = () => {
   const { user, isLoading } = useSelector((s) => s.user);
 
   useEffect(() => {
-    dispatch(checkAuth());
-  }, []);
-
-  useEffect(() => {
     if (!isLoading && !user) {
       navigate("/login");
     }

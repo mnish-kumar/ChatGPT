@@ -12,14 +12,20 @@ const OAuthSuccess = () => {
   useEffect(() => {
     const token = searchParams.get("token");
 
-    if (token) {
-      dispatch(setAccessToken(token));
-      dispatch(checkAuth()).then(() => {
-        navigate("/dashboard", { replace: true });
-      });
-    } else {
+    if (!token) {
       navigate("/login", { replace: true });
+      return;
     }
+
+    dispatch(setAccessToken(token));
+
+    dispatch(checkAuth()).then((result) => {
+      if (result.meta.requestStatus === "fulfilled") {
+        navigate("/dashboard", { replace: true });
+      } else {
+        navigate("/login", { replace: true });
+      }
+    });
   }, []);
 
   return (
