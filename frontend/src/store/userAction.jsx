@@ -18,7 +18,7 @@ export const registerUser = createAsyncThunk(
   },
 );
 
-// ─── Login ────────────────────────────────────────────────
+// ─── Login
 export const loginUser = createAsyncThunk(
   "user/login",
   async (credentials, { rejectWithValue }) => {
@@ -51,7 +51,7 @@ export const loginUser = createAsyncThunk(
   },
 );
 
-// ─── Logout ───────────────────────────────────────────────
+// ─── Logout
 export const logoutUser = createAsyncThunk(
   "user/logout",
   async (_, { rejectWithValue }) => {
@@ -64,7 +64,7 @@ export const logoutUser = createAsyncThunk(
   },
 );
 
-// ─── Check Auth (App start) ────────────────────────────
+// ─── Check Auth (App start)
 export const checkAuth = createAsyncThunk(
   "user/checkAuth",
   async (_, { rejectWithValue }) => {
@@ -92,7 +92,7 @@ export const checkAuth = createAsyncThunk(
   },
 );
 
-// ─── Verify 2FA ─────────────────────────────────────────
+// ─── Verify 2FA Login
 export const verify2FALogin = createAsyncThunk(
   "user/verify2FA",
   async ({ tempToken, otp }, { rejectWithValue }) => {

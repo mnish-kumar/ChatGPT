@@ -2,13 +2,31 @@ import { useDispatch } from "react-redux";
 import { setPremium } from "@/store/reducers/userSlice";
 import { createOrder } from "@/api/order.api";
 import { initializePayment, verifyPayment } from "@/api/paymnet.api";
-import { checkAuth } from "@/store/userAction"; // ← add karo
+import { checkAuth } from "@/store/userAction";
+
+
+const loadRazorpay = () => {
+  return new Promise((resolve) => {
+    if (window.Razorpay) return resolve(true);
+    const script = document.createElement("script");
+    script.src = "https://checkout.razorpay.com/v1/checkout.js";
+    script.onload = () => resolve(true);
+    script.onerror = () => resolve(false);
+    document.body.appendChild(script);
+  });
+};
 
 export const useRazorpay = () => {
   const dispatch = useDispatch();
 
   const openCheckout = async ({ plan = "personal" } = {}) => {
     try {
+      const loaded = await loadRazorpay();
+      if (!loaded) {
+        alert("Payment service not loaded. Please try again.");
+        return;
+      }
+
       const orderData = await createOrder({ plan });
       const { razorpayOrderId, orderId, amount, currency, keyId } = orderData;
 
@@ -29,13 +47,8 @@ export const useRazorpay = () => {
               razorpayOrderId: response.razorpay_order_id,
               razorpaySignature: response.razorpay_signature,
             });
-
-            // Optimistic UI update (instant)
             dispatch(setPremium());
-
-            // Sync with backend (plan + expiry from DB)
             await dispatch(checkAuth());
-
             alert("🎉 Premium activated!");
           } catch (err) {
             alert("Verification failed: " + (err.message || "Contact support"));
