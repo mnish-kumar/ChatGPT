@@ -15,6 +15,7 @@ import {
   TwoFactorSettingSkeleton,
   UserProfileSkeleton,
 } from "@/components/skeletons";
+import PageLoader from "@/components/skeletons/GenericPageLoader";
 
 // Lazy load components for better performance
 const Home = lazy(() => import("../pages/Home"));
@@ -40,6 +41,7 @@ const ChatHome = lazy(() => import("@/pages/chat/ChatHome"));
 const ResumeHome = lazy(() => import("@/pages/resume/ResumeHome"));
 const Dropdown = lazy(() => import("@/pages/user/Dropdown"));
 const ReportHistory = lazy(() => import("@/pages/resume/ReportHistory"));
+const OAuthSuccess = lazy(() => import("@/pages/OAuthSuccess"));
 
 const HomeSkeleton = () => (
   <div className="min-h-screen bg-[#F1F0E8] font-sans text-slate-900 antialiased">
@@ -138,6 +140,15 @@ const MainRoute = () => {
             element={
               <Suspense fallback={<HomeSkeleton />}>
                 <Home />
+              </Suspense>
+            }
+          />
+
+          <Route
+            path="/oauth-success"
+            element={
+              <Suspense fallback={<PageLoader />}>
+                <OAuthSuccess />
               </Suspense>
             }
           />

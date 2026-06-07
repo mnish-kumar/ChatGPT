@@ -4,10 +4,8 @@ import TextType from "@/components/TextType";
 import { MenuIcon, Zap, ArrowRight, MessageCircle, BriefcaseBusiness, Crown, Sparkles, Star } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import Dropdown from "./user/Dropdown";
-import { setAccessToken } from "@/store/reducers/userSlice";
 import { checkAuth } from "@/store/userAction";
 import { DashboardSkeleton } from "@/components/skeletons";
-import api from "@/api/axios";
 
 // ── Premium Footer Banner
 function PremiumBanner({ plan, onUpgrade }) {
@@ -150,31 +148,7 @@ const Dashboard = () => {
   const { user, isLoading } = useSelector((s) => s.user);
 
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const token = params.get("token");
-    const refreshToken = params.get("refreshToken");
-    const sessionId = params.get("sessionId");
-
-    const init = async () => {
-      if (token) {
-        dispatch(setAccessToken(token));
-        window.history.replaceState({}, "", "/dashboard");
-
-        if (refreshToken && sessionId) {
-          try {
-            await api.post("/api/auth/google/exchange", {
-              refreshToken,
-              sessionId,
-            });
-          } catch (e) {
-            console.error("Exchange failed", e);
-          }
-        }
-      }
-      dispatch(checkAuth());
-    };
-
-    init();
+    dispatch(checkAuth());
   }, []);
 
   useEffect(() => {
