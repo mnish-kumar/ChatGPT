@@ -50,6 +50,7 @@ export const useRazorpay = () => {
             dispatch(setPremium());
             
             toast.success("🎉 Premium activated! Welcome to Pro!")
+            window.location.href = "/dashboard";
           } catch (err) {
             toast.error("Verification failed: " + (err.message || "Contact support"));
           }

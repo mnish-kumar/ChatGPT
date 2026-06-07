@@ -16,11 +16,11 @@ import {
 } from "lucide-react";
 
 const FREE_FEATURES = [
-  { icon: FileText,      text: "3 resume analyses per month" },
-  { icon: MessageCircle, text: "Basic interview Q&A (5 questions each)" },
-  { icon: BarChart2,     text: "Basic match score" },
-  { icon: Clock,         text: "Standard response speed" },
+  { icon: MessageCircle, text: "Unlimited AI chat conversations" },
+  { icon: Zap,           text: "Fast AI responses" },
   { icon: Users,         text: "Community support" },
+  { icon: Shield,        text: "Secure & private conversations" },
+  { icon: Clock,         text: "Chat history saved" },
 ];
 
 const PRO_FEATURES = [

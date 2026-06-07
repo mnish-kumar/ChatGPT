@@ -4,7 +4,6 @@ import TextType from "@/components/TextType";
 import { MenuIcon, Zap, ArrowRight, MessageCircle, BriefcaseBusiness, Crown, Sparkles, Star } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import Dropdown from "./user/Dropdown";
-import { checkAuth } from "@/store/userAction";
 import { DashboardSkeleton } from "@/components/skeletons";
 
 // ── Premium Footer Banner
@@ -55,7 +54,7 @@ function PremiumBanner({ plan, onUpgrade }) {
                 "Unlimited Analyses",
                 "AI Job Matching",
                 "Priority Support",
-                "Mock Interviews",
+                "Preparation Plans",
               ].map((f) => (
                 <span key={f} className="flex items-center gap-1 text-[10px] text-gray-600">
                   <span className="text-[#ff3e7f]">✦</span> {f}
