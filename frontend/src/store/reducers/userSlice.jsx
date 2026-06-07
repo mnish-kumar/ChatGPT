@@ -61,7 +61,7 @@ const userSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
-    // ─── Register ──────────────────────────────
+    // Register
     builder
       .addCase(registerUser.pending, (state) => {
         state.isLoading = true;
@@ -78,7 +78,7 @@ const userSlice = createSlice({
         state.error = action.payload;
       });
 
-    // ─── Login ─────────────────────────────────
+    // Login 
     builder
       .addCase(loginUser.pending, (state) => {
         state.isLoading = true;
@@ -105,7 +105,7 @@ const userSlice = createSlice({
         state.error = action.payload;
       });
 
-    // ─── Logout ────────────────────────────────
+    // Logout 
     builder.addCase(logoutUser.fulfilled, (state) => {
       state.user = null;
       state.accessToken = null;
@@ -114,7 +114,7 @@ const userSlice = createSlice({
       state.error = null;
     });
 
-    // ─── Check Auth ────────────────────────────
+    // Check Auth 
     builder
       .addCase(checkAuth.pending, (state) => {
         state.isLoading = true;
@@ -132,7 +132,7 @@ const userSlice = createSlice({
         state.isAuthenticated = false;
       });
 
-    // ─── Verify 2FA ─────────────────────────────────
+    // Verify 2FA 
     builder
       .addCase(verify2FALogin.pending, (state) => {
         state.isLoading = true;

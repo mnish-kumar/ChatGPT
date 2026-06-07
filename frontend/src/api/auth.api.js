@@ -1,6 +1,6 @@
 import api from "../api/axios";
 
-// ─── Register ───────────────────────────────
+// Register
 export async function register({ fullname, username, email, password }) {
   try {
     const response = await api.post("/api/auth/register", {
@@ -19,7 +19,7 @@ export async function register({ fullname, username, email, password }) {
   }
 }
 
-// ─── Login ─────────────────────────────────
+// Login
 export async function login({ username, email, password }) {
   try {
     const response = await api.post("/api/auth/login", {
@@ -34,7 +34,7 @@ export async function login({ username, email, password }) {
 }
 
 
-// ─── Logout ───────────────────────────────
+// Logout
 export async function logout() {
   try {
     await api.post("/api/auth/logout");
@@ -43,7 +43,7 @@ export async function logout() {
   }
 }
 
-// ─── Check Authentication ───────────────────────────────
+// Check Authentication
 export async function getMe() {
   try {
     const response = await api.get("/api/auth/get-me");
@@ -53,7 +53,7 @@ export async function getMe() {
   }
 }
 
-// ─── Request Password Reset ───────────────────────────────
+// Request Password Reset
 export async function requestPasswordReset({ email }) {
   try {
     const response = await api.post("/api/auth/request-password-reset", { email });
@@ -63,7 +63,7 @@ export async function requestPasswordReset({ email }) {
   }
 }
 
-// ─── Verify Reset Token ───────────────────────────────────
+// Verify Reset Token
 export async function verifyResetToken({ token, id }) {
   try {
     const response = await api.post("/api/auth/verify-reset-token", { token, id });
@@ -73,7 +73,7 @@ export async function verifyResetToken({ token, id }) {
   }
 }
 
-// ─── Reset Password ───────────────────────────────────────
+// Reset Password 
 export async function resetPassword({
   token,
   id,
@@ -93,7 +93,7 @@ export async function resetPassword({
   }
 }
 
-// ─── Send Verification Email ──────────────────────────────
+// Send Verification Email 
 export async function sendVerificationEmail({ email }) {
   try {
     const response = await api.post("/api/auth/send-verification-email", { email });
@@ -105,7 +105,7 @@ export async function sendVerificationEmail({ email }) {
   }
 }
 
-// ─── Resend Verification Email ────────────────────────────
+// Resend Verification Email
 export async function resendVerificationEmail({ email }) {
   try {
     const response = await api.post("/api/auth/resend-verification-email", {
@@ -119,12 +119,12 @@ export async function resendVerificationEmail({ email }) {
   }
 }
 
-// ─── Google Login ─────────────────────────────────────────
+// Google Login
 export function googleLogin() {
   window.location.href = `${import.meta.env.VITE_BASE_URL}/api/auth/google`;
 }
 
-// ─── 2FA Setup ────────────────────────────────────────────
+// 2FA Setup
 export async function setup2FA() {
   try {
     const response = await api.post("/api/auth/2fa/setup");
@@ -134,7 +134,7 @@ export async function setup2FA() {
   }
 }
 
-// ─── 2FA Enable ───────────────────────────────────────────
+// 2FA Enable
 export async function enable2FA({ otp }) {
   try {
     const response = await api.post("/api/auth/2fa/enable", { otp });
@@ -144,7 +144,7 @@ export async function enable2FA({ otp }) {
   }
 }
 
-// ─── 2FA Verify ───────────────────────────────────────────
+// 2FA Verify
 export async function verify2FA({ otp, tempToken }) {
   try {
     const response = await api.post("/api/auth/2fa/verify", { otp, tempToken });
@@ -154,7 +154,7 @@ export async function verify2FA({ otp, tempToken }) {
   }
 }
 
-// ─── 2FA Disable ──────────────────────────────────────────
+// 2FA Disable
 export async function disable2FA({ otp }) {
   try {
     const response = await api.post("/api/auth/2fa/disable", { otp });
