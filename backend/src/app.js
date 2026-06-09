@@ -29,17 +29,22 @@ app.set('trust proxy', 1);
 const allowedOrigins = (process.env.FRONTEND_URL || "")
   .split(",")
   .map((s) => s.trim())
-  .filter(Boolean);
+  .filter(Boolean)
+  .map((origin) => origin.replace(/\/$/, ""));
+
+const normalizeOrigin = (value) => value?.replace(/\/$/, "");
 
 const corsOptions = {
   origin: (origin, callback) => {
     if (!origin) return callback(null, true);
 
+    const normalizedOrigin = normalizeOrigin(origin);
+
     if (allowedOrigins.length === 0) {
       return callback(new Error("CORS: FRONTEND_URL not configured"), false);
     }
 
-    if (allowedOrigins.includes(origin)) {
+    if (allowedOrigins.includes(normalizedOrigin)) {
       return callback(null, true);
     }
 
