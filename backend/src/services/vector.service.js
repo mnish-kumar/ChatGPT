@@ -36,7 +36,12 @@ async function queryVectors({ queryVector, limit = 5, metadata }) {
     filter: Object.keys(filter).length ? filter : undefined,
   });
 
-  return (results.matches || []).map((match) => ({
+  const bestScore = results.matches?.[0]?.score || 0;
+  const relevantThreshold = results.matches.filter(
+    (match) => match.score >= bestScore * 0.85,
+  );
+
+  return relevantThreshold.map((match) => ({
     messageId: match.metadata?.messageId,
     metadata: {
       text: match.metadata?.text,
@@ -47,7 +52,7 @@ async function queryVectors({ queryVector, limit = 5, metadata }) {
 }
 
 async function deleteVectorsByChatId(chatId) {
-  await index.delete({
+  await index.deleteMany({
     filter: {
       chatId: { $eq: chatId.toString() },
     },

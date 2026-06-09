@@ -1965,12 +1965,7 @@
       "index": "b0H",
       "frameId": null,
       "roundness": null,
-      "boundElements": [
-        {
-          "id": "Zj2eFeqTWXtoxzKHqf76G",
-          "type": "arrow"
-        }
-      ],
+      "boundElements": [],
       "updated": 1771600657690,
       "link": null,
       "locked": false
@@ -2002,12 +1997,7 @@
       "index": "b0I",
       "frameId": null,
       "roundness": null,
-      "boundElements": [
-        {
-          "id": "uOVGpMcgL7T0-r-HoEzKX",
-          "type": "arrow"
-        }
-      ],
+      "boundElements": [],
       "updated": 1771600447666,
       "link": null,
       "locked": false
@@ -2226,7 +2216,7 @@
       "index": "b0L1",
       "frameId": null,
       "roundness": null,
-      "boundElements": null,
+      "boundElements": [],
       "updated": 1771601547409,
       "link": null,
       "locked": false
@@ -2258,12 +2248,7 @@
       "index": "b0L2",
       "frameId": null,
       "roundness": null,
-      "boundElements": [
-        {
-          "id": "Zj2eFeqTWXtoxzKHqf76G",
-          "type": "arrow"
-        }
-      ],
+      "boundElements": [],
       "updated": 1771601547409,
       "link": null,
       "locked": false
@@ -2295,12 +2280,7 @@
       "index": "b0L3",
       "frameId": null,
       "roundness": null,
-      "boundElements": [
-        {
-          "id": "uOVGpMcgL7T0-r-HoEzKX",
-          "type": "arrow"
-        }
-      ],
+      "boundElements": [],
       "updated": 1771601547409,
       "link": null,
       "locked": false
@@ -2361,7 +2341,7 @@
       "roundness": {
         "type": 2
       },
-      "boundElements": null,
+      "boundElements": [],
       "updated": 1771601547409,
       "link": null,
       "locked": false
@@ -2422,7 +2402,7 @@
       "roundness": {
         "type": 2
       },
-      "boundElements": null,
+      "boundElements": [],
       "updated": 1771601547409,
       "link": null,
       "locked": false
@@ -2487,7 +2467,7 @@
       "roundness": {
         "type": 2
       },
-      "boundElements": null,
+      "boundElements": [],
       "updated": 1771601547409,
       "link": null,
       "locked": false
@@ -2519,7 +2499,7 @@
       "index": "b0L8",
       "frameId": null,
       "roundness": null,
-      "boundElements": null,
+      "boundElements": [],
       "updated": 1771600869037,
       "link": null,
       "locked": false
@@ -2551,12 +2531,7 @@
       "index": "b0LG",
       "frameId": null,
       "roundness": null,
-      "boundElements": [
-        {
-          "id": "Zj2eFeqTWXtoxzKHqf76G",
-          "type": "arrow"
-        }
-      ],
+      "boundElements": [],
       "updated": 1771600869037,
       "link": null,
       "locked": false
@@ -2588,16 +2563,7 @@
       "index": "b0LO",
       "frameId": null,
       "roundness": null,
-      "boundElements": [
-        {
-          "id": "uOVGpMcgL7T0-r-HoEzKX",
-          "type": "arrow"
-        },
-        {
-          "id": "_UqzJfyq5XflWe8KZcvXZ",
-          "type": "arrow"
-        }
-      ],
+      "boundElements": [],
       "updated": 1771601077017,
       "link": null,
       "locked": false
@@ -2658,7 +2624,7 @@
       "roundness": {
         "type": 2
       },
-      "boundElements": null,
+      "boundElements": [],
       "updated": 1771600869037,
       "link": null,
       "locked": false
@@ -2719,7 +2685,7 @@
       "roundness": {
         "type": 2
       },
-      "boundElements": null,
+      "boundElements": [],
       "updated": 1771600869037,
       "link": null,
       "locked": false
@@ -2784,7 +2750,7 @@
       "roundness": {
         "type": 2
       },
-      "boundElements": null,
+      "boundElements": [],
       "updated": 1771600869037,
       "link": null,
       "locked": false
@@ -2944,7 +2910,7 @@
       "version": 85,
       "versionNonce": 811669887,
       "isDeleted": false,
-      "boundElements": null,
+      "boundElements": [],
       "updated": 1771600419196,
       "link": null,
       "locked": false,
@@ -2996,7 +2962,7 @@
       "version": 55,
       "versionNonce": 1472071665,
       "isDeleted": false,
-      "boundElements": null,
+      "boundElements": [],
       "updated": 1771600412195,
       "link": null,
       "locked": false,
@@ -3035,7 +3001,7 @@
       "version": 76,
       "versionNonce": 178263697,
       "isDeleted": false,
-      "boundElements": null,
+      "boundElements": [],
       "updated": 1771600447666,
       "link": null,
       "locked": false,
@@ -3089,7 +3055,7 @@
       "version": 34,
       "versionNonce": 1965242783,
       "isDeleted": false,
-      "boundElements": null,
+      "boundElements": [],
       "updated": 1771600458827,
       "link": null,
       "locked": false,
@@ -3172,7 +3138,7 @@
       "version": 151,
       "versionNonce": 1199993777,
       "isDeleted": false,
-      "boundElements": null,
+      "boundElements": [],
       "updated": 1771600841189,
       "link": null,
       "locked": false,
@@ -3191,8 +3157,8 @@
       "type": "text",
       "x": 601.4151159318216,
       "y": 1604.8215730057595,
-      "width": 229.89333045871226,
-      "height": 100.48152140076017,
+      "width": 229.8811492919922,
+      "height": 100.48152140076019,
       "angle": 0,
       "strokeColor": "#1e1e1e",
       "backgroundColor": "transparent",
@@ -3206,11 +3172,11 @@
       "index": "b0s",
       "roundness": null,
       "seed": 337634193,
-      "version": 441,
-      "versionNonce": 95592703,
+      "version": 442,
+      "versionNonce": 1494663978,
       "isDeleted": false,
-      "boundElements": null,
-      "updated": 1771600699907,
+      "boundElements": [],
+      "updated": 1780993168383,
       "link": null,
       "locked": false,
       "text": "store user input in MongoDB.\nuser-> socket.user._id\nchat -> chatID\ncontent-> user input\nrole -> \"user\"",
@@ -3246,7 +3212,7 @@
       "version": 613,
       "versionNonce": 1957091551,
       "isDeleted": false,
-      "boundElements": null,
+      "boundElements": [],
       "updated": 1771601474602,
       "link": null,
       "locked": false,
@@ -3283,7 +3249,7 @@
       "version": 29,
       "versionNonce": 526067519,
       "isDeleted": false,
-      "boundElements": null,
+      "boundElements": [],
       "updated": 1771600638324,
       "link": null,
       "locked": false,
@@ -3322,7 +3288,7 @@
       "version": 79,
       "versionNonce": 1915736177,
       "isDeleted": false,
-      "boundElements": null,
+      "boundElements": [],
       "updated": 1771600657690,
       "link": null,
       "locked": false,
@@ -3370,7 +3336,7 @@
       "version": 54,
       "versionNonce": 1887242687,
       "isDeleted": false,
-      "boundElements": null,
+      "boundElements": [],
       "updated": 1771600783206,
       "link": null,
       "locked": false,
@@ -3409,7 +3375,7 @@
       "version": 45,
       "versionNonce": 2134535903,
       "isDeleted": false,
-      "boundElements": null,
+      "boundElements": [],
       "updated": 1771600850622,
       "link": null,
       "locked": false,
@@ -3457,7 +3423,7 @@
       "version": 40,
       "versionNonce": 1137066929,
       "isDeleted": false,
-      "boundElements": null,
+      "boundElements": [],
       "updated": 1771600894256,
       "link": null,
       "locked": false,
@@ -3476,7 +3442,7 @@
       "type": "text",
       "x": 548.9749178151534,
       "y": 2095.191414358772,
-      "width": 288.68344799440314,
+      "width": 288.667236328125,
       "height": 85.43283582089556,
       "angle": 0,
       "strokeColor": "#1e1e1e",
@@ -3491,11 +3457,11 @@
       "index": "b0z",
       "roundness": null,
       "seed": 1244504095,
-      "version": 306,
-      "versionNonce": 200886513,
+      "version": 307,
+      "versionNonce": 1528920362,
       "isDeleted": false,
-      "boundElements": null,
-      "updated": 1771601045617,
+      "boundElements": [],
+      "updated": 1780993189149,
       "link": null,
       "locked": false,
       "text": "save embedding user content.\n-> vector\n-> messageId\n-> metadata: { chatId , messageId , text }",
@@ -3533,7 +3499,7 @@
       "version": 274,
       "versionNonce": 1104198303,
       "isDeleted": false,
-      "boundElements": null,
+      "boundElements": [],
       "updated": 1771601045617,
       "link": null,
       "locked": false
@@ -3563,7 +3529,7 @@
       "version": 90,
       "versionNonce": 2095715121,
       "isDeleted": false,
-      "boundElements": null,
+      "boundElements": [],
       "updated": 1771601081049,
       "link": null,
       "locked": false,
@@ -3650,7 +3616,7 @@
       "version": 93,
       "versionNonce": 9415807,
       "isDeleted": false,
-      "boundElements": null,
+      "boundElements": [],
       "updated": 1771601123584,
       "link": null,
       "locked": false,
@@ -3730,7 +3696,7 @@
       "version": 139,
       "versionNonce": 1060353311,
       "isDeleted": false,
-      "boundElements": null,
+      "boundElements": [],
       "updated": 1771601226431,
       "link": null,
       "locked": false,
@@ -3767,7 +3733,7 @@
       "version": 103,
       "versionNonce": 870748881,
       "isDeleted": false,
-      "boundElements": null,
+      "boundElements": [],
       "updated": 1771601250031,
       "link": null,
       "locked": false,
@@ -3806,7 +3772,7 @@
       "version": 51,
       "versionNonce": 783723825,
       "isDeleted": false,
-      "boundElements": null,
+      "boundElements": [],
       "updated": 1771601261559,
       "link": null,
       "locked": false,
@@ -3897,7 +3863,7 @@
       "version": 635,
       "versionNonce": 1112482271,
       "isDeleted": false,
-      "boundElements": null,
+      "boundElements": [],
       "updated": 1771601379547,
       "link": null,
       "locked": false,
@@ -3936,7 +3902,7 @@
       "version": 54,
       "versionNonce": 1918306687,
       "isDeleted": false,
-      "boundElements": null,
+      "boundElements": [],
       "updated": 1771601387408,
       "link": null,
       "locked": false,
@@ -3984,7 +3950,7 @@
       "version": 29,
       "versionNonce": 365055089,
       "isDeleted": false,
-      "boundElements": null,
+      "boundElements": [],
       "updated": 1771601400978,
       "link": null,
       "locked": false,
@@ -4021,7 +3987,7 @@
       "version": 5,
       "versionNonce": 1404757393,
       "isDeleted": false,
-      "boundElements": null,
+      "boundElements": [],
       "updated": 1771601410102,
       "link": null,
       "locked": false,
@@ -4099,7 +4065,7 @@
       "version": 37,
       "versionNonce": 887058399,
       "isDeleted": false,
-      "boundElements": null,
+      "boundElements": [],
       "updated": 1771601490541,
       "link": null,
       "locked": false,
@@ -4153,7 +4119,7 @@
       "version": 39,
       "versionNonce": 1174593233,
       "isDeleted": false,
-      "boundElements": null,
+      "boundElements": [],
       "updated": 1771601504124,
       "link": null,
       "locked": false,
@@ -4203,7 +4169,7 @@
       "version": 66,
       "versionNonce": 2112054865,
       "isDeleted": false,
-      "boundElements": null,
+      "boundElements": [],
       "updated": 1771601526794,
       "link": null,
       "locked": false
@@ -4275,7 +4241,7 @@
       "version": 79,
       "versionNonce": 871538449,
       "isDeleted": false,
-      "boundElements": null,
+      "boundElements": [],
       "updated": 1771601538956,
       "link": null,
       "locked": false,
@@ -4323,7 +4289,7 @@
       "version": 58,
       "versionNonce": 1587680255,
       "isDeleted": false,
-      "boundElements": null,
+      "boundElements": [],
       "updated": 1771601574859,
       "link": null,
       "locked": false,

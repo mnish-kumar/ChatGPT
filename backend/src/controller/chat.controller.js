@@ -75,9 +75,7 @@ async function deleteChat(req, res) {
   const { chatId } = req.params;
 
   if (!chatId || !mongoose.Types.ObjectId.isValid(chatId)) {
-    return res.status(400).json({
-      message: "Invalid chat ID.",
-    });
+    return res.status(400).json({ message: "Invalid chat ID." });
   }
 
   const chat = await chatModel.findOneAndDelete({
@@ -91,19 +89,20 @@ async function deleteChat(req, res) {
     });
   }
 
-  const deletedMessages = await messageModel.deleteMany({ chat: chatId });
-
-  const deletedVectors = await vectorService.deleteVectorsByChatId(chatId);
+  // Parallel delete — faster
+  const [deletedMessages] = await Promise.all([
+    messageModel.deleteMany({ chat: chatId }),
+    vectorService.deleteVectorsByChatId(chatId).catch((err) =>
+      console.error("Pinecone delete error:", err)
+    ),
+  ]);
 
   res.status(200).json({
     message: "Chat deleted successfully.",
-    deletedMessages:{
+    deletedMessages: {
       count: deletedMessages.deletedCount,
-      chatId: chatId,
+      chatId,
     },
-    deletedVectors: {
-      chatId: chatId
-    }
   });
 }
 
