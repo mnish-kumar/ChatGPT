@@ -26,6 +26,7 @@ const chatSlice = createSlice({
       state.activeChatId = action.payload;
       state.streamingMessage = null;
       state.isStreaming = false;
+      state.activeStreamingChat = null;
     },
 
     // Called on every "ai-chunk" socket event
@@ -53,6 +54,7 @@ const chatSlice = createSlice({
       state.messages[chat].push(msg);
       state.streamingMessage = null;
       state.isThinking = false;
+      state.activeStreamingChat = null;
     },
 
     // Optimistically add user message to UI
@@ -68,6 +70,7 @@ const chatSlice = createSlice({
       state.isThinking = true;
       state.isStreaming = true;
       state.streamingMessage = null;
+      state.activeStreamingChat = chatId;
     },
 
     clearError(state) {
@@ -79,6 +82,7 @@ const chatSlice = createSlice({
       state.isStreaming = false;
       state.isThinking = false;
       state.streamingMessage = null;
+      state.activeStreamingChat = null;
     },
   },
   extraReducers: (builder) => {
