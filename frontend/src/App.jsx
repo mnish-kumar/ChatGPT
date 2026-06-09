@@ -10,6 +10,8 @@ const App = () => {
   const location = useLocation();
 
   useEffect(() => {
+    fetch(`${import.meta.env.VITE_BASE_URL}/health`).catch(() => {});
+    
     dispatch(checkAuth());
   }, [dispatch]);
 
