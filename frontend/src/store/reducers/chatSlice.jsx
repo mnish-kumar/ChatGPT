@@ -15,6 +15,7 @@ const initialState = {
   isLoadingChats: false,
   isLoadingMessages: false,
   error: null,
+  isThinking: false,
 };
 
 const chatSlice = createSlice({
@@ -31,8 +32,9 @@ const chatSlice = createSlice({
     appendChunk(state, action) {
       const { content, chat } = action.payload;
       state.isStreaming = true;
+      state.isThinking = false;
       state.streamingMessage = (state.streamingMessage || "") + content;
-      state.activeStreamingChat = chat; // ← konse chat ka stream hai
+      state.activeStreamingChat = chat;
     },
 
     // Called on "ai-response" — streaming done, save full message
@@ -50,6 +52,7 @@ const chatSlice = createSlice({
       if (!state.messages[chat]) state.messages[chat] = [];
       state.messages[chat].push(msg);
       state.streamingMessage = null;
+      state.isThinking = false;
     },
 
     // Optimistically add user message to UI
@@ -62,6 +65,9 @@ const chatSlice = createSlice({
         content,
         createdAt: new Date().toISOString(),
       });
+      state.isThinking = true;
+      state.isStreaming = true;
+      state.streamingMessage = null;
     },
 
     clearError(state) {
@@ -71,6 +77,7 @@ const chatSlice = createSlice({
     setError(state, action) {
       state.error = action.payload;
       state.isStreaming = false;
+      state.isThinking = false;
       state.streamingMessage = null;
     },
   },

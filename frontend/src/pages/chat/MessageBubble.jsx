@@ -1,3 +1,4 @@
+import { Bot } from "lucide-react";
 import { useState } from "react";
 
 const formatContent = (text) => {
@@ -97,7 +98,6 @@ export default function MessageBubble({ message, isStreaming = false }) {
   const parts = formatContent(message.content);
   const [msgCopied, setMsgCopied] = useState(false);
 
-
   const handleCopyMessage = () => {
     navigator.clipboard.writeText(message.content);
     setMsgCopied(true);
@@ -111,18 +111,13 @@ export default function MessageBubble({ message, isStreaming = false }) {
       {/* AI Avatar */}
       {!isUser && (
         <div className="w-7 h-7 rounded-lg bg-[#89A8B2]/20 border border-[#89A8B2]/40 text-[#89A8B2] flex items-center justify-center flex-shrink-0 mt-1">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
-            <path
-              d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"
-              opacity="0.9"
-            />
-          </svg>
+          <Bot size={13} />
         </div>
       )}
 
       {/* Bubble */}
       <div
-        className={`flex flex-col gap-1 ${isUser ? "items-end" : "items-start"} max-w-[80%]`}
+        className={`flex flex-col gap-1 ${isUser ? "items-end" : "items-start"} max-w-[80%] group`}
       >
         <div
           className={`px-4 py-2.5 w-full ${
@@ -131,16 +126,26 @@ export default function MessageBubble({ message, isStreaming = false }) {
               : "bg-white/[0.08] border border-[#89A8B2]/20 rounded-[4px] rounded-tr-[18px] rounded-br-[18px] rounded-bl-[18px]"
           }`}
         >
-          {parts.map((part, i) =>
-            part.type === "code" ? (
-              <CodeBlock key={i} lang={part.lang} content={part.content} />
-            ) : (
-              <TextPart key={i} content={part.content} isUser={isUser} />
-            ),
-          )}
-
-          {isStreaming && (
-            <span className="inline-block w-0.5 h-3.5 bg-[#B3C8CF]/80 ml-0.5 align-middle animate-[blink_0.8s_steps(2)_infinite] rounded-sm" />
+          {/* 3 dots — jab streaming hai but content nahi aaya abhi */}
+          {isStreaming && !message.content ? (
+            <div className="flex items-center gap-1.5 py-0.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#89A8B2]/60 animate-bounce" style={{ animationDelay: "0ms" }} />
+              <span className="w-1.5 h-1.5 rounded-full bg-[#89A8B2]/60 animate-bounce" style={{ animationDelay: "150ms" }} />
+              <span className="w-1.5 h-1.5 rounded-full bg-[#89A8B2]/60 animate-bounce" style={{ animationDelay: "300ms" }} />
+            </div>
+          ) : (
+            <>
+              {parts.map((part, i) =>
+                part.type === "code" ? (
+                  <CodeBlock key={i} lang={part.lang} content={part.content} />
+                ) : (
+                  <TextPart key={i} content={part.content} isUser={isUser} />
+                ),
+              )}
+              {isStreaming && (
+                <span className="inline-block w-0.5 h-3.5 bg-[#B3C8CF]/80 ml-0.5 align-middle animate-[blink_0.8s_steps(2)_infinite] rounded-sm" />
+              )}
+            </>
           )}
         </div>
 
@@ -151,28 +156,14 @@ export default function MessageBubble({ message, isStreaming = false }) {
           >
             {msgCopied ? (
               <>
-                <svg
-                  width="11"
-                  height="11"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.5"
-                >
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                   <path d="M20 6L9 17l-5-5" />
                 </svg>
                 Copied
               </>
             ) : (
               <>
-                <svg
-                  width="11"
-                  height="11"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                >
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <rect x="9" y="9" width="13" height="13" rx="2" />
                   <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
                 </svg>

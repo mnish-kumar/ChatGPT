@@ -66,6 +66,7 @@ async function getChatMessages(req, res) {
       content: message.content,
       role: message.role,
       chat: message.chat,
+      createdAt: message.createdAt,
     }))
   });
 }

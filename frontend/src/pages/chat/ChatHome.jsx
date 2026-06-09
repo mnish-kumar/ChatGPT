@@ -1,7 +1,11 @@
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { connectSocket, disconnectSocket } from "@/service/socket";
-import { appendChunk, finalizeResponse, setError } from "../../store/reducers/chatSlice";
+import {
+  appendChunk,
+  finalizeResponse,
+  setError,
+} from "../../store/reducers/chatSlice";
 import { getUserChatsAction } from "../../store/chatAction";
 import { ChatPageSkeleton } from "@/components/skeletons";
 import Sidebar from "./Sidebar";
@@ -16,6 +20,8 @@ export default function ChatPage() {
   const { isLoading } = useSelector((state) => state.user);
 
   useEffect(() => {
+    if (!accessToken) return;
+
     dispatch(getUserChatsAction());
 
     const socket = connectSocket(accessToken);

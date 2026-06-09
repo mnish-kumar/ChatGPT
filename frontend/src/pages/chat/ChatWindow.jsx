@@ -1,12 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import {
-  Menu,
-  MenuIcon,
-  MoreVertical,
-  Share2,
-  SlidersHorizontal,
-} from "lucide-react";
+import { Menu, MenuIcon, Bot, Share2, SlidersHorizontal } from "lucide-react";
 
 import { clearError } from "../../store/reducers/chatSlice";
 import { getChatMessagesAction } from "@/store/chatAction";
@@ -16,20 +10,50 @@ import MessageBubble from "./MessageBubble";
 import MessageInput from "./MessageInput";
 import Dropdown from "../user/Dropdown";
 
+const getDateLabel = (dateStr) => {
+  const date = new Date(dateStr);
+  const today = new Date();
+  const yesterday = new Date();
+  yesterday.setDate(today.getDate() - 1);
+
+  if (date.toDateString() === today.toDateString()) return "Today";
+  if (date.toDateString() === yesterday.toDateString()) return "Yesterday";
+  return date.toLocaleDateString("en-US", {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  });
+};
+
+const groupMessagesByDate = (messages) => {
+  const groups = new Map();
+
+  [...messages]
+    .filter((msg) => msg?.createdAt)
+    .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt))
+    .forEach((msg) => {
+      const dayKey = new Date(msg.createdAt).toISOString().slice(0, 10);
+      const label = getDateLabel(msg.createdAt);
+
+      if (!groups.has(dayKey)) {
+        groups.set(dayKey, { label, messages: [] });
+      }
+
+      groups.get(dayKey).messages.push(msg);
+    });
+
+  return [...groups.entries()].map(([dayKey, group]) => ({
+    dayKey,
+    label: group.label,
+    messages: group.messages,
+  }));
+};
+
 const WelcomeScreen = () => (
   <div className="flex-1 flex items-center justify-center">
-    <div className="text-center max-w-md px-6 animate-[fadeUp_0.4s_ease]">
+    <div className="text-center max-w-md px-6 animate-fadeUp">
       <div className="w-16 h-16 rounded-2xl bg-[#89A8B2]/15 border border-[#89A8B2]/30 flex items-center justify-center mx-auto mb-5 text-[#89A8B2]">
-        <svg
-          width="32"
-          height="32"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.5"
-        >
-          <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
-        </svg>
+        <Bot size={32} />
       </div>
       <h1 className="text-2xl font-semibold text-white mb-3">
         How can I help you?
@@ -66,6 +90,8 @@ export default function ChatWindow({ sidebarOpen = true, onOpenSidebar }) {
     isStreaming,
     isLoadingMessages,
     error,
+    activeStreamingChat,
+    isThinking,
   } = useSelector((s) => s.chat);
 
   const msgs = messages?.[activeChatId] || [];
@@ -102,7 +128,6 @@ export default function ChatWindow({ sidebarOpen = true, onOpenSidebar }) {
 
   useEffect(() => {
     if (msgs.length === 0) return;
-
     bottomRef.current?.scrollIntoView({ behavior: "instant" });
   }, [activeChatId]);
 
@@ -112,6 +137,8 @@ export default function ChatWindow({ sidebarOpen = true, onOpenSidebar }) {
       behavior: isStreaming ? "auto" : "smooth",
     });
   }, [msgs.length, streamingMessage, isStreaming]);
+
+  const grouped = groupMessagesByDate(msgs);
 
   return (
     <main className="h-full w-full flex flex-col overflow-hidden bg-transparent">
@@ -124,12 +151,11 @@ export default function ChatWindow({ sidebarOpen = true, onOpenSidebar }) {
                 type="button"
                 aria-label="Open sidebar"
                 onClick={onOpenSidebar}
-                className="w-9 h-9 rounded-xl cursor-pointer border border-[#89A8B2]/20 bg-white/[0.02] text-[#B3C8CF]/80 flex items-center justify-center hover:bg-[#89A8B2]/10 hover:text-[#B3C8CF] transition"
+                className="w-9 h-9 rounded-xl cursor-pointer border border-[#89A8B2]/20 bg-white/2 text-[#B3C8CF]/80 flex items-center justify-center hover:bg-[#89A8B2]/10 hover:text-[#B3C8CF] transition"
               >
                 <Menu size={16} />
               </button>
             )}
-
             <div className="min-w-0">
               <div className="text-[13px] font-medium text-white truncate">
                 {activeChatId
@@ -143,29 +169,26 @@ export default function ChatWindow({ sidebarOpen = true, onOpenSidebar }) {
             <button
               type="button"
               aria-label="Preferences"
-              className="w-9 h-9 rounded-xl border border-[#89A8B2]/20 bg-white/[0.02] text-[#B3C8CF]/60 hover:text-[#B3C8CF] hover:bg-[#89A8B2]/10 transition flex items-center justify-center"
+              className="w-9 h-9 rounded-xl border border-[#89A8B2]/20 bg-white/2 text-[#B3C8CF]/60 hover:text-[#B3C8CF] hover:bg-[#89A8B2]/10 transition flex items-center justify-center"
             >
               <SlidersHorizontal size={16} />
             </button>
             <button
               type="button"
               aria-label="Share"
-              className="w-9 h-9 rounded-xl border border-[#89A8B2]/20 bg-white/[0.02] text-[#B3C8CF]/60 hover:text-[#B3C8CF] hover:bg-[#89A8B2]/10 transition flex items-center justify-center"
+              className="w-9 h-9 rounded-xl border border-[#89A8B2]/20 bg-white/2 text-[#B3C8CF]/60 hover:text-[#B3C8CF] hover:bg-[#89A8B2]/10 transition flex items-center justify-center"
             >
               <Share2 size={16} />
             </button>
-            <div
-              ref={menuRef}
-              className=" right-8 text-gray-400 border-[#1e2130]]"
-            >
+            <div ref={menuRef} className="right-8 text-gray-400">
               <button
                 onClick={() => setMenuOpen((p) => !p)}
-                className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg border border-border bg-[#0d0f14] transition hover:border-[#ff3e7f]/40 hover:bg-[#1e2130"
+                className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg border border-border bg-[#0d0f14] transition hover:border-[#ff3e7f]/40 hover:bg-[#1e2130]"
               >
                 <MenuIcon size={18} />
               </button>
               {menuOpen && (
-                <div className="absolute top-2 right-65 ">
+                <div className="absolute top-2 right-65">
                   <Dropdown onClose={() => setMenuOpen(false)} />
                 </div>
               )}
@@ -192,22 +215,33 @@ export default function ChatWindow({ sidebarOpen = true, onOpenSidebar }) {
           </div>
         ) : (
           <div className="max-w-3xl mx-auto px-5 pt-6 pb-2 flex flex-col gap-1">
-            <div className="flex justify-center pb-5">
-              <span className="text-[10px] tracking-wider uppercase px-3 py-1 rounded-full border border-[#89A8B2]/15 bg-[#0f1219]/35 text-[#B3C8CF]/40">
-                Today
-              </span>
-            </div>
+            {/* Date wise grouped messages */}
+            {grouped.map(({ dayKey, label, messages: groupMsgs }) => (
+              <div key={dayKey}>
+                {/* Date label */}
+                <div className="flex justify-center py-3">
+                  <span className="text-[10px] tracking-wider uppercase px-3 py-1 rounded-full border border-[#89A8B2]/15 bg-[#0f1219]/35 text-[#B3C8CF]/40">
+                    {label}
+                  </span>
+                </div>
 
-            {msgs.map((msg) => (
-              <MessageBubble key={msg._id} message={msg} />
+                {/* Messages for this date */}
+                {groupMsgs.map((msg) => (
+                  <MessageBubble key={msg._id} message={msg} />
+                ))}
+              </div>
             ))}
 
-            {isStreaming && activeChatId && (
-              <MessageBubble
-                message={{ role: "model", content: streamingMessage || "" }}
-                isStreaming
-              />
-            )}
+            {/* Streaming / Thinking bubble */}
+            {(isThinking || isStreaming) &&
+              activeStreamingChat === activeChatId && (
+                <MessageBubble
+                  key="streaming-bubble"
+                  message={{ role: "model", content: streamingMessage || "" }}
+                  isStreaming
+                />
+              )}
+
             <div ref={bottomRef} />
           </div>
         )}
