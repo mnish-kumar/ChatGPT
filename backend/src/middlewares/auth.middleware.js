@@ -1,4 +1,3 @@
-const userModel = require("../models/user.model");
 const jwt = require("jsonwebtoken");
 const {redisClient} = require("../config/redis");
 
@@ -22,9 +21,7 @@ function createAuthMiddleware(roles = []) {
     try {
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-      const user = await userModel.findById(decoded.id).select("_id isEmailVerified role");
-
-      if (!user) {
+      if (!decoded || !decoded.id) {
         return res.status(401).json({
           success: false,
           message: "Unauthorized",
@@ -32,7 +29,7 @@ function createAuthMiddleware(roles = []) {
       }
 
       // Default to "user" role if not set (for backward compatibility with existing users)
-      const userRole = user.role || "user";
+      const userRole = decoded.role || "user";
 
       if (roles.length > 0 && !roles.includes(userRole)) {
         return res.status(403).json({
@@ -41,7 +38,12 @@ function createAuthMiddleware(roles = []) {
         });
       }
 
-      req.user = user;
+      req.user = {
+        id: decoded.id,
+        _id: decoded.id,
+        role: userRole,
+        isEmailVerified: decoded.isEmailVerified,
+      };
 
       next();
     } catch (error) {

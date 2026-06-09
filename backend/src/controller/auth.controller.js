@@ -2,7 +2,7 @@ const bcrypt = require("bcryptjs");
 const userModel = require("../models/user.model");
 const jwt = require("jsonwebtoken");
 const blacklistTokenModel = require("../models/token.model");
-const {redisClient} = require("../config/redis");
+const { redisClient } = require("../config/redis");
 const userCache = require("../cache/user.cache");
 const authRedisService = require("../services/redis.service");
 const hash = require("../utils/hash.utils");
@@ -66,14 +66,14 @@ async function registerController(req, res) {
 
   // Generate access token
   const accessToken = jwt.sign(
-    { id: user._id, role: user.role },
+    { id: user._id, role: user.role, isEmailVerified: user.isEmailVerified },
     process.env.JWT_SECRET,
     { expiresIn: "15m" },
   );
 
   // Generate refresh token
   const refreshToken = jwt.sign(
-    { id: user._id, role: user.role },
+    { id: user._id, role: user.role, isEmailVerified: user.isEmailVerified },
     process.env.JWT_REFRESH_SECRET,
     { expiresIn: "7d" },
   );
@@ -197,6 +197,7 @@ async function loginController(req, res) {
     {
       id: user._id,
       role: user.role,
+      isEmailVerified: user.isEmailVerified
     },
     process.env.JWT_SECRET,
     {
@@ -209,6 +210,7 @@ async function loginController(req, res) {
     {
       id: user._id,
       role: user.role,
+      isEmailVerified: user.isEmailVerified,
     },
     process.env.JWT_REFRESH_SECRET,
     {
@@ -259,7 +261,7 @@ async function loginController(req, res) {
  * @access Private
  */
 async function logoutController(req, res) {
-    const cookieOptions = getCookieOptions(req);
+  const cookieOptions = getCookieOptions(req);
   if (!req.user) {
     return res.status(401).json({
       message: "Unauthorized user",
@@ -295,6 +297,10 @@ async function logoutController(req, res) {
     }
 
     await authRedisService.deleteRefreshToken(userId, sessionId);
+    blacklistTokenModel.create({
+      token: accessToken,
+      expiresAt: new Date(decoded.exp * 1000),
+    });
 
     res.clearCookie("refreshToken", cookieOptions);
     res.clearCookie("sessionId", cookieOptions);
@@ -334,7 +340,7 @@ async function getMeController(req, res) {
 
     if (cachedUser) {
       // fire-and-forget (non-blocking)
-      userCache.refreshUserCacheTTL(userId);
+      void userCache.refreshUserCacheTTL(userId);
 
       return res.status(200).json({
         success: true,
