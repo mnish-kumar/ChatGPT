@@ -2,9 +2,20 @@ import { io } from "socket.io-client";
 
 let socket = null;
 
+const getSocketBaseUrl = () => {
+  const apiUrl = import.meta.env.VITE_BASE_URL?.trim();
+  const socketUrl = import.meta.env.VITE_SOCKET_URL?.trim();
+
+  if (apiUrl && apiUrl !== "undefined") return apiUrl;
+  if (socketUrl && socketUrl !== "undefined") return socketUrl;
+  if (typeof window !== "undefined") return window.location.origin;
+
+  return undefined;
+};
+
 export const getSocket = () => {
   if (!socket) {
-    socket = io(import.meta.env.VITE_SOCKET_URL, {
+    socket = io(getSocketBaseUrl(), {
       withCredentials: true,
       autoConnect: false,
     });
