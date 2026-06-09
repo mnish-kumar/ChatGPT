@@ -2,7 +2,7 @@ const { GoogleGenAI } = require("@google/genai");
 const { z } = require("zod");
 const utils = require("../utils/stream.helper");
 const userModel = require("../models/user.model");
-const validateTokenLimit = require('../utils/validateTokenLimit');
+const { getPlanLimits } = require("./prompt.service");
 
 if (!process.env.GEMINI_API_KEY) {
   console.error("GEMINI_API_KEY is not set in environment variables.");
@@ -24,18 +24,6 @@ const structuredContentSchema = z.object({
 });
 
 
-// Generate response of user query.
-async function generateResponse(content) {
-  const responce = await ai.models.generateContent({
-    model: process.env.GEMINI_MODEL_NAME,
-    contents: content,
-    config: {
-      temperature: 0.2,
-      systemInstruction: "You are a helpful assistant for answering user queries.",
-    },
-  });
-  return responce.text;
-}
 // Generate response embeddings for given content.
 async function generateEmbedding(content) {
   const response = await ai.models.embedContent({
@@ -163,7 +151,7 @@ async function generateInterviewReport({
   return JSON.parse(response.text);
 }
 
-async function GenerateContentStream(content, onChunk) {
+async function GenerateContentStream(content, onChunk, systemInstruction, user) {
   try {
     const stream = await ai.models.generateContentStream({
       model: process.env.GEMINI_MODEL_NAME,
@@ -171,8 +159,8 @@ async function GenerateContentStream(content, onChunk) {
 
       config: {
         temperature: 0.2,
-        systemInstruction:
-          "You are a helpful assistant for answering user queries.",
+        systemInstruction: systemInstruction,
+        maxOutputTokens: getPlanLimits(user).maxOutputTokens,
       },
     });
 
@@ -194,7 +182,6 @@ async function GenerateContentStream(content, onChunk) {
 }
 
 module.exports = {
-  generateResponse,
   generateEmbedding,
   GenerateContentStream,
   generateInterviewReport,

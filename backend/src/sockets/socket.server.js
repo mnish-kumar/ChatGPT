@@ -7,6 +7,7 @@ const messageModel = require("../models/message.model");
 const { createVector, queryVectors } = require("../services/vector.service");
 const { redisClient } = require("../config/redis");
 const { chatModel } = require("../models/chat.model");
+const { getSystemPrompt } = require("../services/prompt.service");
 
 function initSocketServer(httpServer) {
   const io = new Server(httpServer, {
@@ -160,6 +161,8 @@ function initSocketServer(httpServer) {
         const Response = await aiService.GenerateContentStream(
           [...LTM, ...STM],
           chunkingCallback,
+          getSystemPrompt(socket.user),
+          socket.user,
         );
 
         // Signal streaming is complete
