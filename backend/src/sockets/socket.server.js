@@ -217,7 +217,7 @@ function initSocketServer(httpServer) {
         console.error("ai-message handler error:", error.message);
         console.error("Full error:", error);
         socket.emit("ai-error", {
-          message: error.message || "Something went wrong. Please try again.",
+          message: "Something went wrong. Please try again.",
           errorType: error.constructor.name,
         });
       }
