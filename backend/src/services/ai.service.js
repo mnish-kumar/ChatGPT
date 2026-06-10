@@ -5,7 +5,8 @@ const userModel = require("../models/user.model");
 const { getPlanLimits } = require("./prompt.service");
 
 if (!process.env.GEMINI_API_KEY) {
-  console.error("GEMINI_API_KEY is not set in environment variables.");
+  console.error("❌ GEMINI_API_KEY is not set in environment variables.");
+  console.error("Required env vars: GEMINI_API_KEY, GEMINI_MODEL_NAME, GEMINI_EMBEDDING_MODEL_NAME");
   process.exit(1);
 }
 
@@ -176,8 +177,19 @@ async function GenerateContentStream(content, onChunk, systemInstruction, user) 
     }
     return fullText;
   } catch (error) {
-    console.error("Gemini streaming error:", error);
-    throw new Error("AI response generation failed");
+    console.error("Gemini streaming error:", error.message);
+    console.error("Error type:", error.constructor.name);
+    
+    if (error.message?.includes("API_KEY")) {
+      throw new Error("GEMINI_API_KEY is missing or invalid. Check environment variables.");
+    }
+    if (error.message?.includes("model")) {
+      throw new Error(`Invalid model name. Check GEMINI_MODEL_NAME env var: ${process.env.GEMINI_MODEL_NAME}`);
+    }
+    if (error.status === 429) {
+      throw new Error("API rate limit exceeded. Try again in a moment.");
+    }
+    throw new Error(`AI service error: ${error.message}`);
   }
 }
 

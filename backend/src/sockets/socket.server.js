@@ -202,9 +202,11 @@ function initSocketServer(httpServer) {
           console.error("Pinecone memory error", error);
         }
       } catch (error) {
-        console.error("ai-message handler error", error);
+        console.error("ai-message handler error:", error.message);
+        console.error("Full error:", error);
         socket.emit("ai-error", {
-          message: "Something went wrong. Please try again.",
+          message: error.message || "Something went wrong. Please try again.",
+          errorType: error.constructor.name,
         });
       }
     });
