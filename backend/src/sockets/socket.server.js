@@ -10,9 +10,16 @@ const { chatModel } = require("../models/chat.model");
 const { getSystemPrompt } = require("../services/prompt.service");
 
 function initSocketServer(httpServer) {
+ 
+  const allowedOrigins = (process.env.FRONTEND_URL || "")
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean)
+    .map((origin) => origin.replace(/\/$/, ""));
+
   const io = new Server(httpServer, {
     cors: {
-      origin: process.env.FRONTEND_URL,
+      origin: allowedOrigins.length > 0 ? allowedOrigins : "*",
       allowedHeaders: ["Content-Type", "Authorization"],
       credentials: true,
     },
@@ -51,11 +58,16 @@ function initSocketServer(httpServer) {
   });
 
   io.on("connection", (socket) => {
-    console.log("A user connection");
+    console.log("✅ Socket connected:", socket.id, "User:", socket.user.email);
 
     // disconnection event fire when user disconnects
     socket.on("disconnect", () => {
-      console.log("A user disconnected");
+      console.log("❌ Socket disconnected:", socket.id);
+    });
+
+    // Log connection errors
+    socket.on("connect_error", (error) => {
+      console.error("🚨 Socket connection error:", error.message);
     });
 
     socket.on("ai-message", async (messagePayload) => {
