@@ -8,6 +8,7 @@ const { createVector, queryVectors } = require("../services/vector.service");
 const { redisClient } = require("../config/redis");
 const { chatModel } = require("../models/chat.model");
 const { getSystemPrompt } = require("../services/prompt.service");
+const chatCache = require("../cache/chat.cache");
 
 function initSocketServer(httpServer) {
  
@@ -85,6 +86,16 @@ function initSocketServer(httpServer) {
 
         if (messagePayload.content.length > 5000) {
           socket.emit("ai-error", { message: "Message too long" });
+          return;
+        }
+
+        // check the cache first
+        const cachedResponse = await chatCache.getChatCache(messagePayload.chat, messagePayload.content);
+        if (cachedResponse) {
+          socket.emit("ai-response", {
+            content: cachedResponse.response,
+            chat: messagePayload.chat,
+          });
           return;
         }
 
@@ -177,11 +188,16 @@ function initSocketServer(httpServer) {
           socket.user,
         );
 
+        await chatCache.setChatCache(socket.user.id, messagePayload.chat, messagePayload.content, Response);
+
         // Signal streaming is complete
         socket.emit("ai-response", {
           content: Response,
           chat: messagePayload.chat,
         });
+
+        // Store in redis for cache aiResponseMessage
+
 
         const [aiResponseMessage, responseVectors] = await Promise.all([
           // Store AI response in DB
