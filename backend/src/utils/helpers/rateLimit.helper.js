@@ -1,8 +1,5 @@
-
 function getClientIP(req) {
-  if (req.ip) {
-    return req.ip;
-  }
+  if (req.ip) return req.ip;
 
   const forwardedFor = req.headers["x-forwarded-for"];
   if (forwardedFor) {
@@ -10,27 +7,26 @@ function getClientIP(req) {
       .split(",")
       .map((s) => s.trim())
       .filter(Boolean);
-    // Last IP = added by your infra, not spoofable by the client
-    return ips[ips.length - 1];
+    return ips[ips.length - 1]; // last IP = infra added, not spoofable
   }
 
-  return req.connection?.remoteAddress || "unknown_ip";
+  return req.socket?.remoteAddress || "unknown_ip"; // req.connection deprecated
 }
 
-function toManyRequest(res, message, rlError) {
+
+function toManyRequest(res, rlError, message) {
   const retryAfterSeconds = rlError?.msBeforeNext
     ? Math.ceil(rlError.msBeforeNext / 1000)
     : 60;
 
-  return res.status(429).set("Retry-After", String(retryAfterSeconds)).json({
-    success: false,
-    message,
-    retryAfter: retryAfterSeconds,
-  });
+  return res
+    .status(429)
+    .set("Retry-After", String(retryAfterSeconds))
+    .json({
+      success: false,
+      message,
+      retryAfter: retryAfterSeconds,
+    });
 }
 
-
-module.exports = {
-    getClientIP,
-    toManyRequest,
-};
+module.exports = { getClientIP, toManyRequest };

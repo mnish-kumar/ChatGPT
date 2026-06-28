@@ -9,6 +9,7 @@ const { redisClient } = require("../config/redis");
 const { chatModel } = require("../models/chat.model");
 const { getSystemPrompt } = require("../services/prompt.service");
 const chatCache = require("../cache/chat.cache");
+const socketRateLimiter = require("./socketRateLimiter.middleware");
 
 function initSocketServer(httpServer) {
  
@@ -58,6 +59,14 @@ function initSocketServer(httpServer) {
     }
   });
 
+  io.use(async(socket, next) => {
+    try {
+      await socketRateLimiter.checkSocketIPBlocked(socket);
+    } catch (err) {
+      next(new Error(`TOO_MANY_CONNECTIONS:${socketRateLimiter.getRetryAfter(err)}`));
+    }
+  });
+
   io.on("connection", (socket) => {
     console.log("✅ Socket connected:", socket.id, "User:", socket.user.email);
 
@@ -78,6 +87,48 @@ function initSocketServer(httpServer) {
         Chat: chatId
       }
       */
+
+      // Rate limit based on socket IP
+      try {
+        await socketRateLimiter.consumeSocketIPRateLimit(socket);
+      }catch (err) {
+        socket.emit("ai-error", {
+          errorCode: "IP_RATE_LIMITED",
+          message: "Too many requests from your network.",
+          retryAfter: socketRateLimiter.getRetryAfter(err),
+        });
+        return;
+      }
+
+      const freshUser = await userModel
+        .findById(socket.user.id)
+        .select("plan")
+        .lean();
+      const plan = freshUser?.plan || "FREE";
+
+      try {
+        await socketRateLimiter.consumeUserChatLimit(socket.user.id, plan);
+      }catch (err) {
+        const remaining = await socketRateLimiter.getRemainingQuota(socket.user.id, plan);
+        socket.emit("ai-error", {
+          errorCode: "USER_RATE_LIMITED",
+          message: plan === "FREE"
+            ? "Message limit reached. Upgrade to Premium for more."
+            : "Rate limit reached. Try again shortly.",
+          retryAfter: socketRateLimiter.getRetryAfter(err),
+          remaining,
+          plan,
+        });
+        return;
+      }
+
+      // Quota update
+      const remainingQuota = await socketRateLimiter.getRemainingQuota(socket.user.id, plan);
+      socket.emit("quota-update", {
+        remaining: remainingQuota,
+        plan,
+      });
+
       try {
         if (!messagePayload.content?.trim()) {
           socket.emit("ai-error", { message: "Content cannot be empty" });
@@ -188,8 +239,6 @@ function initSocketServer(httpServer) {
           socket.user,
         );
 
-        await chatCache.setChatCache(socket.user.id, messagePayload.chat, messagePayload.content, Response);
-
         // Signal streaming is complete
         socket.emit("ai-response", {
           content: Response,
@@ -197,8 +246,9 @@ function initSocketServer(httpServer) {
         });
 
         // Store in redis for cache aiResponseMessage
+        await chatCache.setChatCache(socket.user.id, messagePayload.chat, messagePayload.content, Response);
 
-
+        
         const [aiResponseMessage, responseVectors] = await Promise.all([
           // Store AI response in DB
           messageModel.create({

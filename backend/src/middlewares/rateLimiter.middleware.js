@@ -1,98 +1,6 @@
+const configRateLimiter = require("../config/rateLimiter.config");
 const { getClientIP, toManyRequest } = require("../utils/helpers/rateLimit.helper");
 const hashKey = require("../utils/hash.utils");
-const { RateLimiterRedis } = require("rate-limiter-flexible");
-const { redisClient } = require("../config/redis")
-
-
-/**
- * Login — per IP
- * 5 attempts per 15 min window; 1-hour block after exhaustion.
- * inmemoryBlockOnConsumed reduces Redis round-trips under a brute-force flood.
- */
-const loginByIP = new RateLimiterRedis({
-  storeClient: redisClient,
-  keyPrefix: "login_ip",
-  points: 5,
-  duration: 60 * 15,
-  blockDuration: 60 * 15,
-  inMemoryBlockOnConsumed: 5,
-  inMemoryBlockDuration: 60 * 30,
-});
-
-
-/**
- * Login — per user (hashed email)
- * Prevents distributed attacks targeting a single account from many IPs.
- */
-const loginByUser = new RateLimiterRedis({
-  storeClient: redisClient,
-  keyPrefix: "login_user",
-  points: 5,
-  duration: 60 * 15,
-  blockDuration: 60 * 15,
-  inMemoryBlockOnConsumed: 5,
-  inMemoryBlockDuration: 60 * 30,
-});
-
-
-/**
- * Register — per IP
- * Tighter than the global limiter to prevent mass account creation.
- */
-const registerByIP = new RateLimiterRedis({
-  storeClient: redisClient,
-  keyPrefix: "register_ip",
-  points: 5,
-  duration: 60 * 15,
-  blockDuration: 60 * 15,
-  inMemoryBlockOnConsumed: 5,
-  inMemoryBlockDuration: 60 * 30,
-});
-
-
-/**
- * Global API — per IP
- * Loose general-purpose throttle for all routes.
- */
-const globalAPIByIP = new RateLimiterRedis({
-  storeClient: redisClient,
-  keyPrefix: "global_api_ip",
-  points: 100,
-  duration: 60,
-  inMemoryBlockOnConsumed: 100,
-  inMemoryBlockDuration: 30,
-});
-
-
-/**
- * Password Reset — per user
- * Prevents abuse of password reset functionality.
- */
-const passwordResetLimiter = new RateLimiterRedis({
-  storeClient: redisClient,
-  keyPrefix: "rl:password_reset",
-  points: 5,
-  duration: 60 * 60, 
-  blockDuration: 60 * 60,
-});
-
-
-const emailVerificationLimiter = new RateLimiterRedis({
-  storeClient: redisClient,
-  keyPrefix: "rl:email_verification",
-  points: 3,
-  duration: 60 * 60, 
-  blockDuration: 60 * 60,
-})
-
-
-const twoFactorLimiter = new RateLimiterRedis({
-  storeClient: redisClient,
-  keyPrefix: "rl:2fa",
-  points: 5,               
-  duration: 60 * 10,       
-  blockDuration: 60 * 30,
-});
 
 const loginRateLimiter = async (req, res, next) => {
   const ip = getClientIP(req);
@@ -100,10 +8,10 @@ const loginRateLimiter = async (req, res, next) => {
   const userKey = hashKey.hashKey(rawEmail);
   try {
     // Consume points for IP
-    await loginByIP.consume(ip);
+    await configRateLimiter.loginByIP.consume(ip);
 
     // Consume points for User
-    await loginByUser.consume(userKey);
+    await configRateLimiter.loginByUser.consume(userKey);
 
     return next();
   } catch (err) {
@@ -128,7 +36,7 @@ const loginRateLimiter = async (req, res, next) => {
 const registerRateLimiter = async (req, res, next) => {
   const ip = getClientIP(req);
   try {
-    await registerByIP.consume(ip);
+    await configRateLimiter.registerByIP.consume(ip);
     return next();
   } catch (err) {
     if (err instanceof Error) {
@@ -149,10 +57,10 @@ const registerRateLimiter = async (req, res, next) => {
 };
 
 const globalAPIRateLimiter = async (req, res, next) => {
-  const ip =
-    req.headers["x-forwarded-for"] || req.connection.remoteAddress || req.ip;
+  const ip = getClientIP(req);
+
   try {
-    await globalAPIByIP.consume(ip);
+    await configRateLimiter.globalAPIByIP.consume(ip);
     next();
   } catch (err) {
     if (err instanceof Error) {
@@ -169,10 +77,10 @@ const globalAPIRateLimiter = async (req, res, next) => {
   }
 };
 
-
 const passwordResetRateLimiter = async (req, res, next) => {
   try {
-    await passwordResetLimiter.consume(req.ip);
+    const ip = getClientIP(req);
+    await configRateLimiter.passwordReset.consume(ip);
     next();
   }catch (err) {
     return res.status(429).json({
@@ -184,7 +92,7 @@ const passwordResetRateLimiter = async (req, res, next) => {
 
 const emailVerificationRateLimiter = async (req, res, next) => {
   try {
-    await emailVerificationLimiter.consume(req.ip);
+    await configRateLimiter.emailVerification.consume(req.ip);
     next();
   } catch (err) {
     return res.status(429).json({
@@ -196,13 +104,39 @@ const emailVerificationRateLimiter = async (req, res, next) => {
 
 const twoFactorRateLimiter = async (req, res, next) => {
   try {
-    await twoFactorLimiter.consume(req.ip);
+    await configRateLimiter.twoFactor.consume(req.ip);
     next();
   } catch (err) {
     return res.status(429).json({
       success: false,
       message: "Too many 2FA attempts. Try again later.",
     });
+  }
+}
+
+const chatRoomCreateRateLimiter = async (req, res, next) => {
+  const userId = req.user?.id;
+
+  if (!userId) {
+    return res.status(400).json({
+      success: false,
+      message: "User ID is required for rate limiting.",
+    });
+  }
+
+  try {
+    await configRateLimiter.chatRoomCreateLimiter.consume(userId);
+    next();
+  } catch (err) {
+     if (err instanceof Error) {
+      console.error("[RateLimit] chat room create error:", err.message);
+      return res.status(503).json({ 
+        success: false, 
+        message: "Service unavailable." 
+      });
+    }
+    
+    return toManyRequest(res, err, "Too many chat room creation attempts. Try again later.");
   }
 }
 
@@ -213,4 +147,5 @@ module.exports = {
   passwordResetRateLimiter,
   emailVerificationRateLimiter,
   twoFactorRateLimiter,
+  chatRoomCreateRateLimiter,
 };

@@ -37,9 +37,9 @@ const App = () => {
   }, [location.pathname, location.hash]);
 
   return (
-    <div className="w-full">
+    <main className="w-full">
       <MainRoute />
-    </div>
+    </main>
   );
 };
 
