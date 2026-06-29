@@ -28,6 +28,13 @@ router.get('/', authUserMiddleware.createAuthMiddleware(["user"]), ChatControlle
 router.get('/:chatId/messages', authUserMiddleware.createAuthMiddleware(["user"]), ChatController.getChatMessages);
 
 /**
+ * @route GET /api/chat/search
+ * @desc Search chats for the authenticated user
+ * @access Private
+ */
+router.get('/search', authUserMiddleware.createAuthMiddleware(["user"]), ChatController.searchUserChats);
+
+/**
  * @route DELETE /api/chat/deleteChat/chatID/:chatId
  * @desc Delete a specific chat by ID
  * @access Private

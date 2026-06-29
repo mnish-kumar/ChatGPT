@@ -67,7 +67,7 @@ async function getChatMessages(req, res) {
       role: message.role,
       chat: message.chat,
       createdAt: message.createdAt,
-    }))
+    })),
   });
 }
 
@@ -93,9 +93,9 @@ async function deleteChat(req, res) {
   // Parallel delete — faster
   const [deletedMessages] = await Promise.all([
     messageModel.deleteMany({ chat: chatId }),
-    vectorService.deleteVectorsByChatId(chatId).catch((err) =>
-      console.error("Pinecone delete error:", err)
-    ),
+    vectorService
+      .deleteVectorsByChatId(chatId)
+      .catch((err) => console.error("Pinecone delete error:", err)),
   ]);
 
   res.status(200).json({
@@ -107,10 +107,55 @@ async function deleteChat(req, res) {
   });
 }
 
+async function searchUserChats(req, res) {
+  try {
+    const { query, page = 1, limit = 20 } = req.query;
+
+    if (!query?.trim()) {
+      return res.status(400).json({ message: "Search query is required." });
+    }
+
+    const userId = req.user._id;
+
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+
+    const [chats, totalChats] = await Promise.all([
+      chatModel
+        .find({
+          user: userId,
+          $text: { $search: query.trim() },
+        })
+        .skip(skip)
+        .limit(parseInt(limit))
+        .sort({ score: { $meta: "textScore" }, lastActivity: -1 })
+        .lean(),
+
+      chatModel.countDocuments({
+        user: userId,
+        $text: { $search: query.trim() },
+      }),
+    ]);
+
+    return res.status(200).json({
+      success: true,
+      chats,
+      pagination: {
+        page: parseInt(page),
+        limit: parseInt(limit),
+        total,
+        totalPages: Math.ceil(total / parseInt(limit)),
+      },
+    });
+  } catch (error) {
+    console.error("Error searching user chats:", error);
+    res.status(500).json({ message: "Internal server error." });
+  }
+}
 
 module.exports = {
   createChat,
   getUserChats,
   getChatMessages,
   deleteChat,
+  searchUserChats,
 };

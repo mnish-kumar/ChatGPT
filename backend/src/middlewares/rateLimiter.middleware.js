@@ -80,7 +80,7 @@ const globalAPIRateLimiter = async (req, res, next) => {
 const passwordResetRateLimiter = async (req, res, next) => {
   try {
     const ip = getClientIP(req);
-    await configRateLimiter.passwordReset.consume(ip);
+    await configRateLimiter.passwordResetLimiter.consume(ip);
     next();
   }catch (err) {
     return res.status(429).json({
@@ -92,7 +92,7 @@ const passwordResetRateLimiter = async (req, res, next) => {
 
 const emailVerificationRateLimiter = async (req, res, next) => {
   try {
-    await configRateLimiter.emailVerification.consume(req.ip);
+    await configRateLimiter.emailVerificationLimiter.consume(req.ip);
     next();
   } catch (err) {
     return res.status(429).json({
@@ -104,7 +104,7 @@ const emailVerificationRateLimiter = async (req, res, next) => {
 
 const twoFactorRateLimiter = async (req, res, next) => {
   try {
-    await configRateLimiter.twoFactor.consume(req.ip);
+    await configRateLimiter.twoFactorLimiter.consume(req.ip);
     next();
   } catch (err) {
     return res.status(429).json({

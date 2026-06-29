@@ -23,8 +23,8 @@ async function consumeSocketIPRateLimit(socket, next) {
   const ip = extractSocketIP(socket);
 
   await Promise.all([
-    socketIPLimiterMinute.consume(ip),
-    socketIPLimiterHour.consume(ip),
+    socketRateLimiterConfig.socketIPLimiterMinute.consume(ip),
+    socketRateLimiterConfig.socketIPLimiterHour.consume(ip),
   ]);
 }
 
