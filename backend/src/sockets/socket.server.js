@@ -12,7 +12,6 @@ const chatCache = require("../cache/chat.cache");
 const socketRateLimiter = require("./socketRateLimiter.middleware");
 
 function initSocketServer(httpServer) {
- 
   const allowedOrigins = (process.env.FRONTEND_URL || "")
     .split(",")
     .map((s) => s.trim())
@@ -31,13 +30,14 @@ function initSocketServer(httpServer) {
   io.use(async (socket, next) => {
     const token =
       socket.handshake.auth?.token ||
-      socket.handshake.headers?.authorization?.split(" ")[1]||
-      socket.handshake.headers?.cookie;
+      socket.handshake.headers?.authorization?.split(" ")[1] ||
+      socket.handshake.headers?.cookie||
+      socket.handshake.query?.token;
 
     if (!token) {
       return next(new Error("Authentication error ! Token not found"));
     }
-
+    
     try {
       const isBlacklisted = await redisClient.get(`blacklist:${token}`);
       if (isBlacklisted) {
@@ -55,15 +55,23 @@ function initSocketServer(httpServer) {
       socket.user = user;
       next();
     } catch (err) {
-      return next(new Error("Authentication error ! Invalid Token"));
+      if (err.name === "TokenExpiredError") {
+        return next(new Error("TOKEN_EXPIRED")); // frontend refresh kar sake
+      }
+      return next(new Error("Invalid token"));
     }
   });
 
-  io.use(async(socket, next) => {
+  io.use(async (socket, next) => {
     try {
       await socketRateLimiter.checkSocketIPBlocked(socket);
+      next();
     } catch (err) {
-      next(new Error(`TOO_MANY_CONNECTIONS:${socketRateLimiter.getRetryAfter(err)}`));
+      next(
+        new Error(
+          `TOO_MANY_CONNECTIONS:${socketRateLimiter.getRetryAfter(err)}`,
+        ),
+      );
     }
   });
 
@@ -91,7 +99,7 @@ function initSocketServer(httpServer) {
       // Rate limit based on socket IP
       try {
         await socketRateLimiter.consumeSocketIPRateLimit(socket);
-      }catch (err) {
+      } catch (err) {
         socket.emit("ai-error", {
           errorCode: "IP_RATE_LIMITED",
           message: "Too many requests from your network.",
@@ -108,13 +116,17 @@ function initSocketServer(httpServer) {
 
       try {
         await socketRateLimiter.consumeUserChatLimit(socket.user.id, plan);
-      }catch (err) {
-        const remaining = await socketRateLimiter.getRemainingQuota(socket.user.id, plan);
+      } catch (err) {
+        const remaining = await socketRateLimiter.getRemainingQuota(
+          socket.user.id,
+          plan,
+        );
         socket.emit("ai-error", {
           errorCode: "USER_RATE_LIMITED",
-          message: plan === "FREE"
-            ? "Message limit reached. Upgrade to Premium for more."
-            : "Rate limit reached. Try again shortly.",
+          message:
+            plan === "FREE"
+              ? "Message limit reached. Upgrade to Premium for more."
+              : "Rate limit reached. Try again shortly.",
           retryAfter: socketRateLimiter.getRetryAfter(err),
           remaining,
           plan,
@@ -123,7 +135,10 @@ function initSocketServer(httpServer) {
       }
 
       // Quota update
-      const remainingQuota = await socketRateLimiter.getRemainingQuota(socket.user.id, plan);
+      const remainingQuota = await socketRateLimiter.getRemainingQuota(
+        socket.user.id,
+        plan,
+      );
       socket.emit("quota-update", {
         remaining: remainingQuota,
         plan,
@@ -141,7 +156,10 @@ function initSocketServer(httpServer) {
         }
 
         // check the cache first
-        const cachedResponse = await chatCache.getChatCache(messagePayload.chat, messagePayload.content);
+        const cachedResponse = await chatCache.getChatCache(
+          messagePayload.chat,
+          messagePayload.content,
+        );
         if (cachedResponse) {
           socket.emit("ai-response", {
             content: cachedResponse.response,
@@ -238,6 +256,7 @@ function initSocketServer(httpServer) {
           getSystemPrompt(socket.user),
           socket.user,
         );
+        console.log(Response)
 
         // Signal streaming is complete
         socket.emit("ai-response", {
@@ -246,9 +265,13 @@ function initSocketServer(httpServer) {
         });
 
         // Store in redis for cache aiResponseMessage
-        await chatCache.setChatCache(socket.user.id, messagePayload.chat, messagePayload.content, Response);
+        await chatCache.setChatCache(
+          socket.user.id,
+          messagePayload.chat,
+          messagePayload.content,
+          Response,
+        );
 
-        
         const [aiResponseMessage, responseVectors] = await Promise.all([
           // Store AI response in DB
           messageModel.create({

@@ -115,7 +115,7 @@ const chatRoomCreateLimiter = makeLimiter({
 // Chat limiters
 const chatFreeLimiterMinute = makeLimiter({
   keyPrefix: "chat_free_min",
-  points: 2,
+  points: 10,
   duration: 60,
   blockDuration: 300, // 5 minutes block after exceeding the limit
 });
