@@ -17,7 +17,7 @@ const UserProfile = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // ─── Fetch Profile
+  // Fetch Profile
   const fetchProfile = async () => {
     try {
       setLoading(true);
@@ -34,7 +34,7 @@ const UserProfile = () => {
     fetchProfile();
   }, []);
 
-  // ─── Logout Handler
+  // Logout Handler
   const handleLogout = async () => {
     dispatch(logoutUser());
     navigate("/");
@@ -52,7 +52,7 @@ const UserProfile = () => {
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  // ─── Loading
+  // Loading
   if (loading) {
     return (
       <UserProfileSkeleton />
@@ -90,7 +90,7 @@ const UserProfile = () => {
           {menuOpen && <Dropdown onClose={() => setMenuOpen(false)} />}
         </div>
       <div className="max-w-2xl mx-auto space-y-6">
-        {/* ── Profile Card ── */}
+        {/* Profile Card */}
         <BorderGlow
           edgeSensitivity={30}
           glowColor="40 80 80"

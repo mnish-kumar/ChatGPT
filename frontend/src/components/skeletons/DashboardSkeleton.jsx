@@ -10,7 +10,7 @@ export default function DashboardSkeleton() {
 
         {/* Cards grid skeleton */}
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {[1, 2, 3, 4, 5, 6].map((i) => (
+          {[1, 2, 3].map((i) => (
             <div
               key={i}
               className="bg-white rounded-lg shadow-md p-6 space-y-4"

@@ -1,7 +1,7 @@
 import { loginUser } from "@/store/userAction";
 import { useForm } from "react-hook-form";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { BorderBeam } from "@/components/ui/border-beam";
 import { googleLogin } from "../api/auth.api";
 import { useEffect, useState } from "react";
@@ -76,7 +76,7 @@ const Login = () => {
 
         <form
           onSubmit={handleSubmit(onSubmit)}
-          className="relative mx-4 w-full max-w-89 overflow-hidden rounded-xl border border-border bg-card p-4 text-left text-sm text-muted-foreground shadow-sm md:p-6"
+          className="relative mx-4 w-full max-w-89 overflow-hidden rounded-xl border border-border bg-white/70 p-4 text-left text-sm text-muted-foreground shadow-sm md:p-6"
         >
           <h2 className="mb-6 text-center text-2xl font-semibold text-foreground">
             Login
@@ -184,15 +184,15 @@ const Login = () => {
           </button>
 
           <div className="flex items-center gap-2 my-5">
-            <hr className="flex-1 border-border" />
+            <hr className="flex-1 border border-gray-300" />
             <span className="text-xs text-muted-foreground">OR</span>
-            <hr className="flex-1 border-border" />
+            <hr className="flex-1 border border-gray-300" />
           </div>
 
           <button
             type="button"
             onClick={googleLogin}
-            className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg border border-border bg-background py-2 text-sm font-medium text-foreground transition hover:bg-muted"
+            className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg border border-gray-400 bg-background py-2 text-sm font-medium text-foreground transition hover:bg-muted"
           >
             <img
               src="https://www.google.com/favicon.ico"
@@ -202,14 +202,14 @@ const Login = () => {
             Continue with Google
           </button>
 
-          <p className="text-center mt-4">
+          <p className="text-center mt-4 text-gray-700">
             Don't have an account?{" "}
-            <a
-              href="/register"
-              className="text-primary underline underline-offset-4 hover:text-primary/80"
+            <Link
+              to="/register"
+              className="text-blue-600 underline underline-offset-4 hover:text-blue-600/90"
             >
               Register
-            </a>
+            </Link>
           </p>
 
           <BorderBeam
