@@ -402,7 +402,7 @@ async function getMeController(req, res) {
  * @access Private
  */
 async function refreshTokenController(req, res) {
-    const cookieOptions = getCookieOptions(req);
+  const cookieOptions = getCookieOptions(req);
   const sessionId = req.cookies.sessionId;
   const refreshToken = req.cookies.refreshToken;
 
