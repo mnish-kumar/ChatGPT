@@ -72,7 +72,7 @@ const Register = () => {
         </button>
         <form
           onSubmit={handleSubmit(onSubmit)}
-          className="relative overflow-hidden bg-white/40 text-gray-500 max-w-97 mt-4 mx-4 md:p-6 p-4 text-left text-sm rounded-xl shadow-[0px_0px_10px_0px] shadow-black/10"
+          className="relative overflow-hidden bg-white/70 text-gray-500 max-w-97 mt-4 mx-4 md:p-6 p-4 text-left text-sm rounded-xl shadow-[0px_0px_10px_0px] shadow-black/10"
         >
           <h2 className="text-2xl font-semibold mb-6 text-center text-gray-800">
             Create Account
