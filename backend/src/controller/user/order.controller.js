@@ -1,4 +1,4 @@
-const orderModel = require("../models/order.model");
+const orderModel = require("../../models/user/order.model");
 const mongoose = require("mongoose");
 const Razorpay = require("razorpay");
 const crypto = require("crypto");

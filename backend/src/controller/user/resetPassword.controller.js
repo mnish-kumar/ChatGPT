@@ -1,10 +1,10 @@
-const userModel = require('../models/user.model');
-const authRedisService = require("../services/redis.service");
-const emailService = require("../broker/email.worker");
-const hash = require("../utils/hash.utils");
-const {redisClient} = require("../config/redis");
+const userModel = require('../../models/user/');
+const authRedisService = require("../../services/redis.service");
+const emailService = require("../../broker/email.worker");
+const hash = require("../../utils/hash.utils");
+const { redisClient } = require("../../config/redis");
 const bcrypt = require("bcryptjs");
-const { emailQueue } = require('../broker/email.queue');
+const { emailQueue } = require('../../broker/email.queue');
 
 /**
  * @route POST api/auth/request-password-reset

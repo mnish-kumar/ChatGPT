@@ -1,13 +1,13 @@
 const speakeasy = require("speakeasy");
 const qrcode = require("qrcode");
-const userModel = require("../models/user.model");
+const userModel = require("../../models/user/user.model");
 const bcrypt = require("bcrypt");
-const {redisClient} = require("../config/redis");
+const { redisClient } = require("../../config/redis");
 const jwt = require("jsonwebtoken");
-const authRedisService = require("../services/redis.service");
-const userCache = require("../cache/user.cache");
+const authRedisService = require("../../services/redis.service");
+const userCache = require("../../cache/user.cache");
 
-const { getCookieOptions } = require("../utils/cookieOptions");
+const { getCookieOptions } = require("../../utils/cookieOptions");
 
 const REFRESH_COOKIE_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
 

@@ -1,10 +1,9 @@
-const orderModel = require("../models/order.model");
-const paymentModel = require("../models/payment.model");
-const userModel = require("../models/user.model");
-const userCache = require("../cache/user.cache");
-const hashSignature = require("../utils/hash.utils");
-const axios = require("axios");
-const { emailQueue } = require("../broker/email.queue");
+const orderModel = require("../../models/user/order.model");
+const paymentModel = require("../../models/user/payment.model");
+const userModel = require("../../models/user/user.model");
+const userCache = require("../../cache/user.cache");
+const hashSignature = require("../../utils/hash.utils");
+const { emailQueue } = require("../../broker/email.queue");
 
 const logger = console;
 

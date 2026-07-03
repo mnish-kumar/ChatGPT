@@ -1,14 +1,14 @@
 const bcrypt = require("bcryptjs");
-const userModel = require("../models/user.model");
+const userModel = require("../../models/user.model");
 const jwt = require("jsonwebtoken");
-const blacklistTokenModel = require("../models/token.model");
-const { redisClient } = require("../config/redis");
-const userCache = require("../cache/user.cache");
-const authRedisService = require("../services/redis.service");
-const hash = require("../utils/hash.utils");
-const { emailQueue } = require("../broker/email.queue");
+const blacklistTokenModel = require("../../models/user/token.model");
+const { redisClient } = require("../../config/redis");
+const userCache = require("../../cache/user.cache");
+const authRedisService = require("../../services/redis.service");
+const hash = require("../../utils/hash.utils");
+const { emailQueue } = require("../../broker/email.queue");
 
-const { getCookieOptions } = require("../utils/cookieOptions");
+const { getCookieOptions } = require("../../utils/cookieOptions");
 
 /**
  * @route POST api/auth/register

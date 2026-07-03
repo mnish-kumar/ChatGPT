@@ -1,4 +1,4 @@
-const planLimits = require("../utils/plan.limit");
+const planLimits = require("../../utils/plan.limit");
 
 const FREE_PROMPT = `You are Jarvis, a career assistant created by the JarviSync team.
                     You are currently in FREE mode. You can ONLY help with:
