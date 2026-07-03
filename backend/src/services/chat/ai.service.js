@@ -2,6 +2,7 @@ const { GoogleGenAI } = require("@google/genai");
 const utils = require("../../utils/stream.helper");
 const userModel = require("../../models/user/user.model");
 const { getPlanLimits } = require("./prompt.service");
+const { z } = require("zod");
 
 if (!process.env.GEMINI_API_KEY) {
   console.error("❌ GEMINI_API_KEY is not set in environment variables.");

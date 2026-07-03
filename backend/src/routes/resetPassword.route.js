@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const redisRateLimiter = require("../middlewares/rateLimiter.middleware");
 const validators = require("../middlewares/validators.middleware");
-const resetPasswordController = require("../controller/resetPassword.controller");
+const resetPasswordController = require("../controller/user/resetPassword.controller");
 
 /**
  * @route POST api/auth/request-password-reset

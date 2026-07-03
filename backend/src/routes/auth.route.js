@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const authController = require("../controller/auth.controller");
+const authController = require("../controller/user/auth.controller");
 const authMiddleware = require("../middlewares/auth.middleware");
 const redisRateLimiter = require("../middlewares/rateLimiter.middleware");
 const validators = require("../middlewares/validators.middleware");

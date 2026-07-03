@@ -1,7 +1,7 @@
 const { default: mongoose } = require("mongoose");
-const { chatModel } = require("../models/chat.model");
-const messageModel = require("../models/message.model");
-const vectorService = require("../services/vector.service");
+const { chatModel } = require("../models/chat/chat.model");
+const messageModel = require("../models/chat/message.model");
+const vectorService = require("../services/chat/vector.service");
 
 async function createChat(req, res) {
   const { title } = req.body;

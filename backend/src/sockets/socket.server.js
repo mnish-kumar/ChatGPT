@@ -1,13 +1,13 @@
 const { Server } = require("socket.io");
 const cookie = require("cookie");
 const jwt = require("jsonwebtoken");
-const userModel = require("../models/user.model");
-const aiService = require("../services/ai.service");
-const messageModel = require("../models/message.model");
-const { createVector, queryVectors } = require("../services/vector.service");
+const userModel = require("../models/user/user.model");
+const aiService = require("../services/chat/ai.service");
+const messageModel = require("../models/chat/message.model");
+const { createVector, queryVectors } = require("../services/chat/vector.service");
 const { redisClient } = require("../config/redis");
-const { chatModel } = require("../models/chat.model");
-const { getSystemPrompt } = require("../services/prompt.service");
+const { chatModel } = require("../models/chat/chat.model");
+const { getSystemPrompt } = require("../services/chat/prompt.service");
 const chatCache = require("../cache/chat.cache");
 const socketRateLimiter = require("./socketRateLimiter.middleware");
 

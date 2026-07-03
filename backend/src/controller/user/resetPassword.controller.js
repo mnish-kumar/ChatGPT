@@ -1,4 +1,4 @@
-const userModel = require('../../models/user/');
+const userModel = require('../../models/user/user.model');
 const authRedisService = require("../../services/redis.service");
 const emailService = require("../../broker/email.worker");
 const hash = require("../../utils/hash.utils");

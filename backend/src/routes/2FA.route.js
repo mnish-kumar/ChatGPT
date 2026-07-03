@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const authMiddleware = require('../middlewares/auth.middleware');
-const twoFactorController = require("../controller/twoFactor.controller");
+const twoFactorController = require("../controller/user/twoFactor.controller");
 const redisRateLimiter = require("../middlewares/rateLimiter.middleware");
 
 /**

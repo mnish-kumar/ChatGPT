@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const resumeController = require("../controller/resumeAnalyzer.controller");
+const resumeController = require("../controller/resume/resumeAnalyzer.controller");
 const authMiddleware = require("../middlewares/auth.middleware");
 const upload = require("../middlewares/multer.middleware");
 
