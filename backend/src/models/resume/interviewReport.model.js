@@ -75,32 +75,84 @@ const preparationPlanSchema = new mongoose.Schema(
   { _id: false },
 );
 
-const interviewReportSchema = new mongoose.Schema({
-  jobDescription: {
-    type: String,
-    required: [true, "Job description is required"],
+const atsScoreBreakdownSchema = new mongoose.Schema(
+  {
+    skillsMatch: { score: Number, max: { type: Number, default: 40 } },
+    experienceMatch: { score: Number, max: { type: Number, default: 25 } },
+    projectsMatch: { score: Number, max: { type: Number, default: 20 } },
+    keywordsMatch: { score: Number, max: { type: Number, default: 10 } },
+    education: { score: Number, max: { type: Number, default: 5 } },
   },
-  resume: {
-    type: String,
-  },
-  selfDescription: {
-    type: String,
-  },
-  matchScore: {
-    type: Number,
-    min: 0,
-    max: 100,
-  },
-  technicalQuestions: [technicalQuestionsSchema],
-  behavioralQuestions: [behavioralQuestionsSchema],
-  skillGaps: [skillGapsSchema],
-  preparationPlan: [preparationPlanSchema],
-  user: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "user"
-  }
-});
+  { _id: false },
+);
 
-const interviewReportModel = mongoose.model("InterviewReport", interviewReportSchema);
+const interviewReportSchema = new mongoose.Schema(
+  {
+    jobDescription: {
+      type: String,
+      required: [true, "Job description is required"],
+    },
+    resume: {
+      type: String,
+    },
+    selfDescription: {
+      type: String,
+    },
+    atsScore: {
+      total: {
+        type: Number,
+        min: 0,
+        max: 100,
+        required: [true, "Total ATS score is required"],
+      },
+      breakdown: atsScoreBreakdownSchema,
+      formattingScore: {
+        score: { type: Number, default: 0 },
+        max: { type: Number, default: 10 },
+        issues: [{
+          issue: String,
+          severity: {
+            type: String,
+            enum: ["Low", "Medium", "High"],
+          }
+        }],
+      },
+      tier: {
+        type: String,
+        enum: ["Poor", "Average", "Good", "Excellent"],
+        required: true,
+      },
+      missingKeywords: [{
+        keyword: String,
+        suggestion: String,
+        type: {
+          type: String,
+          enum: ["genuinely_missing", "present_but_unwritten", "weak_mention"],
+        }
+      }],
+      strengths: [String],
+      version: { type: Number, default: 1 },
+      previousVersions: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "InterviewReport",
+        default: null,
+      },
+    },
+    technicalQuestions: [technicalQuestionsSchema],
+    behavioralQuestions: [behavioralQuestionsSchema],
+    skillGaps: [skillGapsSchema],
+    preparationPlan: [preparationPlanSchema],
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "user",
+    },
+  },
+  { timestamps: true },
+);
+
+const interviewReportModel = mongoose.model(
+  "InterviewReport",
+  interviewReportSchema,
+);
 
 module.exports = interviewReportModel;
