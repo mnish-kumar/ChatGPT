@@ -64,6 +64,15 @@ async function registerController(req, res) {
     firstname: user.fullname.firstname,
   });
 
+  await emailQueue.add(
+  "UPGRADE_NUDGE",
+  { type: "UPGRADE_NUDGE", email: user.email, firstname: user.fullname.firstname, userId: user._id },
+  {
+    delay: 2 * 24 * 60 * 60 * 1000, // After 2 days
+    jobId: `upgrade-nudge-${user._id}`, // duplicate prevent
+  }
+);
+
   // Generate access token
   const accessToken = jwt.sign(
     { id: user._id, role: user.role, isEmailVerified: user.isEmailVerified },
