@@ -1,15 +1,7 @@
-const ai = require("../chat/ai.service");
+const { ai } = require("../chat/ai.service");
 const { z } = require("zod");
 
-// Generate interview report based on user's resume, self description and job description.
 const interviewReportSchema = z.object({
-  matchScore: z
-    .number()
-    .min(0)
-    .max(100)
-    .describe(
-      "A score from 0 to 100 (not 0 to 1) indicating how well the user's profile matches the job description. Example: 85 means 85% match.",
-    ),
   technicalQuestions: z
     .array(
       z.object({
@@ -22,13 +14,14 @@ const interviewReportSchema = z.object({
         answer: z
           .string()
           .describe(
-            "How to answer this question, what points to cover,  what approch to take, etc.",
+            "How to answer this question, what points to cover, what approach to take, etc.",
           ),
       }),
     )
     .describe(
       "Technical questions that may be asked in the interview based on the user's profile and the job description.",
     ),
+
   behavioralQuestions: z
     .array(
       z.object({
@@ -46,6 +39,7 @@ const interviewReportSchema = z.object({
     .describe(
       "Behavioral questions that may be asked in the interview based on the user's profile and the job description.",
     ),
+
   skillGaps: z
     .array(
       z.object({
@@ -69,6 +63,7 @@ const interviewReportSchema = z.object({
     .describe(
       "Identified skill gaps in the user's profile compared to the job requirements, along with their severity and recommendations for improvement.",
     ),
+
   preparationPlan: z
     .array(
       z.object({
@@ -94,6 +89,66 @@ const interviewReportSchema = z.object({
     ),
 });
 
+const resumeExtractionSchema = z.object({
+  candidateSkills: z
+    .array(z.string())
+    .describe("All technical and soft skills found in the candidate's resume."),
+  requiredSkills: z
+    .array(z.string())
+    .describe(
+      "All skills mentioned as required or preferred in the job description.",
+    ),
+  matchedSkills: z
+    .array(z.string())
+    .describe(
+      "Skills from candidateSkills that also appear in requiredSkills.",
+    ),
+  missingSkills: z
+    .array(
+      z.object({
+        keyword: z.string().describe("The missing skill/keyword."),
+        suggestion: z
+          .string()
+          .describe(
+            "Specific advice: if candidate likely has this skill but didn't mention it, suggest how to add it to resume. If genuinely missing, suggest how to acquire it.",
+          ),
+        type: z
+          .enum(["genuinely_missing", "present_but_unwritten", "weak_mention"])
+          .describe(
+            "Whether this is a real gap or just a resume-writing issue.",
+          ),
+      }),
+    )
+    .describe(
+      "Required skills missing from the resume, each with an actionable suggestion.",
+    ),
+  candidateYearsExperience: z
+    .number()
+    .describe("Total years of relevant experience found in the resume."),
+  requiredYearsExperience: z
+    .number()
+    .describe("Years of experience required by the job description."),
+  relevantProjectsCount: z
+    .number()
+    .describe(
+      "Number of projects in the resume relevant to this job description.",
+    ),
+  educationMatch: z
+    .boolean()
+    .describe(
+      "Whether the candidate's education meets the job's education requirement.",
+    ),
+  keywordsFound: z
+    .array(z.string())
+    .describe("Important JD keywords/phrases found in the resume."),
+  keywordsRequired: z
+    .array(z.string())
+    .describe("Important keywords/phrases present in the job description."),
+  strengths: z
+    .array(z.string())
+    .describe("2-4 genuine strengths of this resume for this specific job."),
+});
+
 async function generateInterviewReport({
   selfDescription,
   jobDescription,
@@ -101,21 +156,50 @@ async function generateInterviewReport({
 }) {
   const prompt = `Generate an interview report for a candidate with the following details
                   Resume:${resume}
-                  Self Description:${selfDescription}
+                  Self Description:${selfDescription || "Not provided"}
                   Job Description:${jobDescription}`;
 
-  const response = await ai.models.generateContent({
-    model: process.env.GEMINI_MODEL_NAME,
-    contents: prompt,
-    config: {
-      responseMimeType: "application/json",
-      responseJsonSchema: z.toJSONSchema(interviewReportSchema),
-    },
-  });
+  try {
+    const response = await ai.models.generateContent({
+      model: process.env.GEMINI_MODEL_NAME,
+      contents: prompt,
+      config: {
+        responseMimeType: "application/json",
+        responseJsonSchema: z.toJSONSchema(interviewReportSchema),
+      },
+    });
 
-  return JSON.parse(response.text);
+    return JSON.parse(response.text);
+  } catch (error) {
+    console.error("Interview report generation error:", error.message);
+    throw new Error("Failed to generate interview report. Please try again.");
+  }
+}
+
+async function extractResumeData({ selfDescription, jobDescription, resume }) {
+  const prompt = `Extract structured comparison data between this resume and job description.
+                  Resume: ${resume}
+                  Self Description: ${selfDescription || "Not provided"}
+                  Job Description: ${jobDescription}`;
+
+  try {
+    const response = await ai.models.generateContent({
+      model: process.env.GEMINI_MODEL_NAME,
+      contents: prompt,
+      config: {
+        responseMimeType: "application/json",
+        responseJsonSchema: z.toJSONSchema(resumeExtractionSchema),
+      },
+    });
+
+    return JSON.parse(response.text);
+  } catch (error) {
+    console.error("Resume extraction error:", error.message);
+    throw new Error("Failed to extract resume data. Please try again.");
+  }
 }
 
 module.exports = {
   generateInterviewReport,
+  extractResumeData,
 };

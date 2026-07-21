@@ -2,11 +2,8 @@ const { tavily } = require("@tavily/core");
 const learningResourcesModel = require("../../models/resume/LearningResources.model");
 const client = tavily({ apiKey: process.env.TAVILY_API_KEY });
 
-// client.search({
-//   query: "JavaScript interview preparation resources",
-//   includeAnswer: "advanced",
-//   searchDepth: "advanced",
-// });
+const SEVERITY_ORDER = { High: 3, Medium: 2, Low: 1 };
+const MAX_SKILLS_TO_FETCH = 5;
 
 const extractYoutubeThumbnail = (url) => {
   try {
@@ -19,23 +16,38 @@ const extractYoutubeThumbnail = (url) => {
   }
 };
 
+const safeHostname = (url) => {
+  try {
+    return new URL(url).hostname.replace("www.", "");
+  } catch {
+    return "unknown";
+  }
+};
+
 async function searchLearningResources({
   skillGaps,
   userId,
   reportId,
-  matchScore,
+  atsScoreTotal,
+  tier,
 }) {
   try {
-    // Cache check 
     const cached = await learningResourcesModel.findOne({
       user: userId,
       interviewReport: reportId,
     });
     if (cached) return cached;
 
-    // Har skill ke liye docs + video parallel search
-    const resources = await Promise.all(
-      skillGaps.map(async (gap) => {
+    const topGaps = (skillGaps || [])
+      .slice()
+      .sort(
+        (a, b) =>
+          (SEVERITY_ORDER[b.severity] || 0) - (SEVERITY_ORDER[a.severity] || 0),
+      )
+      .slice(0, MAX_SKILLS_TO_FETCH);
+
+    const settled = await Promise.allSettled(
+      topGaps.map(async (gap) => {
         const [docsResponse, videoResponse] = await Promise.all([
           client.search(`${gap.skill} documentation tutorial for beginners`, {
             search_depth: "advanced",
@@ -64,7 +76,7 @@ async function searchLearningResources({
             title: r.title,
             url: r.url,
             description: r.content?.slice(0, 120) ?? "",
-            source: new URL(r.url).hostname.replace("www.", ""),
+            source: safeHostname(r.url),
           })),
           videos: videoResponse.results.map((r) => ({
             title: r.title,
@@ -77,11 +89,24 @@ async function searchLearningResources({
       }),
     );
 
-    // DB mein save karo
+    const resources = settled
+      .filter((r) => r.status === "fulfilled")
+      .map((r) => r.value);
+
+    settled
+      .filter((r) => r.status === "rejected")
+      .forEach((r) =>
+        console.error(
+          "Skill resource fetch failed:",
+          r.reason?.message || r.reason,
+        ),
+      );
+
     const saved = await learningResourcesModel.create({
       user: userId,
       interviewReport: reportId,
-      matchScore,
+      atsScoreTotal,
+      tier,
       resources,
     });
 
@@ -92,5 +117,4 @@ async function searchLearningResources({
   }
 }
 
-
-module.exports = searchLearningResources
+module.exports = searchLearningResources;

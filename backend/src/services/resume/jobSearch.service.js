@@ -1,9 +1,15 @@
 const axios = require("axios");
 const JobSuggestion = require("../../models/resume/jobSuggestion.model");
+const logger = require("../../config/logger");
 
-const searchJobListings = async ({ userId, reportId, jobRole, matchScore }) => {
+const searchJobListings = async ({
+  userId,
+  reportId,
+  jobRole,
+  atsScoreTotal,
+  tier,
+}) => {
   try {
-    // Cache check
     const cached = await JobSuggestion.findOne({
       user: userId,
       interviewReport: reportId,
@@ -26,34 +32,37 @@ const searchJobListings = async ({ userId, reportId, jobRole, matchScore }) => {
 
     const rawJobs = response.data?.data;
     const jobs = Array.isArray(rawJobs)
-      ? rawJobs.map((job) => ({
-          title: job.job_title,
-          company: job.employer_name,
-          location: job.job_location ?? "Remote",
-          isRemote: job.job_is_remote ?? false,
-          employmentType: job.job_employment_type ?? "FULLTIME",
-          postedAt: job.job_posted_at_datetime_utc
-            ? new Date(job.job_posted_at_datetime_utc)
-            : new Date(),
-          applyUrl: job.job_apply_link,
-          description: job.job_description?.slice(0, 200) ?? "",
-          logo: job.employer_logo ?? null,
-          salary: job.job_salary_string ?? null,
-          publisher: job.job_publisher ?? null,
-        }))
+      ? rawJobs
+          .filter((job) => job.job_apply_link)
+          .map((job) => ({
+            title: job.job_title,
+            company: job.employer_name,
+            location: job.job_location ?? "Remote",
+            isRemote: job.job_is_remote ?? false,
+            employmentType: job.job_employment_type ?? "FULLTIME",
+            postedAt: job.job_posted_at_datetime_utc
+              ? new Date(job.job_posted_at_datetime_utc)
+              : null, 
+            applyUrl: job.job_apply_link,
+            description: job.job_description?.slice(0, 200) ?? "",
+            logo: job.employer_logo ?? null,
+            salary: job.job_salary_string ?? null,
+            publisher: job.job_publisher ?? null,
+          }))
       : [];
 
     const saved = await JobSuggestion.create({
       user: userId,
       interviewReport: reportId,
-      matchScore,
       jobRole,
+      atsScoreTotal,
+      tier,
       jobs,
     });
 
     return saved;
   } catch (error) {
-    console.error("JSearch error:", error.message);
+    logger.error("JSearch error:", error.message);
     throw new Error("Failed to fetch job listings");
   }
 };
