@@ -125,7 +125,7 @@ async function registerController(req, res) {
  * @access Public
  */
 async function loginController(req, res) {
-    const cookieOptions = getCookieOptions(req);
+  const cookieOptions = getCookieOptions(req);
   const { username, email, password } = req.body;
 
   const query = [];
