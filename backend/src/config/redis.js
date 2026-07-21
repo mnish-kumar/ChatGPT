@@ -1,4 +1,6 @@
 const Redis = require("ioredis");
+const logger = require("./logger");
+
 
 const redisOptions = {
   host: process.env.REDIS_HOST,
@@ -13,10 +15,10 @@ const redisOptions = {
   maxRetriesPerRequest: null,
 };
 
-// ─── Main app client (rate limit, cache, sessions)─
+// Main app client (rate limit, cache, sessions)─
 const redisClient = new Redis(redisOptions);
 
-// ─── BullMQ connection
+// BullMQ connection
 const bullMQRedis = new Redis({
   ...redisOptions,
   maxRetriesPerRequest: null,
@@ -24,16 +26,16 @@ const bullMQRedis = new Redis({
 });
 
 redisClient.on("error", (err) => 
-  console.error("Redis Client Error❌", err)
+  logger.error("Redis Client Error❌", err)
 );
 redisClient.on("connect", () => 
-  console.log("Connected to Redis✅")
+  logger.info("Connected to Redis✅")
 );
 
 redisClient.on("reconnecting", () => 
-  console.log("🔄 Redis reconnecting...")
+  logger.info("🔄 Redis reconnecting...")
 );
 
-bullMQRedis.on("error", (err) => console.error("BullMQ Redis Error❌", err));
+bullMQRedis.on("error", (err) => logger.error("BullMQ Redis Error❌", err));
 
 module.exports = { redisClient, bullMQRedis };

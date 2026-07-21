@@ -3,7 +3,7 @@ const app = require('./src/app');
 const connectDB = require('./src/db/db');
 const initSocketServer  = require('./src/sockets/socket.server');
 const httpServer = require('http').createServer(app);
-
+const logger = require('./src/config/logger');
 
 // Connect to the database
 connectDB();
@@ -16,5 +16,5 @@ initSocketServer(httpServer);
 const PORT = process.env.PORT;
 
 httpServer.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT} ✅`);
+    logger.info(`Server is running on port ${PORT} ✅`);
 });

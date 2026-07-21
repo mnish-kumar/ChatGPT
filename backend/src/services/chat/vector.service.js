@@ -1,4 +1,5 @@
 const { Pinecone } = require("@pinecone-database/pinecone");
+const logger = require("../../config/logger");
 
 const pinecone = new Pinecone({
   apiKey: process.env.PINECONE_API_KEY,
@@ -6,7 +7,7 @@ const pinecone = new Pinecone({
 
 const index = pinecone.index("jarvisync");
 
-console.log("Pinecone connected ✅");
+logger.info("Pinecone connected ✅");
 
 async function createVector({ userId, chatId, messageId, vectors, metadata }) {
   const record = {
