@@ -3,6 +3,7 @@ const { bullMQRedis } = require("../config/redis");
 const { QUEUE_NAME } = require("../broker/email.queue");
 const emailService = require("../services/email.service");
 const userModel = require("../models/user/user.model");
+const logger = require("../config/logger");
 
 const emailWorker = new Worker(
   QUEUE_NAME,
@@ -69,7 +70,7 @@ const emailWorker = new Worker(
           if (currentUser && currentUser.plan.type === "FREE") {
             await emailService.sendUpgradeNudgeEmail(email, firstname);
           } else {
-            console.log(
+            logger.info(
               `Skipping upgrade nudge — user ${email} already upgraded`,
             );
           }
@@ -95,7 +96,7 @@ emailWorker.on("failed", (job, err) => {
 });
  
 emailWorker.on("ready", () => {
-  console.log("Email worker is ready");
+  logger.info("Email worker is ready");
 });
 
 module.exports = emailWorker;

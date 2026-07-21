@@ -1,5 +1,6 @@
 const { Queue } = require("bullmq");
 const { bullMQRedis } = require("../config/redis");
+const logger = require("../config/logger")
 
 const QUEUE_NAME = "email";
 
@@ -16,15 +17,15 @@ const emailQueue = new Queue(QUEUE_NAME, {
 });
 
 emailQueue.on("error", (err) => {
-  console.error("Email Queue Error:", err);
+  logger.error("Email Queue Error:", err);
 });
 
 emailQueue.on("waiting", (jobId) => {
-  console.log(`Email job waiting: ${jobId}`);
+  logger.info(`Email job waiting: ${jobId}`);
 });
 
 emailQueue.waitUntilReady().then(() => {
-  console.log("BullMQ Email Queue ready");
+  logger.info("BullMQ Email Queue ready");
 });
 
 module.exports = { emailQueue, QUEUE_NAME };
