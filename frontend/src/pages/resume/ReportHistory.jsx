@@ -8,7 +8,7 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
-// ── Helpers
+// Helpers
 const extractRole = (jobDescription) => {
   const firstLine = jobDescription?.split("\n")[0] ?? "";
   const beforePipe = firstLine.split("|")[0].trim();
@@ -31,15 +31,22 @@ const timeAgo = (dateStr) => {
   return "Just now";
 };
 
-const scoreColor = (score) => {
-  if (score >= 80)
-    return { text: "text-green-400", bg: "bg-green-500", label: "Strong" };
-  if (score >= 60)
-    return { text: "text-yellow-400", bg: "bg-yellow-500", label: "Good" };
-  return { text: "text-red-400", bg: "bg-red-500", label: "Partial" };
+// ✅ Tier-based color/label — replaces old score-threshold guessing,
+// now uses the exact same tier the backend computed (single source of truth)
+const tierStyle = (tier) => {
+  switch (tier) {
+    case "Excellent":
+      return { text: "text-green-400", bg: "bg-green-500", chip: "bg-green-500/10 text-green-400", label: "Excellent" };
+    case "Good":
+      return { text: "text-blue-400", bg: "bg-blue-500", chip: "bg-blue-500/10 text-blue-400", label: "Good" };
+    case "Average":
+      return { text: "text-yellow-400", bg: "bg-yellow-500", chip: "bg-yellow-500/10 text-yellow-400", label: "Average" };
+    default:
+      return { text: "text-red-400", bg: "bg-red-500", chip: "bg-red-500/10 text-red-400", label: "Poor" };
+  }
 };
 
-// ── Skeleton Card
+// Skeleton Card
 function SkeletonCard() {
   return (
     <div className="bg-[#0d0f14] border border-[#1e2130] rounded-xl p-4 animate-pulse">
@@ -55,12 +62,13 @@ function SkeletonCard() {
   );
 }
 
-// ── History Card
+// History Card
 function HistoryCard({ report, onClick }) {
   const role = extractRole(report.jobDescription);
   const when = timeAgo(report.createdAt);
-  const matchScore = Number(report.matchScore ?? 0);
-  const sc = scoreColor(matchScore);
+  const total = Number(report.atsScore?.total ?? 0);
+  const tier = report.atsScore?.tier ?? "Poor";
+  const style = tierStyle(tier);
   const date = new Date(report.createdAt).toLocaleDateString("en-US", {
     month: "short",
     day: "numeric",
@@ -86,45 +94,48 @@ function HistoryCard({ report, onClick }) {
       {/* Date & time */}
       <p className="text-[10px] text-gray-600 mb-3">
         {date} · {when}
+        {report.version > 1 && (
+          <span className="ml-2 text-[#ff3e7f]">v{report.version}</span>
+        )}
       </p>
 
-      {/* Match Score Bar */}
+      {/* ATS Score Bar */}
       <div className="mb-3">
         <div className="flex items-center justify-between mb-1">
-          <span className="text-[10px] text-gray-600">Match Score</span>
-          <span className={`text-[10px] font-bold ${sc.text}`}>
-            {matchScore}%
+          <span className="text-[10px] text-gray-600">ATS Score</span>
+          <span className={`text-[10px] font-bold ${style.text}`}>
+            {total}/100
           </span>
         </div>
         <div className="h-1.5 bg-[#1e2130] rounded-full overflow-hidden">
           <div
-            className={`h-full ${sc.bg} rounded-full transition-all duration-500`}
-            style={{ width: `${matchScore}%` }}
+            className={`h-full ${style.bg} rounded-full transition-all duration-500`}
+            style={{ width: `${total}%` }}
           />
         </div>
       </div>
 
       {/* Stats chips */}
       <div className="flex gap-1.5 flex-wrap">
-        <span className="text-[10px] bg-[#1e2130] text-gray-500 px-2 py-0.5 rounded-full">
-          {report.technicalQuestions?.length ?? 0} Tech Qs
-        </span>
-        <span className="text-[10px] bg-[#1e2130] text-gray-500 px-2 py-0.5 rounded-full">
-          {report.skillGaps?.length ?? 0} Gaps
-        </span>
-        <span className="text-[10px] bg-[#1e2130] text-gray-500 px-2 py-0.5 rounded-full">
-          {report.preparationPlan?.length ?? 0}-day plan
-        </span>
-        <span
-          className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${
-            matchScore >= 80
-              ? "bg-green-500/10 text-green-400"
-              : matchScore >= 60
-              ? "bg-yellow-500/10 text-yellow-400"
-              : "bg-red-500/10 text-red-400"
-          }`}
-        >
-          {sc.label}
+        {tier === "Poor" ? (
+          <span className="text-[10px] bg-[#1e2130] text-gray-500 px-2 py-0.5 rounded-full">
+            {report.missingKeywords?.length ?? 0} keywords to fix
+          </span>
+        ) : (
+          <>
+            <span className="text-[10px] bg-[#1e2130] text-gray-500 px-2 py-0.5 rounded-full">
+              {report.technicalQuestions?.length ?? 0} Tech Qs
+            </span>
+            <span className="text-[10px] bg-[#1e2130] text-gray-500 px-2 py-0.5 rounded-full">
+              {report.skillGaps?.length ?? 0} Gaps
+            </span>
+            <span className="text-[10px] bg-[#1e2130] text-gray-500 px-2 py-0.5 rounded-full">
+              {report.preparationPlan?.length ?? 0}-day plan
+            </span>
+          </>
+        )}
+        <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${style.chip}`}>
+          {style.label}
         </span>
       </div>
     </button>
@@ -159,7 +170,7 @@ const ReportHistory = () => {
   return (
     <div className="min-h-screen bg-[#0d0f14] text-white font-sans">
 
-      {/* ── Mobile Top Bar ── */}
+      {/* Mobile Top Bar */}
       <div className="sm:hidden sticky top-0 z-20 bg-[#0d0f14] border-b border-[#1e2130] px-4 py-3 flex items-center justify-between">
         <button
           onClick={() => navigate("/resume-analyzer")}
@@ -173,13 +184,11 @@ const ReportHistory = () => {
             History
           </span>
         </div>
-        {/* Spacer to center title */}
         <div className="w-12" />
       </div>
 
-      {/* ── Desktop Layout ── */}
+      {/* Desktop Layout */}
       <div className="hidden sm:flex min-h-screen">
-        {/* Left Sidebar */}
         <aside className="w-64 shrink-0 border-r border-[#1e2130] flex flex-col h-screen sticky top-0">
           <div className="p-4 border-b border-[#1e2130] flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -202,7 +211,6 @@ const ReportHistory = () => {
           </div>
         </aside>
 
-        {/* Main content */}
         <main className="flex-1 overflow-y-auto p-6">
           <HistoryList
             loading={historyLoading}
@@ -213,7 +221,7 @@ const ReportHistory = () => {
         </main>
       </div>
 
-      {/* ── Mobile Content ── */}
+      {/* Mobile Content */}
       <div className="sm:hidden px-4 py-5">
         <HistoryList
           loading={historyLoading}
@@ -226,7 +234,7 @@ const ReportHistory = () => {
   );
 };
 
-// ── Shared History List
+// Shared History List
 function HistoryList({ loading, history, onSelect, onNavigate }) {
   return (
     <div className="max-w-3xl mx-auto">
@@ -262,7 +270,6 @@ function HistoryList({ loading, history, onSelect, onNavigate }) {
         )}
       </div>
 
-      {/* Bottom padding on mobile for safe area */}
       <div className="h-6 sm:h-0" />
     </div>
   );

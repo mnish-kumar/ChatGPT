@@ -13,7 +13,7 @@ import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import Dropdown from "../user/Dropdown";
 
-// ── Main Component
+// Main Component
 const ResumeHome = ({ onSubmit }) => {
   const [jobDescription, setJobDescription] = useState("");
   const [selfDescription, setSelfDescription] = useState("");
@@ -31,7 +31,6 @@ const ResumeHome = ({ onSubmit }) => {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef(null);
 
-  // Detect mobile resize 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
     window.addEventListener("resize", checkMobile);
@@ -65,8 +64,7 @@ const ResumeHome = ({ onSubmit }) => {
   };
 
   const handleSubmit = async () => {
-    if (!jobDescription.trim()) return;
-    if (!resumeFile && !selfDescription.trim()) return;
+    if (!jobDescription.trim() || !resumeFile) return;
     setLoading(true);
     try {
       const nextReport = await generateResumeReport({
@@ -83,8 +81,7 @@ const ResumeHome = ({ onSubmit }) => {
     }
   };
 
-  const isValid =
-    jobDescription.trim() && (resumeFile || selfDescription.trim());
+ const isValid = jobDescription.trim() && resumeFile;
 
   if (report) {
     return <ReportPage report={report} onBack={() => setReport(null)} />;
@@ -93,7 +90,7 @@ const ResumeHome = ({ onSubmit }) => {
   return (
     <div className="min-h-screen bg-[#0d0f14] text-white flex font-sans relative">
 
-      {/* ── Mobile Sidebar Overlay ── */}
+      {/* Mobile Sidebar Overlay */}
       {isMobile && sidebarOpen && (
         <div
           className="fixed inset-0 bg-black/60 z-30 backdrop-blur-sm"
@@ -101,7 +98,7 @@ const ResumeHome = ({ onSubmit }) => {
         />
       )}
 
-      {/* ── History Sidebar ── */}
+      {/* History Sidebar */}
       {sidebarOpen && (
         <aside
           className={`
@@ -112,7 +109,6 @@ const ResumeHome = ({ onSubmit }) => {
             w-64 border-r border-[#1e2130] flex flex-col bg-[#0d0f14]
           `}
         >
-          {/* Sidebar Header */}
           <div className="p-4 border-b border-[#1e2130]">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -155,7 +151,6 @@ const ResumeHome = ({ onSubmit }) => {
               <ChevronRightIcon size={14} className="text-gray-600" />
             </button>
 
-            {/* User details */}
             <div
               className="px-3 py-3 border-t border-[#89A8B2]/15 flex items-center gap-3 cursor-pointer rounded m-1 hover:bg-[#1e2130] hover:border-[#ff3e7f]/40 transition-all"
               onClick={() => {
@@ -182,7 +177,6 @@ const ResumeHome = ({ onSubmit }) => {
 
         {/* ── Top Bar ── */}
         <div className="w-full max-w-5xl flex items-center justify-between mb-6 md:mb-8">
-          {/* Sidebar toggle (always visible when closed) */}
           {!sidebarOpen && (
             <button
               onClick={() => setSidebarOpen(true)}
@@ -194,7 +188,6 @@ const ResumeHome = ({ onSubmit }) => {
           )}
           {sidebarOpen && <div />}
 
-          {/* Menu (top right) */}
           <div ref={menuRef} className="relative text-gray-400">
             <button
               onClick={() => setMenuOpen((p) => !p)}
@@ -213,11 +206,11 @@ const ResumeHome = ({ onSubmit }) => {
         {/* Header */}
         <div className="text-center mb-6 md:mb-8 max-w-xl px-2">
           <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-3 leading-tight">
-            Create Your Custom{" "}
-            <span className="text-[#ff3e7f]">Interview Plan</span>
+            Get Your{" "}
+            <span className="text-[#ff3e7f]">ATS Score</span> & Interview Plan
           </h1>
           <p className="text-gray-400 text-sm leading-relaxed">
-            Turn your profile into a job-winning strategy 🚀.
+            Upload your resume, get a deterministic ATS-compatibility score, and a job-winning strategy 🚀.
           </p>
         </div>
 
@@ -252,12 +245,12 @@ const ResumeHome = ({ onSubmit }) => {
               <span>👤</span> Your Profile
             </div>
 
-            {/* Resume Upload */}
+            {/* Resume Upload — now REQUIRED */}
             <div>
               <div className="flex items-center gap-2 text-sm mb-2">
                 <span className="font-medium">Upload Resume</span>
-                <span className="text-[10px] font-bold bg-green-500/20 text-green-400 px-2 py-0.5 rounded">
-                  BEST RESULTS
+                <span className="text-[10px] font-bold bg-[#ff3e7f]/20 text-[#ff3e7f] px-2 py-0.5 rounded">
+                  REQUIRED
                 </span>
               </div>
               <div
@@ -314,33 +307,31 @@ const ResumeHome = ({ onSubmit }) => {
             {/* Divider */}
             <div className="flex items-center gap-3">
               <div className="flex-1 h-px bg-[#1e2130]" />
-              <span className="text-xs text-gray-600">OR</span>
+              <span className="text-xs text-gray-600">OPTIONAL — EXTRA CONTEXT</span>
               <div className="flex-1 h-px bg-[#1e2130]" />
             </div>
 
-            {/* Self Description */}
+            {/* Self Description — now purely OPTIONAL extra context, not an alternative to resume */}
             <div>
-              <p className="text-sm font-medium mb-2">Quick Self-Description</p>
+              <p className="text-sm font-medium mb-2">Self-Description (Optional)</p>
               <textarea
-                className={`w-full h-24 sm:h-28 bg-[#0d0f14] border rounded-xl p-3 text-sm text-gray-300 placeholder-gray-600 resize-none focus:outline-none transition-colors ${
-                  selfDescription.trim()
-                    ? "border-[#ff3e7f]/50"
-                    : "border-[#1e2130] focus:border-[#ff3e7f]/50"
-                }`}
-                placeholder="Briefly describe your experience, key skills, and years of experience..."
+                className="w-full h-24 sm:h-28 bg-[#0d0f14] border border-[#1e2130] rounded-xl p-3 text-sm text-gray-300 placeholder-gray-600 resize-none focus:outline-none focus:border-[#ff3e7f]/50 transition-colors"
+                placeholder="Anything not on your resume? e.g. freelance work, internships, unwritten experience..."
                 value={selfDescription}
                 onChange={(e) => setSelfDescription(e.target.value)}
               />
+              <p className="text-[10px] text-gray-600 mt-1.5 leading-relaxed">
+                This information is used as additional context to improve the accuracy of your ATS score. It does not replace or modify your resume.
+              </p>
             </div>
 
-            {/* Info Banner */}
-            {!resumeFile && !selfDescription.trim() && (
+            {/* Info Banner — updated: resume ab hard requirement hai */}
+            {!resumeFile && (
               <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-3 flex items-start gap-2">
                 <span className="text-blue-400 mt-0.5 shrink-0">ℹ</span>
                 <p className="text-xs text-blue-300 leading-relaxed">
-                  Either a <strong>Resume</strong> or a{" "}
-                  <strong>Self Description</strong> is required to generate a
-                  personalized plan.
+                  <strong>Resume upload is required</strong> to generate an ATS score —
+                  self-description is only used for additional context, not as a resume replacement.
                 </p>
               </div>
             )}
@@ -350,7 +341,7 @@ const ResumeHome = ({ onSubmit }) => {
         {/* Footer Bar */}
         <div className="w-full max-w-5xl mt-4 flex flex-col sm:flex-row items-center justify-between gap-3 px-1">
           <p className="text-xs text-gray-600 text-center sm:text-left">
-            AI-Powered Strategy Generation · Approx 30s
+            Deterministic ATS Scoring · Approx 30s
           </p>
           <button
             onClick={handleSubmit}
@@ -385,12 +376,11 @@ const ResumeHome = ({ onSubmit }) => {
                 Analyzing...
               </>
             ) : (
-              <>★ Generate My Interview Strategy</>
+              <>★ Generate My ATS Score & Interview Strategy</>
             )}
           </button>
         </div>
 
-        {/* Bottom padding for mobile scroll */}
         <div className="h-6 md:h-0" />
       </div>
     </div>

@@ -118,7 +118,7 @@ function ToolCard({ tag, tagColor, title, description, cta, onClick, accentColor
 
         {/* CTA Button */}
         <button
-          className="mt-auto flex items-center justify-center gap-2 w-full px-4 py-3 rounded-xl border font-semibold text-sm transition-all group-hover:shadow-lg active:scale-95"
+          className="mt-auto flex items-center justify-center gap-2 w-full px-4 py-3 rounded-xl border font-semibold text-sm transition-all group-hover:shadow-lg active:scale-95 cursor-pointer"
           style={{
             borderColor: `${accentColor}40`,
             color: accentColor,
@@ -138,12 +138,11 @@ function ToolCard({ tag, tagColor, title, description, cta, onClick, accentColor
   );
 }
 
-// ── Main Dashboard
+// Main Dashboard
 const Dashboard = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef(null);
   const navigate = useNavigate();
-  const dispatch = useDispatch();
   const { user, isLoading } = useSelector((s) => s.user);
 
   useEffect(() => {
@@ -231,7 +230,7 @@ const Dashboard = () => {
         <p className="text-sm text-gray-600">Pick a tool and let's get to work</p>
       </div>
 
-      {/* ── Cards Grid ── */}
+      {/* Cards Grid */}
       <div className="w-full max-w-5xl mx-auto px-4 grid grid-cols-1 sm:grid-cols-2 gap-12">
 
         {/* Card 1: ChitChat */}
@@ -289,13 +288,13 @@ const Dashboard = () => {
         </ToolCard>
       </div>
 
-      {/* ── Premium Footer Banner ── */}
+      {/* Premium Footer Banner */}
       <PremiumBanner
         plan={user?.plan}
         onUpgrade={() => navigate("/subscription")}
       />
 
-      {/* ── Footer ── */}
+      {/* Footer */}
       <footer className="mt-auto pt-10 pb-6 px-4 text-center">
         <p className="text-[10px] text-gray-700">
           © {new Date().getFullYear()} JarviSync · Built with AI
